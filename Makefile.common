@@ -1,0 +1,21 @@
+
+HEADERS = utils.h multiverse.h
+CORE_OBJS = mv_data.o mv_parser.o mv_session.o mv_common.o mv_local.o
+TEST_OBJS = $(CORE_OBJS) $(EXTRA_OBJS) test1.o
+DEMO_OBJS = $(CORE_OBJS) $(EXTRA_OBJS) demo.o
+
+test : $(TEST_OBJS) $(HEADERS)
+	gcc $(TEST_OBJS) -o test
+
+demo : $(DEMO_OBJS) $(HEADERS)
+	gcc $(DEMO_OBJS) -o demo
+
+%.o : %.c $(HEADERS)
+	gcc -Wall -c -g $(COPTS) $< -o $@
+
+clean :
+	rm -f *.o
+	rm -f test
+	rm -f demo
+
+

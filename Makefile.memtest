@@ -1,0 +1,8 @@
+
+EXTRA_OBJS = memwatch.o
+COPTS = -DMEMWATCH
+
+include Makefile.common
+
+memwatch.o : 
+	gcc -Wall -c -g $(COPTS) memwatch/memwatch.c -o memwatch.o
