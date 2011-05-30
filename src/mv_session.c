@@ -3,53 +3,145 @@
 #include <stdlib.h>
 #include <string.h>
 #include "multiverse.h"
-#include "utils.h"
 
-mv_error* __mv_create_entity(int* ref, mv_session* state, mv_attrlist source) {
+mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
+	int ref;
+
+	dst->type = src->type;
+
+	switch(src->type) {
+	case MVTYPE_RAWREF:
+		ref = mv_session_findvar(sess, src->value.rawref);
+		if (ref == -1) {
+			THROW(BADVAR, "Unknown variable '%s'", src->name);
+		}
+		dst->type = MVTYPE_REF;
+		dst->value.ref = ref;
+		break;
+	case MVTYPE_REF:
+		dst->value.ref = src->value.ref;
+		break;
+	case MVTYPE_STRING:
+		dst->value.string = strdup(src->value.string);
+		break;
+	default:
+		THROW(INTERNAL, "Unknown type");
+	}
+
+	dst->name = strdup(src->name);
+
+	return NULL;
+}
+
+mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
+	mv_typespec *dtype, *stype;
+	dst->type = src->type;
+
+	switch (src->type) {
+	case MVSPEC_TYPE:
+		dtype = &(dst->value.typespec);
+		stype = &(src->value.typespec);
+		dtype->type = stype->type;
+		dtype->classname = (stype->classname == NULL) ? NULL :
+			strdup(stype->classname);
+		break;
+	default:
+		THROW(INTERNAL, "Unknown attrspec code (%d)", src->type);
+	}
+
+	dst->name = strdup(src->name);
+	return NULL;
+}
+
+mv_error* __mv_create_entity(int* ref,
+                             mv_session* sess,
+                             mv_attrlist attrs)
+{
+	int i, j;
 	mv_attrlist entity;
-	mv_attrlist_alloc(&entity, source.size);
-	int i;
-	for (i=0; i<source.size; i++) {
-		switch(source.attrs[i].type) {
-		case MVTYPE_STRING:
-			entity.attrs[i].type = MVTYPE_STRING;
-			entity.attrs[i].name = strdup(source.attrs[i].name);
-			entity.attrs[i].value.string = strdup(source.attrs[i].value.string);
-			break;
-		default:
-			return mv_error_raise(MVERROR_INTERNAL, "Unknown type");
+	mv_error *error;
+	mv_attr *src, *dst;
+	//
+	mv_attrlist_alloc(&entity, attrs.size);
+	for (i=0; i<attrs.size; i++) {
+		src = &attrs.attrs[i];
+		dst = &entity.attrs[i];
+		if ((error = __mv_copy_attr(dst, src, sess))) {
+			for (j=0; j<i; j++) mv_attr_release(&entity.attrs[j]);
+			return error;
 		}
 	}
-	i = mv_entcache_put(&state->entities, &entity);
-	if (ref != NULL) *ref = i;
+	mv_entcache_put(&sess->entities, ref, &entity);
+	return NULL;
+}
+
+mv_error* __mv_create_class(int* ref,
+                            mv_session* sess,
+                            mv_speclist specs)
+{
+	int i, j;
+	mv_speclist cls;
+	mv_error *error;
+	mv_attrspec *src, *dst;
+	//
+	mv_speclist_alloc(&cls, specs.size);
+	for (i=0; i<specs.size; i++) {
+		src = &specs.specs[i];
+		dst = &cls.specs[i];
+		if ((error = __mv_copy_spec(dst, src))) {
+			for (j=0; j<i; j++) mv_attrspec_release(&cls.specs[j]);
+			return error;
+		}
+	}
+	mv_clscache_put(&sess->classes, ref, &cls);
 	return NULL;
 }
 
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
+	mv_error* error;
+
 	switch (action->code) {
-		case MVCMD_CREATE_ENTITY:
-			if (action->vars.used == 0) {
-				return __mv_create_entity(NULL, state, action->attrs);
-			} else if (action->vars.used == 1) {
-				int ref = mv_varbind_lookup(&state->vars, action->vars.items[0]);
-				if (ref != -1) {
-					return mv_error_raise(MVERROR_BADVAR, "Variable already bound");
-				}
-				mv_error* error = __mv_create_entity(&ref, state, action->attrs);
-				if (error != NULL) return error;
-				mv_varbind_insert(&state->vars, action->vars.items[0], ref);
-				return NULL;
-			} else {
-				return mv_error_raise(MVERROR_INTERNAL, "Malformed action");
+	case MVCMD_CREATE_ENTITY:
+		if (action->vars.used == 0) {
+			return __mv_create_entity(NULL, state, action->attrs);
+		} else if (action->vars.used == 1) {
+			char* varname = action->vars.items[0];
+			int ref = mv_varbind_lookup(&state->vars, varname);
+			if (ref != -1) {
+				THROW(BADVAR, "Variable already bound");
 			}
-		default:
-			return mv_error_raise(MVERROR_INTERNAL, "Unknown action");
+			if ((error = __mv_create_entity(&ref, state, action->attrs))) {
+				return error;
+			}
+			mv_varbind_insert(&state->vars, varname, ref);
+			return NULL;
+		} else {
+			THROW(INTERNAL, "Malformed action");
+		}
+	case MVCMD_CREATE_CLASS:
+		if (action->vars.used != 1) {
+			THROW(INTERNAL, "Strange number of variables");
+		}
+		char* clsname = action->vars.items[0];
+		int ref = mv_varbind_lookup(&state->clsnames, clsname);
+		if (ref != -1) {
+			THROW(BADVAR, "Class '%s' already defined", clsname);
+		}
+		if ((error = __mv_create_class(&ref, state, action->spec))) {
+			return error;
+		}
+		mv_varbind_insert(&state->clsnames, clsname, ref);
+		return NULL;
+	default:
+		THROW(INTERNAL, "Unknown action (%d)", action->code);
 	}
 }
 
 void mv_session_init(mv_session* state) {
 	mv_varbind_alloc(&state->vars, 8);
+	mv_varbind_alloc(&state->clsnames, 8);
 	mv_entcache_alloc(&state->entities, 8);
+	mv_clscache_alloc(&state->classes, 8);
 }
 
 int mv_session_findvar(mv_session* session, char* name) {
@@ -59,6 +151,19 @@ int mv_session_findvar(mv_session* session, char* name) {
 		return ref;
 	}
 	return mv_varbind_lookup(&(session->vars), name);
+}
+
+mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
+	int i;
+	mv_command cmd;
+	for (i=0; i<script->used; i++) {
+		mv_error* error = mv_command_parse(&cmd, script->items[i]);
+		if (error != NULL) return error;
+		error = mv_session_execute(session, &cmd);
+		mv_command_release(&cmd);
+		if (error != NULL) return error;
+	}
+	return NULL;
 }
 
 mv_error* mv_session_show(char** target, mv_session* session, char* name) {
@@ -72,11 +177,13 @@ mv_error* mv_session_show(char** target, mv_session* session, char* name) {
 		*target = mv_strbuf_align(&buf);
 		return NULL;
 	}
-	return mv_error_raiseform(MVERROR_BADVAR, "Unknown name '%s'", name);
+	THROW(BADVAR, "Unknown name '%s'", name);
 }
 
 void mv_session_release(mv_session* state) {
 	mv_varbind_release(&state->vars);
+	mv_varbind_release(&state->clsnames);
 	mv_entcache_release(&(state->entities));
+	mv_clscache_release(&state->classes);
 }
 

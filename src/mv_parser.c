@@ -6,40 +6,40 @@
 #include <stdlib.h>
 #include <string.h>
 #include "multiverse.h"
-#include "utils.h"
 
-int __mvp_ispair(mv_ast_entry* entry) {
-	return (entry->type == MVAST_ATTRPAIR);
+#define PAIR(var) ((var->type) == MVAST_ATTRPAIR)
+#define SPEC(var) ((var->type) == MVAST_TYPESPEC)
+#define LEAF(var) ((var)->type == MVAST_LEAF)
+#define LEAFFIX(var, text) (LEAF(var) && STREQ((var)->value.leaf, text))
+#define TEMPFIX(var, code) ((var->type) == MVAST_TEMP##code)
+
+mv_ast_entry
+__mv_ast_mergepair(mv_ast_entry* a, mv_ast_entry* b, int typecode) {
+	mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+	tmp[0] = *a;
+	tmp[1] = *b;
+
+	mv_ast_entry result;
+	result.type = typecode;
+	result.value.subtree.size = 2;
+	result.value.subtree.items = tmp;
+
+	return result;
 }
-
-int __mvp_isleaf(mv_ast_entry* entry) {
-	return (entry->type == MVAST_LEAF);
-}
-
-int __mvp_istemplist(mv_ast_entry* entry) {
-	return (entry->type == MVAST_TEMPATTRLIST);
-}
-
-int __mvp_isfixed(mv_ast_entry* entry, char* text) {
-	return (entry->type == MVAST_LEAF) &&
-	       (strcmp(entry->value.leaf, text) == 0);
-}
-
-#define FIXED(var, code) ((var->type) == MVAST_TEMP##code)
 
 mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	mv_strarr tokens;
-	mv_error* error = mv_tokenize(&tokens, data);
-	if (error != NULL) {
+	mv_error* error;
+	if ((error = mv_tokenize(&tokens, data))) {
 		return error;
 	}
-	mv_ast_entry* stack = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * tokens.used);
+	mv_ast_entry* stack = malloc(sizeof(mv_ast_entry) * tokens.used);
 	int scan = 0, size = 0;
 
 	while (scan < tokens.used) {
-		if (strcmp(tokens.items[scan], "{") == 0) {
+		if (STREQ(tokens.items[scan], "{")) {
 			stack[size].type = MVAST_TEMPOPENBRACE;
-		} else if (strcmp(tokens.items[scan], "}") == 0) {
+		} else if (STREQ(tokens.items[scan], "}")) {
 			stack[size].type = MVAST_TEMPCLOSEBRACE;
 		} else {
 			stack[size].type = MVAST_LEAF;
@@ -58,7 +58,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 
 			mv_ast_entry *e1 = stack + size - 2, *e2 = e1 + 1;
 
-			if (FIXED(e1, OPENBRACE) && FIXED(e2, CLOSEBRACE)) {
+			if (TEMPFIX(e1, OPENBRACE) && TEMPFIX(e2, CLOSEBRACE)) {
 				e1->type = MVAST_ATTRLIST;
 				e1->value.subtree.size = 0;
 				e1->value.subtree.items = NULL;
@@ -68,41 +68,58 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 
 			if (size < 3) break;
 
-			e1 = stack + size - 3;
-			e2 = e1 + 1;
+			e1--;
+			e2--;
 			mv_ast_entry *e3 = e1 + 2;
 			
-			if (__mvp_isleaf(e1) && __mvp_isfixed(e2, "=") && __mvp_isleaf(e3)) {
-				mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
-				tmp[0] = *e1;
-				tmp[1] = *e3;
-				free(e2->value.leaf);
-				e1->type = MVAST_ATTRPAIR;
-				e1->value.subtree.size = 2;
-				e1->value.subtree.items = tmp;
-				size -= 2;
-				continue;
-			}
-			
-			if (FIXED(e1, OPENBRACE) && __mvp_ispair(e2) && FIXED(e3, CLOSEBRACE)) {
-				mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry));
-				tmp[0] = *e2;
-				e1->type = MVAST_ATTRLIST;
-				e1->value.subtree.size = 1;
-				e1->value.subtree.items = tmp;
-				size -= 2;
-				continue;				
+			if (LEAF(e1) && LEAF(e3)) {
+				int typecode = 0;
+
+				if (LEAFFIX(e2, "=")) {
+					typecode = MVAST_ATTRPAIR;
+				} else if (LEAFFIX(e2, ":")) {
+					typecode = MVAST_TYPESPEC;
+				}
+
+				if (typecode != 0) {
+					free(e2->value.leaf);
+					*e1 = __mv_ast_mergepair(e1, e3, typecode);
+					size -= 2;
+					continue;	
+				}
 			}
 
-			if (FIXED(e1, OPENBRACE) && __mvp_istemplist(e2) && FIXED(e3, CLOSEBRACE)) {
-				e1->type = MVAST_ATTRLIST;
-				e1->value.subtree = e2->value.subtree;
-				size -= 2;
-				continue;				
+			if (TEMPFIX(e1, OPENBRACE) && TEMPFIX(e3, CLOSEBRACE)) {
+				if (PAIR(e2)) {
+					mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
+					tmp[0] = *e2;
+					e1->type = MVAST_ATTRLIST;
+					e1->value.subtree.size = 1;
+					e1->value.subtree.items = tmp;
+					size -= 2;
+					continue;				
+				}
+
+				if (SPEC(e2)) {
+					mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
+					tmp[0] = *e2;
+					e1->type = MVAST_ATTRSPECLIST;
+					e1->value.subtree.size = 1;
+					e1->value.subtree.items = tmp;
+					size -= 2;
+					continue;
+				}
+
+				if (TEMPFIX(e2, ATTRLIST)) {
+					e1->type = MVAST_ATTRLIST;
+					e1->value.subtree = e2->value.subtree;
+					size -= 2;
+					continue;				
+				}
 			}
 			
-			if (__mvp_ispair(e1) && __mvp_isfixed(e2, ",") && __mvp_ispair(e3)) {
-				mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
+			if (PAIR(e1) && LEAFFIX(e2, ",") && PAIR(e3)) {
+				mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
 				tmp[0] = *e1;
 				tmp[1] = *e3;
 				free(e2->value.leaf);
@@ -115,7 +132,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 		} while (oldsize != size);
 	}
 	
-	stack = (mv_ast_entry*)realloc(stack, sizeof(mv_ast_entry) * size);
+	stack = realloc(stack, sizeof(mv_ast_entry) * size);
 	free(tokens.items);
 	
 	target->size = size;
@@ -125,7 +142,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	for (i=0; i < size; i++) {
 		if (stack[i].type < 0) {
 			mv_ast_release(target);
-			return mv_error_raise(MVERROR_SYNTAX, "Unmatched temporary objects");
+			THROW(SYNTAX, "Unmatched temporary objects in %s", data);
 		}
 	}
 	return NULL;
@@ -148,18 +165,49 @@ void mv_ast_release(mv_ast* ast) {
 	free(ast->items);
 }
 
-int mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source) {
+void mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source) {
 	mv_attrlist_alloc(target, source->size);
 	int i;
 	for (i=0; i<source->size; i++) {
-		assert(source->items[i].type == MVAST_ATTRPAIR);
-		mv_ast astpair = source->items[i].value.subtree;
-		assert(astpair.size == 2);
-		assert(astpair.items[0].type == MVAST_LEAF);
-		assert(astpair.items[1].type == MVAST_LEAF);
-		mv_attr_parse(target->attrs + i, astpair.items[0].value.leaf, astpair.items[1].value.leaf);
+		mv_ast_entry srcitem = source->items[i];
+		if (srcitem.type != MVAST_ATTRPAIR) {
+			DIE("AttrPair expected");
+		}
+		mv_ast astpair = srcitem.value.subtree;
+		if (astpair.size != 2) {
+			DIE("Two elements expected");
+		}
+		mv_ast_entry* items = astpair.items;
+		if (items[0].type != MVAST_LEAF || items[1].type != MVAST_LEAF) {
+			DIE("Leafs expected");
+		}
+		mv_attr_parse(&target->attrs[i],
+                      items[0].value.leaf,
+                      items[1].value.leaf);
 	}
-	return 0;
+}
+
+void mv_ast_to_speclist(mv_speclist* target, mv_ast* source) {
+	mv_speclist_alloc(target, source->size);
+	int i;
+	for (i=0; i<source->size; i++) {
+		mv_ast_entry src = source->items[i];
+		assert(
+			(src.type == MVAST_ATTRPAIR) ||
+        	(src.type == MVAST_TYPESPEC)
+		);
+		assert(src.value.subtree.size == 2);
+		mv_ast_entry* items = src.value.subtree.items;
+		assert(LEAF(&items[0]));
+		assert(LEAF(&items[1]));
+		//
+		mv_spec_parse(
+			&(target->specs[i]),
+			items[0].value.leaf,
+			items[1].value.leaf,
+			src.type
+		);
+	}
 }
 
 void mv_attr_parse(mv_attr* target, char* name, char* value) {
@@ -172,37 +220,64 @@ void mv_attr_parse(mv_attr* target, char* name, char* value) {
 		target->value.rawref = strdup(value);
 	}
 }
+
+mv_error* __mv_command_create_parse(mv_command* target, mv_ast_entry* items, int size) {
+	if ((size == 1) || !(LEAF(&items[1]))) {
+		THROW(INTERNAL, "Malformed 'create' command");
+	}
+
+	if (LEAFFIX(items + 1, "entity")) {
+		target->code = MVCMD_CREATE_ENTITY;
+		if (items[2].type != MVAST_ATTRLIST) {
+			THROW(INTERNAL, "Expected AttrList, got %d", items[2].type);
+		}
+		assert(items[2].type == MVAST_ATTRLIST);
+		assert(size >= 3);
+		assert(size <= 4);
+		mv_ast_to_attrlist(&target->attrs, &items[2].value.subtree);
+		if (size == 4) {
+			assert(items[3].type == MVAST_LEAF);
+			mv_strarr_alloc(&target->vars, 1);
+			mv_strarr_append(&target->vars, items[3].value.leaf);
+		} else {
+			mv_strarr_alloc(&target->vars, 0);
+		}
+		target->spec.size = 0;
+		target->spec.specs = NULL;
+		return NULL;
+	}
+
+	if (LEAFFIX(items + 1, "class")) {
+		target->code = MVCMD_CREATE_CLASS;
+		if (!LEAF(&items[2])) {
+			THROW(INTERNAL, "Expected class name, got %d", items[2].type);
+		}
+		if (items[3].type != MVAST_ATTRSPECLIST) {
+			THROW(INTERNAL, "Expected AttrSpecList, got %d", items[3].type);
+		}
+		mv_ast_to_speclist(&(target->spec), &(items[3].value.subtree));
+		mv_strarr_alloc(&target->vars, 1);
+		mv_strarr_append(&target->vars, items[2].value.leaf);
+		target->attrs.size = 0;
+		target->attrs.attrs = NULL;
+		return NULL;
+	}
 	
+	THROW(SYNTAX, "Invalid task for create - '%s'", items[1].value.leaf);
+}
+
 mv_error* mv_command_parse(mv_command* target, char* data) {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, data);
 	if (error != NULL) return error;
 
-	if (__mvp_isfixed(ast.items, "create") &&
-	    __mvp_isfixed(ast.items + 1, "entity"))
-	{
-		target->code = MVCMD_CREATE_ENTITY;
-		if (ast.items[2].type != MVAST_ATTRLIST) {
-			char buffer[200];
-			mv_ast_release(&ast);
-			sprintf(buffer, "Expected AttrList, got %d", ast.items[2].type);
-			return mv_error_raise(MVERROR_INTERNAL, buffer);
-		}
-		assert(ast.items[2].type == MVAST_ATTRLIST);
-		assert(ast.size >= 3);
-		assert(ast.size <= 4);
-		mv_ast_to_attrlist(&(target->attrs), &(ast.items[2].value.subtree));
-		if (ast.size == 4) {
-			assert(ast.items[3].type == MVAST_LEAF);
-			mv_strarr_alloc(&target->vars, 1);
-			mv_strarr_append(&target->vars, ast.items[3].value.leaf);
-		} else {
-			mv_strarr_alloc(&target->vars, 0);
-		}
+	if (LEAFFIX(ast.items, "create")) {
+		error = __mv_command_create_parse(target, ast.items, ast.size);
 		mv_ast_release(&ast);
-		return NULL;
+		return error;
 	}
-	if (__mvp_isfixed(ast.items, "show"))
+
+	if (LEAFFIX(ast.items, "show"))
 	{
 		assert(ast.size == 2);
 		assert(ast.items[1].type == MVAST_LEAF);
@@ -214,7 +289,7 @@ mv_error* mv_command_parse(mv_command* target, char* data) {
 		mv_ast_release(&ast);
 		return NULL;
 	}
-	if (__mvp_isfixed(ast.items, "quit"))
+	if (LEAFFIX(ast.items, "quit"))
 	{
 		assert(ast.size == 1);
 		target->code = MVCMD_QUIT;
@@ -225,86 +300,76 @@ mv_error* mv_command_parse(mv_command* target, char* data) {
 		return NULL;
 	}
 
-	return mv_error_raise(MVERROR_SYNTAX, "Syntax error");
+	THROW(SYNTAX, "Syntax error");
+}
+
+void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
+	switch(rel) {
+		case MVAST_TYPESPEC:
+			ptr->type = MVSPEC_TYPE;
+			if (STREQ(value, "string")) {
+				ptr->value.typespec.type = MVTYPE_STRING;
+				ptr->value.typespec.classname = NULL;
+			} else {
+				DIE("Unknown type '%s'", value);
+			}	
+			break;
+		default:
+			DIE("Unknown relationship code (%d)", rel);
+	}
+	ptr->name = strdup(key);
 }
 
 mv_error* mv_tokenize(mv_strarr* target, char* data) {
 	assert(data != NULL);
 	assert(target != NULL);
-	int count = 0;
-	// states: 0 - in whitespace, 1 - in literal, 2 - in token
-	int state = 0;
-	int scan, base, fill;
+	enum { WHITESPACE, LITERAL, TOKEN } state = WHITESPACE;
+	int base = 0, scan;
+	mv_strarr_alloc(target, 10);
 	for (scan = 0; data[scan] != '\0'; scan++) {
 		switch (data[scan]) {
 		case ' ': case '\t': case '\n':
-			if (state == 2) state = 0;
-			break;
-		case '\'':
-			if (state == 1) state = 0;
-			else {
-				state = 1;
-				count++;
-			}
-			break;
-		case ',': case '{': case '}':
-			if ((state == 0) || (state == 2)) {
-				state = 0;
-				count++;
-			}
-			break;
-		default:
-			if (state == 0) {
-				state = 2;
-				count++;
-			}
-		}
-	}
-	if (state == 1) {
-		return mv_error_raise(MVERROR_SYNTAX, "Unmatched \"'\"");
-	}
-	mv_strarr_alloc(target, count);
-	state = 0;
-	base = 0;
-	fill = 0;
-	for (scan = 0; data[scan] != '\0'; scan++) {
-		switch (data[scan]) {
-		case ' ': case '\t': case '\n':
-			if (state == 2) {
-				state = 0;
+			if (state == TOKEN) {
+				state = WHITESPACE;
 				mv_strarr_appslice(target, data, base, scan);
 			}
 			break;
 		case '\'':
-			if (state == 0) {
+			if (state == WHITESPACE) {
 				base = scan;
-				state = 1;
-			} else if (state == 1) {
-				mv_strarr_appslice(target, data, base, scan);			
-				state = 0;
-			} else if (state == 2) {
-				mv_strarr_appslice(target, data, base, scan - 1);			
-				state = 1;
+				state = LITERAL;
+			} else if (state == LITERAL) {
+				mv_strarr_appslice(target, data, base, scan);
+				state = WHITESPACE;
+			} else {
+				mv_strarr_appslice(target, data, base, scan - 1);
+				state = LITERAL;
 			}
 			break;
-		case ',': case '{': case '}':
-			if (state == 0) {
+		case ',': case '{': case '}': case ':':
+			if (state == WHITESPACE) {
 				mv_strarr_appslice(target, data, scan, scan + 1);
-			} else if (state == 2) {
+			} else if (state == TOKEN) {
 				mv_strarr_appslice(target, data, base, scan);
 				mv_strarr_appslice(target, data, scan, scan + 1);
 				state = 0;
 			}
 			break;
 		default:
-			if (state == 0) {
-				state = 2;
+			if (state == WHITESPACE) {
+				state = TOKEN;
 				base = scan;
 			}
 		}	
 	}
+	if (state == 1) {
+		mv_strarr_release(target);
+		THROW(SYNTAX, "Unmatched \"'\"");
+	}
 	if (state == 2) {
 		mv_strarr_appslice(target, data, base, scan);
 	}
+	target->items = realloc(target->items, sizeof(char*) * target->used);
+	target->size = target->used;
 	return NULL;
 }

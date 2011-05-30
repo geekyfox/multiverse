@@ -3,10 +3,7 @@
 #define __MULTIVERSE_HEADER__
 
 #include <stdio.h>
-
-#ifdef MEMWATCH
-#include "memwatch/memwatch.h"
-#endif
+#include <stdlib.h>
 
 /*******************************/
 /* Common utility functions    */
@@ -27,19 +24,35 @@ typedef struct {
 	int code;
 } mv_error;
 
-void      mv_error_display(mv_error* error, FILE* file);
-char*     mv_error_show(mv_error* error);
-mv_error* mv_error_raise(int code, char* message);
-mv_error* mv_error_raiseform(int code, char* format, char* message);
-void      mv_error_release(mv_error* error);
+void  mv_error_display(mv_error* error, FILE* file);
+char* mv_error_show(mv_error* error);
+void  mv_error_release(mv_error* error);
+
+#define PREPARE_ERROR(__errvar, __errcd, ...) do { \
+__errvar = malloc(sizeof(mv_error));               \
+asprintf(&(__errvar->message), __VA_ARGS__);       \
+__errvar->code = MVERROR_##__errcd; } while (0)    \
+
+#define THROW(__errcd, ...) do {                 \
+mv_error* __errtmp__;                            \
+PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
+return __errtmp__; } while (0)
+
+#define DIE(...) do {                              \
+fprintf(stderr, "[ !!! Fatal error | %s %s:%d ] ", \
+__func__, __FILE__, __LINE__);                     \
+fprintf(stderr, __VA_ARGS__);                      \
+fprintf(stderr, "\n");                             \
+abort(); } while (0)
 
 /***************************/
 /* Common string functions */
 /***************************/
 
+#define STREQ(x, y) (strcmp((x), (y)) == 0)
+
 int   mv_strhash(char* str);
 char* mv_strslice(char* source, int start, int end);
-
 
 /*****************************/
 /* Common data structures    */
@@ -56,6 +69,7 @@ typedef struct {
 char* mv_strbuf_align(mv_strbuf* ptr);
 void  mv_strbuf_alloc(mv_strbuf* ptr, int size);
 void  mv_strbuf_append(mv_strbuf* ptr, char* text);
+void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
 
 /*******************/
 /* Name-value pair */
@@ -91,6 +105,31 @@ void mv_attrlist_alloc(mv_attrlist* ptr, int size);
 void mv_attrlist_release(mv_attrlist* ptr);
 void mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr);
 
+typedef struct {
+	int type;
+	char* classname;
+} mv_typespec;
+
+#define MVSPEC_TYPE 1
+
+typedef struct {
+	char* name;
+	int type;
+	union {
+		mv_typespec typespec;
+	} value;	
+} mv_attrspec;
+
+void mv_attrspec_release(mv_attrspec* ptr);
+
+typedef struct {
+	mv_attrspec* specs;
+	int size;
+} mv_speclist;
+
+void mv_speclist_alloc(mv_speclist* ptr, int size);
+void mv_speclist_release(mv_speclist* ptr);
+
 /******************************/
 /* Expandable array of string */
 /******************************/
@@ -114,10 +153,12 @@ void mv_strarr_release(mv_strarr* ptr);
 #define MVCMD_QUIT -1
 #define MVCMD_CREATE_ENTITY 1
 #define MVCMD_SHOW 2
+#define MVCMD_CREATE_CLASS 3
 
 typedef struct {
 	int code;
 	mv_attrlist attrs;
+	mv_speclist spec;
 	mv_strarr vars;
 } mv_command;
 
@@ -164,9 +205,23 @@ typedef struct {
 } mv_entcache;
 
 void mv_entcache_alloc(mv_entcache* ptr, int size);
-int  mv_entcache_put(mv_entcache* ptr, mv_attrlist* obj);
+void mv_entcache_put(mv_entcache* ptr, int* ref, mv_attrlist* obj);
 void mv_entcache_release(mv_entcache* ptr);
 
+typedef struct {
+	int exist;
+	mv_speclist data;
+} mv_class;
+
+typedef struct {
+	int size;
+	int used;
+	mv_class* items;
+} mv_clscache;
+
+void mv_clscache_alloc(mv_clscache* ptr, int size);
+void mv_clscache_put(mv_clscache* ptr, int* ref, mv_speclist* obj);
+void mv_clscache_release(mv_clscache* ptr);
 
 /*******************************/
 /* Text parsing                */
@@ -180,6 +235,8 @@ void mv_entcache_release(mv_entcache* ptr);
 #define MVAST_LEAF 1
 #define MVAST_ATTRLIST 2
 #define MVAST_ATTRPAIR 3
+#define MVAST_TYPESPEC 4
+#define MVAST_ATTRSPECLIST 5
 
 typedef struct {
 	int size;
@@ -196,20 +253,25 @@ typedef struct mv_ast_entry {
 
 mv_error* mv_ast_parse(mv_ast* target, char* request);
 void      mv_ast_release(mv_ast* ast);
-int       mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source);
+void      mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source);
+void      mv_ast_to_speclist(mv_speclist* target, mv_ast* source);
 
 void       mv_attr_parse(mv_attr* target, char* name, char* value);
+void       mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
 mv_error*  mv_command_parse(mv_command* target, char* request);
 mv_error*  mv_tokenize(mv_strarr* target, char* request);
 
 typedef struct {
 	mv_varbind vars;
 	mv_entcache entities;
+	mv_varbind clsnames;
+	mv_clscache classes;
 } mv_session;
 
 void      mv_session_init(mv_session* state);
 mv_error* mv_session_execute(mv_session* state, mv_command* action);
 int       mv_session_findvar(mv_session* session, char* name);
+mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
 void      mv_session_release(mv_session* state);
 mv_error* mv_session_show(char** target, mv_session* source, char* name);
 

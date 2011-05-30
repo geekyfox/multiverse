@@ -31,8 +31,7 @@ void mv_local_execute(mv_command* cmd) {
 			free(tmpstr);
 			break;
 		default:
-			fprintf(stderr, "Unknown command code %d\n", cmd->code);
-			abort();
+			DIE("Unknown command code %d\n", cmd->code);
 	}
 
 	if (error != NULL) {
