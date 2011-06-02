@@ -15,23 +15,25 @@ void mv_local_execute(mv_command* cmd) {
 	char *tmpstr = NULL;
 
 	switch(cmd->code) {
-		case MVCMD_DO_NOTHING:
-			break;
-		case MVCMD_CREATE_ENTITY:
-			error = mv_session_execute(__LOCAL_SESSION__, cmd);
-			if (error == NULL) {
-				printf ("OK, entity created\n");
-			}
-			break;
-		case MVCMD_SHOW:
-			error = mv_session_show(&tmpstr, __LOCAL_SESSION__, cmd->vars.items[0]);
-			if (error != NULL) break;
-			printf("%s", tmpstr);
-			fflush(stdout);
-			free(tmpstr);
-			break;
-		default:
-			DIE("Unknown command code %d\n", cmd->code);
+	case MVCMD_DO_NOTHING:
+		break;
+	case MVCMD_CREATE_ENTITY:
+		error = mv_session_execute(__LOCAL_SESSION__, cmd);
+		if (error == NULL) printf ("OK, entity created\n");
+		break;
+	case MVCMD_CREATE_CLASS:
+		error = mv_session_execute(__LOCAL_SESSION__, cmd);
+		if (error == NULL) printf ("OK, class created\n");
+		break;
+	case MVCMD_SHOW:
+		error = mv_session_show(&tmpstr, __LOCAL_SESSION__, cmd->vars.items[0]);
+		if (error != NULL) break;
+		printf("%s", tmpstr);
+		fflush(stdout);
+		free(tmpstr);
+		break;
+	default:
+		DIE("Unknown command code %d\n", cmd->code);
 	}
 
 	if (error != NULL) {

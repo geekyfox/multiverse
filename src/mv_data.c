@@ -21,24 +21,6 @@ void mv_attr_release(mv_attr* attr) {
 	free(attr->name);
 }
 
-void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
-	mv_strbuf_append(buf, attr->name);
-	mv_strbuf_append(buf, " = ");
-	switch (attr->type) {
-	case MVTYPE_STRING:
-		mv_strbuf_append(buf, "'");
-		mv_strbuf_append(buf, attr->value.string);
-		mv_strbuf_append(buf, "'");
-		break;
-	case MVTYPE_REF:
-		mv_strbuf_append(buf, "##");
-		mv_strbuf_appendi(buf, attr->value.ref);
-		break;
-	default:
-		DIE("Invalid code (%d)", attr->type);
-	}
-}
-
 void mv_attrlist_alloc(mv_attrlist* ptr, int size) {
 	ptr->size = size;
 	ptr->attrs = malloc(sizeof(mv_attr) * size);
@@ -54,27 +36,10 @@ void mv_attrlist_release(mv_attrlist* ptr) {
 	free(ptr->attrs);
 }
 
-void mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr) {
-	int i;
-	mv_strbuf_append(buf, "{\n");
-	for (i=0; i<ptr->size; i++) {
-		mv_strbuf_append(buf, "  ");
-		mv_attr_show(buf, &(ptr->attrs[i]));
-		if (i != ptr->size - 1) mv_strbuf_append(buf, ",");
-		mv_strbuf_append(buf, "\n");
-	}
-	mv_strbuf_append(buf, "}\n");
-}
-
 void mv_attrspec_release(mv_attrspec* ptr) {
 	switch (ptr->type) {
 	case MVSPEC_TYPE:
-		switch (ptr->value.typespec.type) {
-		case MVTYPE_STRING:
-			break;
-		default:
-			DIE("Unknown type (%d)", ptr->value.typespec.type);
-		}
+		mv_typespec_release(&(ptr->value.typespec));
 		break;
 	default:
 		DIE("Unknown type (%d)", ptr->type);
@@ -159,11 +124,6 @@ void mv_entcache_release(mv_entcache* ptr) {
 	free(ptr->items);
 }
 
-void mv_entity_show(mv_strbuf* buf, mv_entity* obj) {
-	mv_strbuf_append(buf, "entity ");
-	mv_attrlist_show(buf, &(obj->data));
-}
-
 void mv_command_release(mv_command* sess) {
 	mv_attrlist_release(&sess->attrs);
 	mv_strarr_release(&sess->vars);
@@ -192,7 +152,7 @@ void mv_strarr_alloc(mv_strarr* ptr, int size) {
 	ptr->size = size;
 }
 
-void __mv_strarr_expand(mv_strarr* ptr) {
+static void __mv_strarr_expand(mv_strarr* ptr) {
 	if (ptr->used < ptr->size) return;
 	ptr->size *= 2;
 	ptr->items = realloc(ptr->items, sizeof(char*) * ptr->size);
@@ -232,21 +192,18 @@ void mv_strbuf_alloc(mv_strbuf* buf, int size) {
 	buf->size = size;
 }
 
-void mv_strbuf_append(mv_strbuf* buf, char* text) {
-	int available = buf->size - buf->used;
-	int len = strlen(text);
-	if (len > available) {
-		buf->size = buf->size * 2 + len;
-		buf->data = realloc(buf->data, sizeof(char) * buf->size);
-	}
-	strcpy(buf->data + buf->used, text);
-	buf->used += len;
-}
 
-void mv_strbuf_appendi(mv_strbuf* buf, int index) {
-	char text[100];
-	sprintf(text, "%d", index);
-	mv_strbuf_append(buf, text);
+
+void mv_typespec_release(mv_typespec* spec) {
+	switch (spec->type) {
+	case MVTYPE_STRING:
+		break;
+	case MVTYPE_RAWREF:
+		free(spec->classname);
+		break;
+	default:
+		DIE("Unknown type (%d)", spec->type);
+	}
 }
 
 void mv_varbind_alloc(mv_varbind* ptr, int size) {

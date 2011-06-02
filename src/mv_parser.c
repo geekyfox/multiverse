@@ -116,6 +116,13 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 					size -= 2;
 					continue;				
 				}
+
+				if (TEMPFIX(e2, ATTRSPECLIST)) {
+					e1->type = MVAST_ATTRSPECLIST;
+					e1->value.subtree = e2->value.subtree;
+					size -= 2;
+					continue;
+				}
 			}
 			
 			if (PAIR(e1) && LEAFFIX(e2, ",") && PAIR(e3)) {
@@ -128,6 +135,18 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 				e1->value.subtree.items = tmp;
 				size -= 2;
 				continue;		
+			}
+
+			if (SPEC(e1) && LEAFFIX(e2, ",") && SPEC(e3)) {
+				mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+				tmp[0] = *e1;
+				tmp[1] = *e3;
+				free(e2->value.leaf);
+				e1->type = MVAST_TEMPATTRSPECLIST;
+				e1->value.subtree.size = 2;
+				e1->value.subtree.items = tmp;
+				size -= 2;
+				continue;
 			}
 		} while (oldsize != size);
 	}
@@ -142,7 +161,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	for (i=0; i < size; i++) {
 		if (stack[i].type < 0) {
 			mv_ast_release(target);
-			THROW(SYNTAX, "Unmatched temporary objects in %s", data);
+			return mv_error_unmatched(stack[i].type, data);
 		}
 	}
 	return NULL;
@@ -284,6 +303,8 @@ mv_error* mv_command_parse(mv_command* target, char* data) {
 		target->code = MVCMD_SHOW;
 		target->attrs.size = 0;
 		target->attrs.attrs = NULL;
+		target->spec.size = 0;
+		target->spec.specs = NULL;
 		mv_strarr_alloc(&target->vars, 1);
 		mv_strarr_append(&target->vars, ast.items[1].value.leaf);
 		mv_ast_release(&ast);
@@ -311,7 +332,8 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 				ptr->value.typespec.type = MVTYPE_STRING;
 				ptr->value.typespec.classname = NULL;
 			} else {
-				DIE("Unknown type '%s'", value);
+				ptr->value.typespec.type = MVTYPE_RAWREF;
+				ptr->value.typespec.classname = strdup(value);
 			}	
 			break;
 		default:
@@ -364,7 +386,7 @@ mv_error* mv_tokenize(mv_strarr* target, char* data) {
 	}
 	if (state == 1) {
 		mv_strarr_release(target);
-		THROW(SYNTAX, "Unmatched \"'\"");
+		return mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
 	}
 	if (state == 2) {
 		mv_strarr_appslice(target, data, base, scan);

@@ -25,16 +25,37 @@ DIE("Expected '%s', got '%s'", __pattern, __value); \
 if (__value == NULL) DIE("Unexpected NULL"); \
 } while (0)
 
+#define ASSERT_NULL(__value) do {         \
+if (__value != NULL) DIE("Unexpected non-NULL value"); \
+} while (0)
+
+#define ENTER() printf("%s ENTERED\n", __FUNCTION__)
+
+#define SUCCESS() printf("%s PASSED\n", __FUNCTION__)
+
+#define REPORT(action) do { ENTER(); action; SUCCESS(); \
+} while (0)
+
 void perform_data_test();
 void perform_parser_test();
+void perform_printer_test();
 
 #define REQ1 "create entity { name = 'Umberto Eco' } umberto_eco"
 #define REQ2 "create entity { country = italy, name = 'Umberto Eco' \
 } umberto_eco"
+#define REQ5 "create entity { title = 'Name of the Rose', author = \
+umberto_eco } name_of_the_rose"
 #define REQ6 "create class person { name : string }"
 #define REQ7 "create class person { name:string }"
+#define REQ8 "create class fruit { name : string, color : color }"
+
+#define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
+Rose',\n  author = ##0\n}\n"
+#define RESP3 "person = class {\n  name : string\n}\n"
 
 #define BADREQ1 "create entity { name = 'Umberto "
+#define ERRRESP1 "Unmatched \"'\" in \"create entity { name = 'Umberto \"" 
+#define BADREQ2 "create entity { name = 'Umberto' "
 
 #endif
 

@@ -2,10 +2,12 @@
 CORE_HEADERS = src/multiverse.h
 TEST_HEADERS = test/test.h
 
-MODULES      = data parser
+MODULES      = data parser printer
 CORE_MODULES = $(MODULES) session common local
 TEST_MODULES = $(MODULES) test 
 DEMO_MODULES = demo
+
+COPTS = -Wall -g
 
 CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o)
 DEMO_OBJS    = $(foreach i,$(DEMO_MODULES),build/dm_$(i).o)
@@ -27,16 +29,16 @@ memtest : testsuite
 	valgrind --leak-check=full --show-reachable=yes ./testsuite
 
 demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS)
-	gcc $(CORE_OBJS) $(DEMO_OBJS) -o demo
+	gcc $(COPTS) $(CORE_OBJS) $(DEMO_OBJS) -o demo
 
 build/dm_%.o : src/%.c $(CORE_HEADERS)
-	gcc -Wall -c -g $(COPTS) $< -o $@
+	gcc $(COPTS) -c $< -o $@
 
 build/ts_%.o : test/%.c $(CORE_HEADERS) $(TEST_HEADERS)
-	gcc -Wall -c -g $(COPTS) $< -o $@
+	gcc $(COPTS) -c $< -o $@
 
 build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
-	gcc -Wall -c -g $(COPTS) $< -o $@
+	gcc $(COPTS) -c $< -o $@
 
 .PHONY : clean
 clean :

@@ -13,10 +13,16 @@ mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
 	case MVTYPE_RAWREF:
 		ref = mv_session_findvar(sess, src->value.rawref);
 		if (ref == -1) {
-			THROW(BADVAR, "Unknown variable '%s'", src->name);
+			if (sess->autovalidate) {
+				THROW(BADVAR, "Unknown variable '%s'", src->name);
+			} else {
+				dst->type = MVTYPE_RAWREF;
+				dst->value.rawref = strdup(src->value.rawref);	
+			}
+		} else {
+			dst->type = MVTYPE_REF;
+			dst->value.ref = ref;
 		}
-		dst->type = MVTYPE_REF;
-		dst->value.ref = ref;
 		break;
 	case MVTYPE_REF:
 		dst->value.ref = src->value.ref;
@@ -142,6 +148,7 @@ void mv_session_init(mv_session* state) {
 	mv_varbind_alloc(&state->clsnames, 8);
 	mv_entcache_alloc(&state->entities, 8);
 	mv_clscache_alloc(&state->classes, 8);
+	state->autovalidate = 1;
 }
 
 int mv_session_findvar(mv_session* session, char* name) {
@@ -151,6 +158,10 @@ int mv_session_findvar(mv_session* session, char* name) {
 		return ref;
 	}
 	return mv_varbind_lookup(&(session->vars), name);
+}
+
+int mv_session_findclass(mv_session* session, char* name) {
+	return mv_varbind_lookup(&(session->clsnames), name);
 }
 
 mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
@@ -166,6 +177,13 @@ mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
 	return NULL;
 }
 
+void mv_session_release(mv_session* state) {
+	mv_varbind_release(&state->vars);
+	mv_varbind_release(&state->clsnames);
+	mv_entcache_release(&(state->entities));
+	mv_clscache_release(&state->classes);
+}
+
 mv_error* mv_session_show(char** target, mv_session* session, char* name) {
 	int ref = mv_session_findvar(session, name);
 	if (ref != -1) {
@@ -177,13 +195,16 @@ mv_error* mv_session_show(char** target, mv_session* session, char* name) {
 		*target = mv_strbuf_align(&buf);
 		return NULL;
 	}
+	ref = mv_session_findclass(session, name);
+	if (ref != -1) {
+		mv_strbuf buf;
+		mv_strbuf_alloc(&buf, 1000);
+		mv_strbuf_append(&buf, name);
+		mv_strbuf_append(&buf, " = ");
+		mv_class_show(&buf, &(session->classes.items[ref]));
+		*target = mv_strbuf_align(&buf);
+		return NULL;
+	}
 	THROW(BADVAR, "Unknown name '%s'", name);
-}
-
-void mv_session_release(mv_session* state) {
-	mv_varbind_release(&state->vars);
-	mv_varbind_release(&state->clsnames);
-	mv_entcache_release(&(state->entities));
-	mv_clscache_release(&state->classes);
 }
 

@@ -28,6 +28,8 @@ void  mv_error_display(mv_error* error, FILE* file);
 char* mv_error_show(mv_error* error);
 void  mv_error_release(mv_error* error);
 
+mv_error* mv_error_unmatched(int objcode, char* command);
+
 #define PREPARE_ERROR(__errvar, __errcd, ...) do { \
 __errvar = malloc(sizeof(mv_error));               \
 asprintf(&(__errvar->message), __VA_ARGS__);       \
@@ -75,9 +77,9 @@ void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
 /* Name-value pair */
 /*******************/
 
-#define MVTYPE_STRING 1
-#define MVTYPE_RAWREF 2
-#define MVTYPE_REF    3
+#define MVTYPE_STRING 1001
+#define MVTYPE_RAWREF 1002
+#define MVTYPE_REF    1003
 
 typedef struct {
 	char* name;
@@ -110,6 +112,9 @@ typedef struct {
 	char* classname;
 } mv_typespec;
 
+void mv_typespec_release(mv_typespec* spec);
+void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
+
 #define MVSPEC_TYPE 1
 
 typedef struct {
@@ -121,6 +126,7 @@ typedef struct {
 } mv_attrspec;
 
 void mv_attrspec_release(mv_attrspec* ptr);
+void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* ptr);
 
 typedef struct {
 	mv_attrspec* specs;
@@ -129,6 +135,7 @@ typedef struct {
 
 void mv_speclist_alloc(mv_speclist* ptr, int size);
 void mv_speclist_release(mv_speclist* ptr);
+void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr);
 
 /******************************/
 /* Expandable array of string */
@@ -213,6 +220,8 @@ typedef struct {
 	mv_speclist data;
 } mv_class;
 
+void mv_class_show(mv_strbuf* buf, mv_class* class);
+
 typedef struct {
 	int size;
 	int used;
@@ -229,14 +238,16 @@ void mv_clscache_release(mv_clscache* ptr);
 /* Implementation: mv_parser.c */
 /*******************************/
 
-#define MVAST_TEMPCLOSEBRACE -3
-#define MVAST_TEMPOPENBRACE -2
-#define MVAST_TEMPATTRLIST -1
-#define MVAST_LEAF 1
-#define MVAST_ATTRLIST 2
-#define MVAST_ATTRPAIR 3
-#define MVAST_TYPESPEC 4
-#define MVAST_ATTRSPECLIST 5
+#define MVAST_TEMPAPOSTROPHE   -2005
+#define MVAST_TEMPATTRSPECLIST -2004
+#define MVAST_TEMPCLOSEBRACE   -2003
+#define MVAST_TEMPOPENBRACE    -2002
+#define MVAST_TEMPATTRLIST     -2001
+#define MVAST_LEAF              2001
+#define MVAST_ATTRLIST          2002
+#define MVAST_ATTRPAIR          2003
+#define MVAST_TYPESPEC          2004
+#define MVAST_ATTRSPECLIST      2005
 
 typedef struct {
 	int size;
@@ -266,10 +277,12 @@ typedef struct {
 	mv_entcache entities;
 	mv_varbind clsnames;
 	mv_clscache classes;
+	int autovalidate;
 } mv_session;
 
 void      mv_session_init(mv_session* state);
 mv_error* mv_session_execute(mv_session* state, mv_command* action);
+int       mv_session_findclass(mv_session* session, char* name);
 int       mv_session_findvar(mv_session* session, char* name);
 mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
 void      mv_session_release(mv_session* state);

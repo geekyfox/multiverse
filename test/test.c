@@ -6,42 +6,21 @@
 #include "test.h"
 
 
-char* bad_request_2 = "create entity { name = 'Umberto' ";
 char* bad_request_3 = "create entity { name = 'Umberto' , }";
 char* request_3 = "show umberto_eco";
 char* request_4 = "create entity {\nname = 'Umberto Eco'\n} umberto_eco";
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
-char* request_5 = "create entity { title = 'Name of the Rose', author = umberto_eco } name_of_the_rose";
-char* response_2 = "name_of_the_rose = entity {\n  title = 'Name of the Rose',\n  author = ##0\n}\n";
 
 void mv_ast_test() {
 	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ1);
-	assert(error == NULL);
-	assert(ast.size == 4);
-	assert(ast.items[0].type == MVAST_LEAF);
-	assert(strcmp(ast.items[0].value.leaf, "create") == 0);
-	assert(ast.items[2].type == MVAST_ATTRLIST);
-	assert(ast.items[2].value.subtree.size == 1);
-	assert(ast.items[2].value.subtree.items[0].type == MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
-
-	error = mv_ast_parse(&ast, REQ2);
-	assert(error == NULL);
-	assert(ast.size == 4);
-	assert(ast.items[0].type == MVAST_LEAF);
-	assert(strcmp(ast.items[0].value.leaf, "create") == 0);
-	assert(ast.items[2].type == MVAST_ATTRLIST);
-	assert(ast.items[2].value.subtree.size == 2);
-	assert(ast.items[2].value.subtree.items[0].type == MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
+	mv_error* error;
 
 	error = mv_ast_parse(&ast, BADREQ1);
 	assert(error != NULL);
 	assert(error->code == MVERROR_SYNTAX);
 	mv_error_release(error);
 
-	error = mv_ast_parse(&ast, bad_request_2);
+	error = mv_ast_parse(&ast, BADREQ2);
 	assert(error != NULL);
 	assert(error->code == MVERROR_SYNTAX);
 	mv_error_release(error);
@@ -129,7 +108,7 @@ void mv_command_test() {
 	printf("mv_command_test STEP 2 PASSED\n");
 
 	check_parsing_failure(BADREQ1);
-	check_parsing_failure(bad_request_2);
+	check_parsing_failure(BADREQ2);
 	check_parsing_failure(bad_request_3);
 
 	error = mv_command_parse(&action, "quit");
@@ -150,7 +129,7 @@ void mv_command_test() {
 
 	printf("mv_command_test STEP 7 PASSED\n");
 
-	error = mv_command_parse(&action, request_5);
+	error = mv_command_parse(&action, REQ5);
 	assert(error == NULL);
 	assert(action.code == MVCMD_CREATE_ENTITY);
 	assert(action.attrs.size == 2);
@@ -194,7 +173,7 @@ void mv_execute_test() {
 	assert(strcmp(state.entities.items[0].data.attrs[0].value.string, "Umberto Eco") == 0);
 	mv_command_release(&action);
 
-	error = mv_command_parse(&action, request_5);
+	error = mv_command_parse(&action, REQ5);
 	FAIL(error);
 	error = mv_session_execute(&state, &action);
 	FAIL(error);
@@ -217,6 +196,12 @@ void mv_execute_test() {
 	ASSERT_INT(state.classes.items[0].data.specs[0].type, MVSPEC_TYPE);
 	mv_command_release(&action);
 
+	error = mv_command_parse(&action, REQ8);
+	FAIL(error);
+	error = mv_session_execute(&state, &action);
+	FAIL(error);
+
+	mv_command_release(&action);
 	mv_session_release(&state);
 
 	printf("mv_execute_test PASSED\n");	
@@ -267,27 +252,24 @@ void mv_session_findvar_test() {
 	printf("mv_session_findvar_test PASSED\n");
 }
 
-void mv_showcmd_test() {
-	mv_session state;
-	mv_strarr script;
+void mv_attrspec_release_test() {
+	mv_command cmd;
+	mv_error* error;
 
-	mv_session_init(&state);
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ1);
-	mv_strarr_append(&script, request_5);
+	error = mv_command_parse(&cmd, REQ7);
+	FAIL(error);
+	mv_command_release(&cmd);
 
-	mv_error* error = mv_session_perform(&state, &script);
+	error = mv_command_parse(&cmd, "show person");
 
-	char* target;
-	error = mv_session_show(&target, &state, "name_of_the_rose");
-	assert(error == NULL);
-	assert(strcmp(target, response_2) == 0);
+	ASSERT_NULL(cmd.attrs.attrs);
+	ASSERT_INT(cmd.attrs.size, 0);
+	ASSERT_NULL(cmd.spec.specs);
+	ASSERT_INT(cmd.spec.size, 0);
+	FAIL(error);
+	mv_command_release(&cmd);
 
-	mv_session_release(&state);
-	mv_strarr_release(&script);
-	free(target);
-
-	printf("mv_showcmd_test PASSED\n");	
+	printf("mv_attrspec_release_test PASSED\n");
 }
 
 void perform_fast_test() {
@@ -297,12 +279,13 @@ void perform_fast_test() {
 	mv_execute_test();
 	mv_attrlist_show_test();
 	mv_session_findvar_test();
-	mv_showcmd_test();
+	mv_attrspec_release_test();
 }
 
 void perform_full_test() {
 	perform_data_test();
 	perform_parser_test();
+	perform_printer_test();
 	perform_fast_test();
 }
 
