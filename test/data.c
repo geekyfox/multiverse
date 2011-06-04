@@ -2,7 +2,7 @@
 #include <string.h>
 #include "test.h"
 
-void mv_strbuf_test() {
+TEST mv_strbuf_test() {
 	mv_strbuf buf;
 	mv_strbuf_alloc(&buf, 1000);
 	mv_strbuf_append(&buf, "foo");
@@ -11,10 +11,9 @@ void mv_strbuf_test() {
 	char* text = mv_strbuf_align(&buf);
 	ASSERT_STRING(text, "foo + bar = baz");
 	free(text);
-	printf("mv_strbuf_test PASSED\n");
 }
 
-void mv_varbind_test() {
+TEST mv_varbind_test() {
 	mv_varbind tmp;
 	mv_varbind_alloc(&tmp, 2);
 	ASSERT_INT(tmp.size, 2);
@@ -46,11 +45,5 @@ void mv_varbind_test() {
 	t = mv_varbind_lookup(&tmp, "quux");
 	ASSERT_INT(t, 424242);
 	mv_varbind_release(&tmp);
-	printf("mv_varbind_test PASSED\n");
-}
-
-void perform_data_test() {
-	mv_varbind_test();
-	mv_strbuf_test();
 }
 

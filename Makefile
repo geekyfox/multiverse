@@ -4,14 +4,15 @@ TEST_HEADERS = test/test.h
 
 MODULES      = data parser printer
 CORE_MODULES = $(MODULES) session common local
-TEST_MODULES = $(MODULES) test 
+TEST_MODULES = $(MODULES) misc 
 DEMO_MODULES = demo
 
 COPTS = -Wall -g
 
 CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o)
 DEMO_OBJS    = $(foreach i,$(DEMO_MODULES),build/dm_$(i).o)
-TEST_OBJS    = $(foreach i,$(TEST_MODULES),build/ts_$(i).o)
+TEST_SRCS    = $(foreach i,$(TEST_MODULES),build/$i.c)
+TEST_OBJS    = $(foreach i,$(TEST_MODULES) suite,build/ts_$(i).o)
 
 .PHONY : all
 all : selftest
@@ -19,7 +20,7 @@ all : selftest
 
 .PHONY : selftest
 selftest : testsuite
-	./testsuite
+	./testsuite > /dev/null
 
 testsuite : $(CORE_OBJS) $(TEST_OBJS) $(HEADERS)
 	gcc $(CORE_OBJS) $(TEST_OBJS) -o testsuite
@@ -34,8 +35,14 @@ demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS)
 build/dm_%.o : src/%.c $(CORE_HEADERS)
 	gcc $(COPTS) -c $< -o $@
 
-build/ts_%.o : test/%.c $(CORE_HEADERS) $(TEST_HEADERS)
-	gcc $(COPTS) -c $< -o $@
+build/ts_%.o : build/%.c $(CORE_HEADERS) $(TEST_HEADERS)
+	gcc $(COPTS) -I src -I test -c $< -o $@
+
+build/suite.c : $(TEST_SRCS)
+	./gensuite.pl $@ $(TEST_SRCS)
+
+build/%.c : test/%.c
+	./gentest.pl $< $@
 
 build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
 	gcc $(COPTS) -c $< -o $@
@@ -43,6 +50,7 @@ build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
 .PHONY : clean
 clean :
 	rm -f build/*.o
+	rm -f build/*.c
 	rm -f testsute
 	rm -f demo
 

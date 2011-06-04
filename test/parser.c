@@ -13,33 +13,32 @@ static void __tokenizeimpl(char* request, char** expect, int count) {
 	mv_strarr_release(&tokens);
 }
 
-static void tokenize_REQ1() {
+TEST tokenize_REQ1() {
 	char* expect[] = {
 		"create", "entity", "{", "name", "=", "'Umberto Eco", "}",
         "umberto_eco"
 	};
-
-	REPORT(__tokenizeimpl(REQ1, expect, 8));
+	__tokenizeimpl(REQ1, expect, 8);
 }
 
-static void tokenize_REQ2() {
+TEST tokenize_REQ2() {
 	char* expect[] = {
 		"create", "entity", "{", "country", "=", "italy", ",", "name",
         "=", "'Umberto Eco", "}", "umberto_eco"
 	};
 
-	REPORT(__tokenizeimpl(REQ2, expect, 12));
+	__tokenizeimpl(REQ2, expect, 12);
 }
 
-static void tokenize_REQ7() {
+TEST tokenize_REQ7() {
 	char* expect[] = {
 		"create", "class", "person", "{", "name", ":", "string", "}"
 	};
 
-	REPORT(__tokenizeimpl(REQ7, expect, 8));
+	__tokenizeimpl(REQ7, expect, 8);
 }
 
-static void tokenize_fails() {
+TEST tokenize_fails() {
 	mv_strarr tokens;
 	mv_error* error = mv_tokenize(&tokens, BADREQ1);
 	ASSERT_NOTNULL(error);
@@ -47,24 +46,16 @@ static void tokenize_fails() {
 	mv_error_release(error);
 }
 
-static void tokenize_test() {
-	ENTER();
-	tokenize_REQ1();
-	tokenize_REQ2();
-	tokenize_REQ7();
-	tokenize_fails();
-
+TEST tokenize_test() {
 	mv_strarr tokens;
 	mv_error* error = mv_tokenize(&tokens, "\nquit");
 	FAIL(error);
 	ASSERT_INT(tokens.used, 1);
 	mv_strarr_release(&tokens);
-	SUCCESS();
 }
 
-void mv_astparse_REQ1() {
+TEST mv_astparse_REQ1() {
 	mv_ast ast;
-	ENTER();
 	mv_error* error = mv_ast_parse(&ast, REQ1);
 	FAIL(error);
 	ASSERT_INT(ast.size, 4);
@@ -74,12 +65,10 @@ void mv_astparse_REQ1() {
 	ASSERT_INT(ast.items[2].value.subtree.size, 1);
 	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
 	mv_ast_release(&ast);
-	SUCCESS();
 }
 
-void mv_astparse_REQ2() {
+TEST mv_astparse_REQ2() {
 	mv_ast ast;
-	ENTER();
 	mv_error* error = mv_ast_parse(&ast, REQ2);
 	FAIL(error);
 	ASSERT_INT(ast.size, 4);
@@ -89,16 +78,5 @@ void mv_astparse_REQ2() {
 	ASSERT_INT(ast.items[2].value.subtree.size, 2);
 	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
 	mv_ast_release(&ast);
-	SUCCESS();
-}
-
-void mv_astparse_test() {
-	mv_astparse_REQ1();
-	mv_astparse_REQ2();
-}
-
-void perform_parser_test() {
-	tokenize_test();
-	mv_astparse_test();
 }
 

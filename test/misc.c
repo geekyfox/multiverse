@@ -5,13 +5,12 @@
 #include <string.h>
 #include "test.h"
 
-
 char* bad_request_3 = "create entity { name = 'Umberto' , }";
 char* request_3 = "show umberto_eco";
 char* request_4 = "create entity {\nname = 'Umberto Eco'\n} umberto_eco";
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
 
-void mv_ast_test() {
+TEST mv_ast_test() {
 	mv_ast ast;
 	mv_error* error;
 
@@ -47,19 +46,15 @@ void mv_ast_test() {
 	assert(ast.items[3].value.subtree.size == 1);
 	assert(ast.items[3].value.subtree.items[0].type == MVAST_TYPESPEC);
 	mv_ast_release(&ast);
-
-	printf("mv_ast_test PASSED\n");	
 }
 
-void mv_attr_test() {
+TEST mv_attr_test() {
 	mv_attr pair;
 	mv_attr_parse(&pair, "name", "'Umberto Eco");
 	assert(pair.type == MVTYPE_STRING);
 	assert(strcmp(pair.name, "name") == 0);
 	assert(strcmp(pair.value.string, "Umberto Eco") == 0);
 	mv_attr_release(&pair);
-
-	printf("mv_attr_test PASSED\n");
 }
 
 void check_parsing_failure(char* request) {
@@ -75,7 +70,7 @@ void check_parsing_failure(char* request) {
 	mv_error_release(error);
 }
 
-void mv_command_test() {
+TEST mv_command_test() {
 	mv_command action;
 	mv_error* error = mv_command_parse(&action, REQ1);
 	assert(error == NULL);
@@ -91,8 +86,6 @@ void mv_command_test() {
 	assert(strcmp(action.attrs.attrs[0].value.string, "Umberto Eco") == 0);
 	mv_command_release(&action);
 
-	printf("mv_command_test STEP 1 PASSED\n");
-
 	error = mv_command_parse(&action, REQ2);
 	assert(error == NULL);
 	assert(action.code == MVCMD_CREATE_ENTITY);
@@ -105,8 +98,6 @@ void mv_command_test() {
 	assert(strcmp(action.attrs.attrs[1].value.string, "Umberto Eco") == 0);	
 	mv_command_release(&action);
 
-	printf("mv_command_test STEP 2 PASSED\n");
-
 	check_parsing_failure(BADREQ1);
 	check_parsing_failure(BADREQ2);
 	check_parsing_failure(bad_request_3);
@@ -117,8 +108,6 @@ void mv_command_test() {
 	assert(action.attrs.size == 0);
 	assert(action.vars.size == 0);
 
-	printf("mv_command_test STEP 6 PASSED\n");
-
 	error = mv_command_parse(&action, request_3);
 	assert(error == NULL);
 	assert(action.code == MVCMD_SHOW);
@@ -126,8 +115,6 @@ void mv_command_test() {
 	assert(action.vars.used == 1);
 	assert(strcmp(action.vars.items[0], "umberto_eco") == 0);
 	mv_command_release(&action);
-
-	printf("mv_command_test STEP 7 PASSED\n");
 
 	error = mv_command_parse(&action, REQ5);
 	assert(error == NULL);
@@ -138,8 +125,6 @@ void mv_command_test() {
 	assert(strcmp(action.attrs.attrs[1].value.rawref, "umberto_eco") == 0);
 	mv_command_release(&action);
 
-	printf("mv_command_test STEP 8 PASSED\n");
-
 	error = mv_command_parse(&action, REQ7);
 	FAIL(error);
 	assert(action.code == MVCMD_CREATE_CLASS);
@@ -148,11 +133,9 @@ void mv_command_test() {
 	assert(action.spec.size == 1);
 	assert(action.spec.specs != NULL);
 	mv_command_release(&action);
-
-	printf("mv_command_test PASSED\n");
 }
 
-void mv_execute_test() {
+TEST mv_execute_test() {
 	mv_command action;
 	mv_session state;
 	mv_error* error = mv_command_parse(&action, REQ1);
@@ -203,11 +186,9 @@ void mv_execute_test() {
 
 	mv_command_release(&action);
 	mv_session_release(&state);
-
-	printf("mv_execute_test PASSED\n");	
 }
 
-void mv_attrlist_show_test() {
+TEST mv_attrlist_show_test() {
 	mv_attrlist attrs;
 	mv_attrlist_alloc(&attrs, 1);
 	mv_attr_parse(attrs.attrs, "name", "'Umberto Eco");
@@ -216,10 +197,9 @@ void mv_attrlist_show_test() {
 	assert(strcmp(attrs.attrs[0].value.string, "Umberto Eco") == 0);
 
 	mv_attrlist_release(&attrs);
-	printf("mv_attrlist_show_test PASSED\n");
 }
 
-void mv_session_findvar_test() {
+TEST mv_session_findvar_test() {
 	mv_session state;
 	mv_session_init(&state);
 	int ref = mv_session_findvar(&state, "foobar");
@@ -248,11 +228,9 @@ void mv_session_findvar_test() {
 	mv_error_release(error);
 
 	mv_session_release(&state);
-
-	printf("mv_session_findvar_test PASSED\n");
 }
 
-void mv_attrspec_release_test() {
+TEST mv_attrspec_release_test() {
 	mv_command cmd;
 	mv_error* error;
 
@@ -268,29 +246,5 @@ void mv_attrspec_release_test() {
 	ASSERT_INT(cmd.spec.size, 0);
 	FAIL(error);
 	mv_command_release(&cmd);
-
-	printf("mv_attrspec_release_test PASSED\n");
-}
-
-void perform_fast_test() {
-	mv_command_test();
-	mv_attr_test();
-	mv_ast_test();
-	mv_execute_test();
-	mv_attrlist_show_test();
-	mv_session_findvar_test();
-	mv_attrspec_release_test();
-}
-
-void perform_full_test() {
-	perform_data_test();
-	perform_parser_test();
-	perform_printer_test();
-	perform_fast_test();
-}
-
-int main(int argc, char** argv) {
-	perform_full_test();
-	return 0;
 }
 

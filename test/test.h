@@ -3,7 +3,7 @@
 #define __MULTIVERSE_TEST_HEADER__
 
 #include <string.h>
-#include "../src/multiverse.h"
+#include <multiverse.h>
 
 #define FAIL(__err) do { if (__err != NULL) {  \
 mv_error_display(__err, stderr);               \
@@ -33,8 +33,8 @@ if (__value != NULL) DIE("Unexpected non-NULL value"); \
 
 #define SUCCESS() printf("%s PASSED\n", __FUNCTION__)
 
-#define REPORT(action) do { ENTER(); action; SUCCESS(); \
-} while (0)
+#define TEST static void
+#define TESTCASE void
 
 void perform_data_test();
 void perform_parser_test();
