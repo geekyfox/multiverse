@@ -43,11 +43,14 @@ void perform_printer_test();
 #define REQ1 "create entity { name = 'Umberto Eco' } umberto_eco"
 #define REQ2 "create entity { country = italy, name = 'Umberto Eco' \
 } umberto_eco"
+#define REQ3 "show umberto_eco"
 #define REQ5 "create entity { title = 'Name of the Rose', author = \
 umberto_eco } name_of_the_rose"
 #define REQ6 "create class person { name : string }"
 #define REQ7 "create class person { name:string }"
 #define REQ8 "create class fruit { name : string, color : color }"
+#define REQ9 "create entity { name = 'Umberto Eco', \
+country = italy, hometown = bologna }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

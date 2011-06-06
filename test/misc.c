@@ -6,7 +6,6 @@
 #include "test.h"
 
 char* bad_request_3 = "create entity { name = 'Umberto' , }";
-char* request_3 = "show umberto_eco";
 char* request_4 = "create entity {\nname = 'Umberto Eco'\n} umberto_eco";
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
 
@@ -108,7 +107,7 @@ TEST mv_command_test() {
 	assert(action.attrs.size == 0);
 	assert(action.vars.size == 0);
 
-	error = mv_command_parse(&action, request_3);
+	error = mv_command_parse(&action, REQ3);
 	assert(error == NULL);
 	assert(action.code == MVCMD_SHOW);
 	assert(action.attrs.size == 0);

@@ -27,6 +27,38 @@ __mv_ast_mergepair(mv_ast_entry* a, mv_ast_entry* b, int typecode) {
 	return result;
 }
 
+static void __merge(mv_ast_entry* a, mv_ast_entry* b, int *count) {
+	if (TEMPFIX(a, ATTRLIST) && PAIR(b)) {	
+		mv_ast* stree = &(a->value.subtree);
+		int sz = ++(stree->size);
+		stree->items = realloc(stree->items, sizeof(mv_ast_entry)*sz);
+		stree->items[sz - 1] = *b;
+		*count -= 2;
+	}
+
+	if (PAIR(a) && PAIR(b)) {
+		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+		tmp[0] = *a;
+		tmp[1] = *b;
+		a->type = MVAST_TEMPATTRLIST;
+		a->value.subtree.size = 2;
+		a->value.subtree.items = tmp;
+		*count -= 2;
+		return;
+	}
+
+	if (SPEC(a) && SPEC(b)) {
+		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+		tmp[0] = *a;
+		tmp[1] = *b;
+		a->type = MVAST_TEMPATTRSPECLIST;
+		a->value.subtree.size = 2;
+		a->value.subtree.items = tmp;
+		*count -= 2;
+		return;
+	}
+}
+
 mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	mv_strarr tokens;
 	mv_error* error;
@@ -90,63 +122,39 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 			}
 
 			if (TEMPFIX(e1, OPENBRACE) && TEMPFIX(e3, CLOSEBRACE)) {
-				if (PAIR(e2)) {
+				if (PAIR(e2) || SPEC(e2)) {
 					mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
 					tmp[0] = *e2;
-					e1->type = MVAST_ATTRLIST;
+					if (PAIR(e2)) {
+						e1->type = MVAST_ATTRLIST;
+					} else {
+						e1->type = MVAST_ATTRSPECLIST;
+					}
 					e1->value.subtree.size = 1;
 					e1->value.subtree.items = tmp;
 					size -= 2;
 					continue;				
 				}
 
-				if (SPEC(e2)) {
-					mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
-					tmp[0] = *e2;
-					e1->type = MVAST_ATTRSPECLIST;
-					e1->value.subtree.size = 1;
-					e1->value.subtree.items = tmp;
-					size -= 2;
-					continue;
-				}
-
-				if (TEMPFIX(e2, ATTRLIST)) {
-					e1->type = MVAST_ATTRLIST;
+				if (TEMPFIX(e2, ATTRLIST) || TEMPFIX(e2, ATTRSPECLIST)) {
+					if (TEMPFIX(e2, ATTRLIST)) {
+						e1->type = MVAST_ATTRLIST;
+					} else {
+						e1->type = MVAST_ATTRSPECLIST;
+					}
 					e1->value.subtree = e2->value.subtree;
 					size -= 2;
 					continue;				
-				}
-
-				if (TEMPFIX(e2, ATTRSPECLIST)) {
-					e1->type = MVAST_ATTRSPECLIST;
-					e1->value.subtree = e2->value.subtree;
-					size -= 2;
-					continue;
 				}
 			}
 			
-			if (PAIR(e1) && LEAFFIX(e2, ",") && PAIR(e3)) {
-				mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
-				tmp[0] = *e1;
-				tmp[1] = *e3;
-				free(e2->value.leaf);
-				e1->type = MVAST_TEMPATTRLIST;
-				e1->value.subtree.size = 2;
-				e1->value.subtree.items = tmp;
-				size -= 2;
-				continue;		
-			}
-
-			if (SPEC(e1) && LEAFFIX(e2, ",") && SPEC(e3)) {
-				mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
-				tmp[0] = *e1;
-				tmp[1] = *e3;
-				free(e2->value.leaf);
-				e1->type = MVAST_TEMPATTRSPECLIST;
-				e1->value.subtree.size = 2;
-				e1->value.subtree.items = tmp;
-				size -= 2;
-				continue;
+			if (LEAFFIX(e2, ",")) {
+				int prevsz = size;
+				__merge(e1, e3, &size);
+				if (prevsz != size) {
+					free(e2->value.leaf);
+					continue;
+				}
 			}
 		} while (oldsize != size);
 	}

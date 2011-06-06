@@ -80,3 +80,14 @@ TEST mv_astparse_REQ2() {
 	mv_ast_release(&ast);
 }
 
+TEST mv_astparse_REQ9() {
+	mv_ast ast;
+	mv_error* error = mv_ast_parse(&ast, REQ9);
+	FAIL(error);
+	ASSERT_INT(ast.size, 3);
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 3);
+	mv_ast_release(&ast);
+}
+
+
