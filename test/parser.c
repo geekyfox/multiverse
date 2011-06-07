@@ -67,6 +67,23 @@ TEST astparse_REQ1() {
 	mv_ast_release(&ast);
 }
 
+TEST cmdparse_REQ1() {
+	mv_command action;
+	mv_error* error = mv_command_parse(&action, REQ1);
+	FAIL(error);
+	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
+	ASSERT_INT(action.spec.size, 0);
+	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.vars.used, 1);
+	ASSERT_NOTNULL(action.vars.items);
+	ASSERT_STRING(action.vars.items[0], "umberto_eco");
+	ASSERT_INT(action.attrs.size, 1);
+	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
+	ASSERT_STRING(action.attrs.attrs[0].name, "name");
+	ASSERT_STRING(action.attrs.attrs[0].value.string, "Umberto Eco");
+	mv_command_release(&action);
+}
+
 TEST astparse_REQ2() {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, REQ2);
@@ -106,7 +123,7 @@ TEST astparse_REQ6() {
 	mv_ast_release(&ast);
 }
 
-TEST mv_astparse_REQ9() {
+TEST astparse_REQ9() {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, REQ9);
 	FAIL(error);

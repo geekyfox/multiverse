@@ -18,33 +18,8 @@ TEST mv_attr_test() {
 
 TEST mv_command_test() {
 	mv_command action;
-	mv_error* error = mv_command_parse(&action, REQ1);
-	assert(error == NULL);
-	assert(action.code == MVCMD_CREATE_ENTITY);
-	assert(action.spec.size == 0);
-	assert(action.spec.specs == NULL);
-	assert(action.vars.used == 1);
-	assert(action.vars.items != NULL);
-	assert(strcmp(action.vars.items[0], "umberto_eco") == 0);
-	assert(action.attrs.size == 1);
-	assert(action.attrs.attrs[0].type == MVTYPE_STRING);
-	assert(strcmp(action.attrs.attrs[0].name, "name") == 0);
-	assert(strcmp(action.attrs.attrs[0].value.string, "Umberto Eco") == 0);
-	mv_command_release(&action);
 
-	error = mv_command_parse(&action, REQ2);
-	assert(error == NULL);
-	assert(action.code == MVCMD_CREATE_ENTITY);
-	assert(action.attrs.size == 2);
-	assert(action.attrs.attrs[0].type == MVTYPE_RAWREF);
-	assert(strcmp(action.attrs.attrs[0].name, "country") == 0);
-	assert(strcmp(action.attrs.attrs[0].value.string, "italy") == 0);
-	assert(action.attrs.attrs[1].type == MVTYPE_STRING);
-	assert(strcmp(action.attrs.attrs[1].name, "name") == 0);
-	assert(strcmp(action.attrs.attrs[1].value.string, "Umberto Eco") == 0);	
-	mv_command_release(&action);
-
-	error = mv_command_parse(&action, "quit");
+	mv_error* error = mv_command_parse(&action, "quit");
 	assert(error == NULL);
 	assert(action.code == MVCMD_QUIT);
 	assert(action.attrs.size == 0);
