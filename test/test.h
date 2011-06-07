@@ -44,6 +44,7 @@ void perform_printer_test();
 #define REQ2 "create entity { country = italy, name = 'Umberto Eco' \
 } umberto_eco"
 #define REQ3 "show umberto_eco"
+#define REQ4 "create entity {\nname = 'Umberto Eco'\n} umberto_eco"
 #define REQ5 "create entity { title = 'Name of the Rose', author = \
 umberto_eco } name_of_the_rose"
 #define REQ6 "create class person { name : string }"
@@ -59,6 +60,7 @@ Rose',\n  author = ##0\n}\n"
 #define BADREQ1 "create entity { name = 'Umberto "
 #define ERRRESP1 "Unmatched \"'\" in \"create entity { name = 'Umberto \"" 
 #define BADREQ2 "create entity { name = 'Umberto' "
+#define BADREQ3 "create entity { name = 'Umberto' , }"
 
 #endif
 

@@ -54,7 +54,7 @@ TEST tokenize_test() {
 	mv_strarr_release(&tokens);
 }
 
-TEST mv_astparse_REQ1() {
+TEST astparse_REQ1() {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, REQ1);
 	FAIL(error);
@@ -67,7 +67,7 @@ TEST mv_astparse_REQ1() {
 	mv_ast_release(&ast);
 }
 
-TEST mv_astparse_REQ2() {
+TEST astparse_REQ2() {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, REQ2);
 	FAIL(error);
@@ -77,6 +77,32 @@ TEST mv_astparse_REQ2() {
 	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
 	ASSERT_INT(ast.items[2].value.subtree.size, 2);
 	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
+	mv_ast_release(&ast);
+}
+
+TEST astparse_REQ4() {
+	mv_ast ast;
+	mv_error* error = mv_ast_parse(&ast, REQ4);
+	FAIL(error);
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
+	ASSERT_STRING(ast.items[0].value.leaf, "create");
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 1);
+	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
+	mv_ast_release(&ast);
+}
+
+TEST astparse_REQ6() {
+	mv_ast ast;
+	mv_error* error;
+	
+	error = mv_ast_parse(&ast, REQ6);
+	FAIL(error);
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[3].type, MVAST_ATTRSPECLIST);
+	ASSERT_INT(ast.items[3].value.subtree.size, 1);
+	ASSERT_INT(ast.items[3].value.subtree.items[0].type, MVAST_TYPESPEC);
 	mv_ast_release(&ast);
 }
 
@@ -90,4 +116,38 @@ TEST mv_astparse_REQ9() {
 	mv_ast_release(&ast);
 }
 
+static void __astparse_fail(char* request) {
+	mv_ast ast;
+	mv_error* error;
+	
+	error = mv_ast_parse(&ast, request);
+	ASSERT_NOTNULL(error);
+	ASSERT_INT(error->code, MVERROR_SYNTAX);
+	mv_error_release(error);
+}
+
+TEST astparse_failures() {
+	__astparse_fail(BADREQ1);
+	__astparse_fail(BADREQ2);
+	__astparse_fail(BADREQ3);
+}
+
+static void __cmdparse_fail(char* request) {
+	mv_command action;
+	mv_error* error = mv_command_parse(&action, request);
+	if (error == NULL) {
+		DIE("Parsing not failed '%s'", request);
+	}
+	if (error->code != MVERROR_SYNTAX) {
+		mv_error_display(error, stderr);
+		DIE("Error is not syntactic");
+	}
+	mv_error_release(error);
+}
+
+TEST cmdparse_failures() {
+	__cmdparse_fail(BADREQ1);
+	__cmdparse_fail(BADREQ2);
+	__cmdparse_fail(BADREQ3);
+}
 

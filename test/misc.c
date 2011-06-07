@@ -5,47 +5,7 @@
 #include <string.h>
 #include "test.h"
 
-char* bad_request_3 = "create entity { name = 'Umberto' , }";
-char* request_4 = "create entity {\nname = 'Umberto Eco'\n} umberto_eco";
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
-
-TEST mv_ast_test() {
-	mv_ast ast;
-	mv_error* error;
-
-	error = mv_ast_parse(&ast, BADREQ1);
-	assert(error != NULL);
-	assert(error->code == MVERROR_SYNTAX);
-	mv_error_release(error);
-
-	error = mv_ast_parse(&ast, BADREQ2);
-	assert(error != NULL);
-	assert(error->code == MVERROR_SYNTAX);
-	mv_error_release(error);
-	
-	error = mv_ast_parse(&ast, bad_request_3);
-	assert(error != NULL);
-	assert(error->code == MVERROR_SYNTAX);
-	mv_error_release(error);
-
-	error = mv_ast_parse(&ast, request_4);
-	assert(error == NULL);
-	assert(ast.size == 4);
-	assert(ast.items[0].type == MVAST_LEAF);
-	assert(strcmp(ast.items[0].value.leaf, "create") == 0);
-	assert(ast.items[2].type == MVAST_ATTRLIST);
-	assert(ast.items[2].value.subtree.size == 1);
-	assert(ast.items[2].value.subtree.items[0].type == MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
-
-	error = mv_ast_parse(&ast, REQ6);
-	assert(error == NULL);
-	assert(ast.size == 4);
-	assert(ast.items[3].type == MVAST_ATTRSPECLIST);
-	assert(ast.items[3].value.subtree.size == 1);
-	assert(ast.items[3].value.subtree.items[0].type == MVAST_TYPESPEC);
-	mv_ast_release(&ast);
-}
 
 TEST mv_attr_test() {
 	mv_attr pair;
@@ -54,19 +14,6 @@ TEST mv_attr_test() {
 	assert(strcmp(pair.name, "name") == 0);
 	assert(strcmp(pair.value.string, "Umberto Eco") == 0);
 	mv_attr_release(&pair);
-}
-
-void check_parsing_failure(char* request) {
-	mv_command action;
-	mv_error* error = mv_command_parse(&action, request);
-	if (error == NULL) {
-		DIE("Parsing not failed '%s'", request);
-	}
-	if (error->code != MVERROR_SYNTAX) {
-		mv_error_display(error, stderr);
-		DIE("Error is not syntactic");
-	}
-	mv_error_release(error);
 }
 
 TEST mv_command_test() {
@@ -96,10 +43,6 @@ TEST mv_command_test() {
 	assert(strcmp(action.attrs.attrs[1].name, "name") == 0);
 	assert(strcmp(action.attrs.attrs[1].value.string, "Umberto Eco") == 0);	
 	mv_command_release(&action);
-
-	check_parsing_failure(BADREQ1);
-	check_parsing_failure(BADREQ2);
-	check_parsing_failure(bad_request_3);
 
 	error = mv_command_parse(&action, "quit");
 	assert(error == NULL);
