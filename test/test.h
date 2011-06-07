@@ -52,6 +52,8 @@ umberto_eco } name_of_the_rose"
 #define REQ8 "create class fruit { name : string, color : color }"
 #define REQ9 "create entity { name = 'Umberto Eco', \
 country = italy, hometown = bologna }"
+#define REQ10 "assign class person to umberto_eco"
+#define REQ11 "lookup person where { name = 'Umberto Eco' }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"
