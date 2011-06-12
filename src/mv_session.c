@@ -64,16 +64,17 @@ mv_error* __mv_create_entity(int* ref,
                              mv_attrlist attrs)
 {
 	int i, j;
-	mv_attrlist entity;
+	mv_entity entity;
 	mv_error *error;
 	mv_attr *src, *dst;
 	//
-	mv_attrlist_alloc(&entity, attrs.size);
+	mv_entity_alloc(&entity, attrs.size, 0);
+	entity.exist = 1;
 	for (i=0; i<attrs.size; i++) {
 		src = &attrs.attrs[i];
-		dst = &entity.attrs[i];
+		dst = &entity.data.attrs[i];
 		if ((error = __mv_copy_attr(dst, src, sess))) {
-			for (j=0; j<i; j++) mv_attr_release(&entity.attrs[j]);
+			for (j=0; j<i; j++) mv_attr_release(&entity.data.attrs[j]);
 			return error;
 		}
 	}
@@ -105,8 +106,24 @@ mv_error* __mv_create_class(int* ref,
 
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 	mv_error* error;
+	char* clsname;
 
 	switch (action->code) {
+	case MVCMD_ASSIGN:
+		assert(action->vars.used == 2);
+		clsname = action->vars.items[0];
+		char* objname = action->vars.items[1];
+		int objref = mv_session_findvar(state, objname);
+		if (objref == -1) {
+			THROW(BADVAR, "Unknown variable '%s'", objname);
+		}
+		int clsref = mv_session_findclass(state, clsname);
+		if (clsref == -1) {
+			THROW(BADVAR, "Unknown class '%s'", clsname);
+		}
+		mv_entity* entity = &(state->entities.items[objref]);
+		mv_strarr_append(&(entity->classes), clsname); 
+		return NULL;
 	case MVCMD_CREATE_ENTITY:
 		if (action->vars.used == 0) {
 			return __mv_create_entity(NULL, state, action->attrs);
@@ -128,7 +145,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 		if (action->vars.used != 1) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
-		char* clsname = action->vars.items[0];
+		clsname = action->vars.items[0];
 		int ref = mv_varbind_lookup(&state->clsnames, clsname);
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
@@ -162,6 +179,24 @@ int mv_session_findvar(mv_session* session, char* name) {
 
 int mv_session_findclass(mv_session* session, char* name) {
 	return mv_varbind_lookup(&(session->clsnames), name);
+}
+
+mv_error* mv_session_lookup(mv_intset* tr, mv_session* s, mv_command* c) {
+	mv_pattern query;
+	mv_error* error = mv_pattern_compile(&query, c);
+
+	if (error != NULL) return error;
+	
+	int i;
+	for (i=0; i<s->entities.used; i++) {
+		if (!s->entities.items[i].exist) continue;
+		if (mv_pattern_match(&query, &(s->entities.items[i]))) {
+			mv_intset_put(tr, i);
+		}
+	}
+
+	mv_pattern_release(&query);
+	return NULL;
 }
 
 mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {

@@ -16,6 +16,11 @@ do { if ((__value) != (__pattern)) {                \
 DIE("Expected '%d', got '%d'", __pattern, __value); \
 }} while (0)
 
+#define ASSERT_NOLESS(__value, __pattern) do {           \
+if ((__value) < (__pattern)) {                           \
+DIE("Expected at least %d, got %d", __pattern, __value); \
+}} while (0)
+
 #define ASSERT_STRING(__value, __pattern)           \
 do { if (strcmp(__value, __pattern) != 0) {         \
 DIE("Expected '%s', got '%s'", __pattern, __value); \
@@ -32,6 +37,9 @@ if (__value != NULL) DIE("Unexpected non-NULL value"); \
 #define ENTER() printf("%s ENTERED\n", __FUNCTION__)
 
 #define SUCCESS() printf("%s PASSED\n", __FUNCTION__)
+
+#define FAILFAST(expr) do { mv_error* __err = expr; \
+FAIL(__err); } while (0)
 
 #define TEST static void
 #define TESTCASE void
@@ -52,8 +60,8 @@ umberto_eco } name_of_the_rose"
 #define REQ8 "create class fruit { name : string, color : color }"
 #define REQ9 "create entity { name = 'Umberto Eco', \
 country = italy, hometown = bologna }"
-#define REQ10 "assign class person to umberto_eco"
-#define REQ11 "lookup person where { name = 'Umberto Eco' }"
+#define REQ10 "assign person to umberto_eco"
+#define REQ11 "lookup person with { name = 'Umberto Eco' }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

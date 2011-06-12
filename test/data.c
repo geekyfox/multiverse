@@ -47,3 +47,28 @@ TEST mv_varbind_test() {
 	mv_varbind_release(&tmp);
 }
 
+TEST intset_test() {
+	mv_intset set;
+	mv_intset_alloc(&set, 1);
+	ASSERT_INT(set.size, 1);
+	ASSERT_INT(set.used, 0);
+	ASSERT_NOTNULL(set.items);
+
+	int ret = mv_intset_contains(&set, 12);
+	ASSERT_INT(ret, 0);
+
+	mv_intset_put(&set, 12);
+	ASSERT_INT(set.used, 1);
+	ret = mv_intset_contains(&set, 12);
+	ASSERT_INT(ret, 1);
+
+	mv_intset_put(&set, 6);
+	ASSERT_INT(set.used, 2);
+	ASSERT_NOLESS(set.size, set.used);
+
+	mv_intset_remove(&set, 6);
+	
+	ASSERT_INT(set.used, 1);
+	mv_intset_release(&set);
+}
+

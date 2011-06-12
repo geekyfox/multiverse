@@ -6,6 +6,7 @@
 
 char* __mv_error_prefix(int code) {
 	switch(code) {
+	case MVERROR_BADCMD:   return "Bad command";
 	case MVERROR_BADVAR:   return "Bad variable";
 	case MVERROR_INTERNAL: return "Internal error";
 	case MVERROR_SYNTAX:   return "Syntax error";

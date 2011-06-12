@@ -328,8 +328,44 @@ mv_error* mv_command_parse(mv_command* target, char* data) {
 		mv_ast_release(&ast);
 		return NULL;
 	}
+	if (LEAFFIX(&(ast.items[0]), "assign"))
+	{
+		assert(ast.size == 4);
+		assert(LEAF(&(ast.items[1])));
+		assert(LEAFFIX(&(ast.items[2]), "to"));
+		assert(LEAF(&(ast.items[3])));
+		target->code = MVCMD_ASSIGN;
+		target->attrs.size = 0;
+		target->attrs.attrs = NULL;
+		target->spec.size = 0;
+		target->spec.specs = NULL;
+		mv_strarr_alloc(&target->vars, 2);
+		mv_strarr_append(&target->vars, ast.items[1].value.leaf);
+		mv_strarr_append(&target->vars, ast.items[3].value.leaf);
+		mv_ast_release(&ast);
+		return NULL;
+	}
+	if (LEAFFIX(&(ast.items[0]), "lookup"))
+	{
+		assert(ast.size == 4);
+		assert(LEAF(&(ast.items[1])));
+		assert(LEAFFIX(&(ast.items[2]), "with"));
+		assert(ast.items[3].type == MVAST_ATTRLIST);
+		target->code = MVCMD_LOOKUP;
+		mv_strarr_alloc(&target->vars, 1);
+		mv_strarr_append(&target->vars, ast.items[1].value.leaf);
+		mv_ast_to_attrlist(&target->attrs, &ast.items[3].value.subtree);
+		target->spec.size = 0;
+		target->spec.specs = NULL;
+		mv_ast_release(&ast);
+		return NULL;
+	}
 
-	THROW(SYNTAX, "Syntax error");
+	if (LEAF(&(ast.items[0]))) {
+		THROW(BADCMD, ast.items[0].value.leaf);
+	} else {
+		THROW(SYNTAX, "Syntax error");
+	}
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {

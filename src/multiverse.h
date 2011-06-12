@@ -18,6 +18,7 @@
 #define MVERROR_SYNTAX 1
 #define MVERROR_INTERNAL 2
 #define MVERROR_BADVAR 3
+#define MVERROR_BADCMD 4
 
 typedef struct {
 	char* message;
@@ -91,8 +92,9 @@ typedef struct {
 	} value;
 } mv_attr;
 
-void mv_attr_release(mv_attr* attr);
-void mv_attr_show(mv_strbuf* buf, mv_attr* attr);
+mv_attr mv_attr_copy(mv_attr* attr);
+void    mv_attr_release(mv_attr* attr);
+void    mv_attr_show(mv_strbuf* buf, mv_attr* attr);
 
 /****************************************/
 /* Fixed-size array of name-value pairs */
@@ -103,9 +105,10 @@ typedef struct {
 	int size;
 } mv_attrlist;
 
-void mv_attrlist_alloc(mv_attrlist* ptr, int size);
-void mv_attrlist_release(mv_attrlist* ptr);
-void mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr);
+void        mv_attrlist_alloc(mv_attrlist* ptr, int size);
+mv_attrlist mv_attrlist_copy(mv_attrlist* src);
+void        mv_attrlist_release(mv_attrlist* ptr);
+void        mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr);
 
 typedef struct {
 	int type;
@@ -115,7 +118,7 @@ typedef struct {
 void mv_typespec_release(mv_typespec* spec);
 void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
 
-#define MVSPEC_TYPE 1
+#define MVSPEC_TYPE  4001
 
 typedef struct {
 	char* name;
@@ -152,15 +155,29 @@ void mv_strarr_append(mv_strarr* ptr, char* value);
 void mv_strarr_appslice(mv_strarr* ptr, char* source, int start, int end);
 void mv_strarr_release(mv_strarr* ptr);
 
+typedef struct {
+	int* items;
+	int size;
+	int used;
+} mv_intset;
+
+void mv_intset_alloc(mv_intset* ptr, int size);
+int  mv_intset_contains(mv_intset* ptr, int value);
+void mv_intset_put(mv_intset* ptr, int value);
+void mv_intset_release(mv_intset* ptr);
+void mv_intset_remove(mv_intset* ptr, int value);
+
 /**********************/
 /* Executable command */
 /**********************/
 
-#define MVCMD_DO_NOTHING -2
-#define MVCMD_QUIT -1
-#define MVCMD_CREATE_ENTITY 1
-#define MVCMD_SHOW 2
-#define MVCMD_CREATE_CLASS 3
+#define MVCMD_DO_NOTHING    -3002
+#define MVCMD_QUIT          -3001
+#define MVCMD_ASSIGN         3001
+#define MVCMD_CREATE_ENTITY  3002
+#define MVCMD_LOOKUP         3003
+#define MVCMD_SHOW           3004
+#define MVCMD_CREATE_CLASS   3005
 
 typedef struct {
 	int code;
@@ -197,9 +214,12 @@ void mv_varbind_show(mv_varbind* ptr);
 typedef struct {
 	int exist;
 	mv_attrlist data;
+	mv_strarr classes;
 } mv_entity;
 
+void mv_entity_alloc(mv_entity* entity, int attrs, int classes);
 void mv_entity_show(mv_strbuf* buf, mv_entity* entity);
+void mv_entity_release(mv_entity* entity);
 
 /*********************/
 /* Cache of entities */
@@ -212,7 +232,7 @@ typedef struct {
 } mv_entcache;
 
 void mv_entcache_alloc(mv_entcache* ptr, int size);
-void mv_entcache_put(mv_entcache* ptr, int* ref, mv_attrlist* obj);
+void mv_entcache_put(mv_entcache* ptr, int* ref, mv_entity* obj);
 void mv_entcache_release(mv_entcache* ptr);
 
 typedef struct {
@@ -284,10 +304,19 @@ void      mv_session_init(mv_session* state);
 mv_error* mv_session_execute(mv_session* state, mv_command* action);
 int       mv_session_findclass(mv_session* session, char* name);
 int       mv_session_findvar(mv_session* session, char* name);
+mv_error* mv_session_lookup(mv_intset*, mv_session*, mv_command*);
 mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
 void      mv_session_release(mv_session* state);
 mv_error* mv_session_show(char** target, mv_session* source, char* name);
 
+typedef struct {
+	char* clsname;
+	mv_attrlist attrs;
+} mv_pattern;
+
+mv_error* mv_pattern_compile(mv_pattern* pat, mv_command* cmd);
+int       mv_pattern_match(mv_pattern* pat, mv_entity* e);
+void      mv_pattern_release(mv_pattern* pat);
 
 void      mv_local_end();
 mv_error* mv_local_read(mv_command* target);

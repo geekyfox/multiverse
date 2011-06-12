@@ -5,6 +5,29 @@
 #include <string.h>
 #include "multiverse.h"
 
+mv_attr mv_attr_copy(mv_attr* attr) {
+	mv_attr result;
+
+	result.type = attr->type;
+	result.name = strdup(attr->name);
+	
+	switch (result.type) {
+	case MVTYPE_STRING:
+		result.value.string = strdup(attr->value.string);
+		break;
+	case MVTYPE_RAWREF:
+		result.value.rawref = strdup(attr->value.rawref);
+		break;
+	case MVTYPE_REF:
+		result.value.ref = attr->value.ref;
+		break;
+	default:
+		DIE("Invalid code (%d)", attr->type);
+	}
+
+	return result;
+}
+
 void mv_attr_release(mv_attr* attr) {
 	switch (attr->type) {
 	case MVTYPE_STRING:
@@ -24,6 +47,16 @@ void mv_attr_release(mv_attr* attr) {
 void mv_attrlist_alloc(mv_attrlist* ptr, int size) {
 	ptr->size = size;
 	ptr->attrs = malloc(sizeof(mv_attr) * size);
+}
+
+mv_attrlist mv_attrlist_copy(mv_attrlist* ptr) {
+	int i;
+	mv_attrlist result;
+	mv_attrlist_alloc(&result, ptr->size);
+	for (i=0; i<ptr->size; i++) {
+		result.attrs[i] = mv_attr_copy(&(ptr->attrs[i]));
+	}
+	return result;
 }
 
 void mv_attrlist_release(mv_attrlist* ptr) {
@@ -91,7 +124,7 @@ void mv_entcache_alloc(mv_entcache* ptr, int size) {
 	ptr->used = 0;
 }
 
-void mv_entcache_put(mv_entcache* ptr, int* ref, mv_attrlist* obj) {
+void mv_entcache_put(mv_entcache* ptr, int* ref, mv_entity* obj) {
 	int i, index = -1;
 	for (i=0; i<ptr->used; i++) {
 		if (ptr->items[i].exist == 0) {
@@ -109,7 +142,8 @@ void mv_entcache_put(mv_entcache* ptr, int* ref, mv_attrlist* obj) {
 		ptr->used++;
 	}
 	ptr->items[index].exist = 1;
-	ptr->items[index].data = *obj;
+	ptr->items[index].data = obj->data;
+	ptr->items[index].classes = obj->classes;
 
 	if (ref != NULL) *ref = index;
 }
@@ -118,10 +152,62 @@ void mv_entcache_release(mv_entcache* ptr) {
 	int i;
 	for (i=0; i<ptr->used; i++) {
 		if (ptr->items[i].exist) {
-			mv_attrlist_release(&ptr->items[i].data);
+			mv_entity_release(&ptr->items[i]);
 		}
 	}
 	free(ptr->items);
+}
+
+void mv_entity_alloc(mv_entity* entity, int attrs, int classes) {
+	mv_attrlist_alloc(&(entity->data), attrs);
+	mv_strarr_alloc(&(entity->classes), classes);
+}
+
+void mv_entity_release(mv_entity* entity) {
+	mv_attrlist_release(&(entity->data));
+	mv_strarr_release(&(entity->classes));
+}
+
+void mv_intset_alloc(mv_intset* ptr, int size) {
+	ptr->items = malloc(sizeof(int) * size);
+	ptr->size = size;
+	ptr->used = 0;
+}
+
+int mv_intset_contains(mv_intset* ptr, int value) {
+	int i;
+	for (i=0; i<ptr->used; i++) {
+		if (ptr->items[i] == value) return 1;
+	}
+	return 0;
+}
+
+void mv_intset_put(mv_intset* ptr, int value) {
+	if (mv_intset_contains(ptr, value)) return;
+	if (ptr->used == ptr->size) {
+		ptr->size *= 2;
+		ptr->items = realloc(ptr->items, ptr->size * sizeof(int));
+	}
+	ptr->items[ptr->used] = value;
+	ptr->used++;
+}
+
+void mv_intset_release(mv_intset* ptr) {
+	free(ptr->items);
+}
+
+void mv_intset_remove(mv_intset* ptr, int value) {
+	int ix = -1, i;
+	for (i=0; i<ptr->used; i++) {
+		if (ptr->items[i] == value) {
+			ix = i;
+			break;
+		}
+	}
+	if (ix != -1) {
+		ptr->used--;
+		if (ix < ptr->used) ptr->items[ix] = ptr->items[ptr->used];
+	}
 }
 
 void mv_command_release(mv_command* sess) {
@@ -191,8 +277,6 @@ void mv_strbuf_alloc(mv_strbuf* buf, int size) {
 	buf->used = 0;
 	buf->size = size;
 }
-
-
 
 void mv_typespec_release(mv_typespec* spec) {
 	switch (spec->type) {
