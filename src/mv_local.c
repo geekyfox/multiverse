@@ -10,6 +10,25 @@ void mv_local_start() {
 	mv_session_init(__LOCAL_SESSION__);
 }
 
+mv_error* __local_lookup(mv_command* c) {
+	mv_intset res;
+	mv_intset_alloc(&res, 1);
+	
+	mv_error* error = mv_session_lookup(&res, __LOCAL_SESSION__, c);
+	if (error == NULL) {
+		if (res.used == 0) {
+			printf ("OK, no matching objects found\n");
+		} else {
+			int i;
+			printf ("OK, matching objects found: [%d", res.items[0]);
+			for (i=1; i<res.used; i++) printf(", %d", res.items[i]);
+			printf ("]\n");
+		}
+	}
+	mv_intset_release(&res);
+	return error;
+}
+
 void mv_local_execute(mv_command* cmd) {
 	mv_error* error = NULL;
 	char *tmpstr = NULL;
@@ -25,12 +44,25 @@ void mv_local_execute(mv_command* cmd) {
 		error = mv_session_execute(__LOCAL_SESSION__, cmd);
 		if (error == NULL) printf ("OK, class created\n");
 		break;
+	case MVCMD_ASSIGN:
+		error = mv_session_execute(__LOCAL_SESSION__, cmd);
+		if (error == NULL) {
+			printf ("OK, class '%s' assigned to '%s'\n",
+                    cmd->vars.items[0],
+                    cmd->vars.items[1]);
+		}
+		break;
 	case MVCMD_SHOW:
-		error = mv_session_show(&tmpstr, __LOCAL_SESSION__, cmd->vars.items[0]);
+		error = mv_session_show(&tmpstr,
+                                __LOCAL_SESSION__,
+                                cmd->vars.items[0]);
 		if (error != NULL) break;
 		printf("%s", tmpstr);
 		fflush(stdout);
 		free(tmpstr);
+		break;
+	case MVCMD_LOOKUP:
+		error = __local_lookup(cmd);
 		break;
 	default:
 		DIE("Unknown command code %d\n", cmd->code);
