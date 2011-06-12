@@ -1,6 +1,32 @@
 
 #include <test.h>
 
+TEST session_init() {
+	mv_session state;
+	state.clsnames.used = 12345;
+	mv_session_init(&state);
+	ASSERT_INT(state.clsnames.used, 0);
+	mv_session_release(&state);
+}
+
+TEST execute_REQ1() {
+	mv_command action;
+	mv_session state;
+	mv_session_init(&state);
+	FAILFAST(mv_command_parse(&action, REQ1));
+	FAILFAST(mv_session_execute(&state, &action));
+	ASSERT_INT(state.vars.used, 1);
+	ASSERT_INT(state.entities.used, 1);
+	
+	mv_attrlist attrs = state.entities.items[0].data;
+	ASSERT_INT(attrs.size, 1);
+	ASSERT_INT(attrs.attrs[0].type, MVTYPE_STRING);
+	ASSERT_STRING(attrs.attrs[0].name, "name");
+	ASSERT_STRING(attrs.attrs[0].value.string, "Umberto Eco");
+	mv_command_release(&action);
+	mv_session_release(&state);
+}
+
 static void __prepare_for_REQ10_11(mv_session* session, int bind) {
 	mv_session_init(session);
 	mv_strarr script;

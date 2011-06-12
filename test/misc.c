@@ -55,25 +55,13 @@ TEST mv_command_test() {
 TEST mv_execute_test() {
 	mv_command action;
 	mv_session state;
-	mv_error* error = mv_command_parse(&action, REQ1);
-	assert(error == NULL);
-	state.clsnames.used = 12345;
 	mv_session_init(&state);
-	ASSERT_INT(state.clsnames.used, 0);
-	error = mv_session_execute(&state, &action);
-	if (error != NULL) {
-		printf("%s\n", error->message);
-	}
-	assert(error == NULL);
-	assert(state.vars.used == 1);
-	assert(state.entities.used == 1);
-	assert(state.entities.items[0].data.size == 1);
-	assert(state.entities.items[0].data.attrs[0].type == MVTYPE_STRING);
-	assert(strcmp(state.entities.items[0].data.attrs[0].name, "name") == 0);
-	assert(strcmp(state.entities.items[0].data.attrs[0].value.string, "Umberto Eco") == 0);
+
+	FAILFAST(mv_command_parse(&action, REQ1));
+	FAILFAST(mv_session_execute(&state, &action));
 	mv_command_release(&action);
 
-	error = mv_command_parse(&action, REQ5);
+	mv_error* error = mv_command_parse(&action, REQ5);
 	FAIL(error);
 	error = mv_session_execute(&state, &action);
 	FAIL(error);

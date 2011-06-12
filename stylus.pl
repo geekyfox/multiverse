@@ -21,7 +21,7 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 			$mark = $loc;
 			$fname = $name;
 		}
-		elsif ($line =~ m/^(inline )*(static )*[a-z_\*]+ [a-zA-Z0-9_]+\(/) {
+		elsif ($line =~ /^(inline )*(static )*[a-z_\*]+ [a-zA-Z0-9_]+\(/) {
 			die "Nested function @ $ARGV[$i]:$loc" if ($inside); 
 			my ($inline, $stat, $name) = $line =~
 				m/^(inline )*(static )*[a-z_\*]+ ([a-zA-Z0-9_]+)\(/;
@@ -33,7 +33,15 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 			die "Unmatched '}' @ $ARGV[$i]:$loc" if (not $inside);
 			$inside = 0;
 			$mark = $loc - $mark;
-			print "$mark\t$fname\t$ARGV[$i]\n" if ($mark > 25);
+			if ($mark > 25) {
+				my $limit;
+				if ($line =~ /style:[0-9]+/) {
+					($limit) = $line =~ m/style\:([0-9]+)/;
+					print "$mark ($limit)\t$fname\t$ARGV[$i]\n";
+				} else {
+					print "$mark\t$fname\t$ARGV[$i]\n";
+				}
+			}
 		}
 	} 
 	close IN

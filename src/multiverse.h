@@ -258,6 +258,9 @@ void mv_clscache_release(mv_clscache* ptr);
 /* Implementation: mv_parser.c */
 /*******************************/
 
+#define MVAST_TEMPCOLON        -2008
+#define MVAST_TEMPEQUALS       -2007
+#define MVAST_TEMPCOMMA        -2006
 #define MVAST_TEMPAPOSTROPHE   -2005
 #define MVAST_TEMPATTRSPECLIST -2004
 #define MVAST_TEMPCLOSEBRACE   -2003

@@ -104,26 +104,30 @@ mv_error* __mv_create_class(int* ref,
 	return NULL;
 }
 
+static mv_error* __assign_execute(mv_session* state, mv_command* cmd) {
+	assert(cmd->vars.used == 2);
+	char* clsname = cmd->vars.items[0];
+	char* objname = cmd->vars.items[1];
+	int objref = mv_session_findvar(state, objname);
+	if (objref == -1) {
+		THROW(BADVAR, "Unknown variable '%s'", objname);
+	}
+	int clsref = mv_session_findclass(state, clsname);
+	if (clsref == -1) {
+		THROW(BADVAR, "Unknown class '%s'", clsname);
+	}
+	mv_entity* entity = &(state->entities.items[objref]);
+	mv_strarr_append(&(entity->classes), clsname); 
+	return NULL;
+}
+
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 	mv_error* error;
 	char* clsname;
 
 	switch (action->code) {
 	case MVCMD_ASSIGN:
-		assert(action->vars.used == 2);
-		clsname = action->vars.items[0];
-		char* objname = action->vars.items[1];
-		int objref = mv_session_findvar(state, objname);
-		if (objref == -1) {
-			THROW(BADVAR, "Unknown variable '%s'", objname);
-		}
-		int clsref = mv_session_findclass(state, clsname);
-		if (clsref == -1) {
-			THROW(BADVAR, "Unknown class '%s'", clsname);
-		}
-		mv_entity* entity = &(state->entities.items[objref]);
-		mv_strarr_append(&(entity->classes), clsname); 
-		return NULL;
+		return __assign_execute(state, action);
 	case MVCMD_CREATE_ENTITY:
 		if (action->vars.used == 0) {
 			return __mv_create_entity(NULL, state, action->attrs);

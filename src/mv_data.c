@@ -300,7 +300,7 @@ void mv_varbind_alloc(mv_varbind* ptr, int size) {
 	ptr->used = 0;
 }
 
-void mv_varbind_insert(mv_varbind* ptr, char* key, int value) {
+inline static void __varbind_expand(mv_varbind* ptr) {
 	if (ptr->size <= ptr->used * 2) {
 		mv_varbind tmp;
 		mv_varbind_alloc(&tmp, ptr->size * 2);
@@ -313,7 +313,10 @@ void mv_varbind_insert(mv_varbind* ptr, char* key, int value) {
 		mv_varbind_release(ptr);
 		*ptr = tmp;
 	}
+}
 
+void mv_varbind_insert(mv_varbind* ptr, char* key, int value) {
+	__varbind_expand(ptr);
 	int hash = mv_strhash(key) % ptr->size, i, j;
 	char* keyCopy = strdup(key);
 	for (i=0, j=hash; i<ptr->size; i++, j++) {
