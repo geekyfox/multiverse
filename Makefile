@@ -25,6 +25,10 @@ selftest : testsuite
 testsuite : $(CORE_OBJS) $(TEST_OBJS) $(HEADERS)
 	gcc $(CORE_OBJS) $(TEST_OBJS) -o testsuite
 
+.PHONY : stylecheck
+stylecheck :
+	find src test -name '*.c' | xargs ./stylus.pl | sort -nr
+
 .PHONY : memtest
 memtest : testsuite
 	valgrind --leak-check=full --show-reachable=yes ./testsuite
