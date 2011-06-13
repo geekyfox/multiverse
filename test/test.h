@@ -62,6 +62,7 @@ umberto_eco } name_of_the_rose"
 country = italy, hometown = bologna }"
 #define REQ10 "assign person to umberto_eco"
 #define REQ11 "lookup person with { name = 'Umberto Eco' }"
+#define REQ12 "destroy entity umberto_eco"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

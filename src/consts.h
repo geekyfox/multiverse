@@ -20,5 +20,18 @@
 #define MVAST_TYPESPEC          2004
 #define MVAST_ATTRSPECLIST      2005
 
+//
+// Constants for command codes
+//
+
+#define MVCMD_DO_NOTHING     -3002
+#define MVCMD_QUIT           -3001
+#define MVCMD_ASSIGN          3001
+#define MVCMD_CREATE_CLASS    3002
+#define MVCMD_CREATE_ENTITY   3003
+#define MVCMD_DESTROY_ENTITY  3004
+#define MVCMD_LOOKUP          3005
+#define MVCMD_SHOW            3006
+
 #endif
 

@@ -137,14 +137,6 @@ void mv_intset_remove(mv_intset* ptr, int value);
 /* Executable command */
 /**********************/
 
-#define MVCMD_DO_NOTHING    -3002
-#define MVCMD_QUIT          -3001
-#define MVCMD_ASSIGN         3001
-#define MVCMD_CREATE_ENTITY  3002
-#define MVCMD_LOOKUP         3003
-#define MVCMD_SHOW           3004
-#define MVCMD_CREATE_CLASS   3005
-
 typedef struct {
 	int code;
 	mv_attrlist attrs;

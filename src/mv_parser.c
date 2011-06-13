@@ -293,7 +293,7 @@ mv_error* __createentity_parse(mv_command* target, mv_ast* ast) {
 	return NULL;
 }
 
-mv_error* __createcmd_parse(mv_command* target, mv_ast* ast) {
+mv_error* __create__(mv_command* target, mv_ast* ast) {
 	int size = ast->size;
 	mv_ast_entry* items = ast->items;
 	if ((size == 1) || !(LEAF(&items[1]))) {
@@ -307,10 +307,14 @@ mv_error* __createcmd_parse(mv_command* target, mv_ast* ast) {
 	if (LEAFFIX(items + 1, "class")) {
 		target->code = MVCMD_CREATE_CLASS;
 		if (!LEAF(&items[2])) {
-			THROW(INTERNAL, "Expected class name, got %d", items[2].type);
+			THROW(INTERNAL,
+			      "Expected class name, got %d",
+			      items[2].type);
 		}
 		if (items[3].type != MVAST_ATTRSPECLIST) {
-			THROW(INTERNAL, "Expected AttrSpecList, got %d", items[3].type);
+			THROW(INTERNAL,
+			      "Expected AttrSpecList, got %d",
+			      items[3].type);
 		}
 		mv_ast_to_speclist(&(target->spec), &(items[3].value.subtree));
 		mv_strarr_alloc(&target->vars, 1);
@@ -323,6 +327,20 @@ mv_error* __createcmd_parse(mv_command* target, mv_ast* ast) {
 	
 	THROW(SYNTAX, "Invalid task for create - '%s'", items[1].value.leaf);
 }
+
+mv_error* __destroy__(mv_command* target, mv_ast* ast) {
+	int size = ast->size;
+	mv_ast_entry* items = ast->items;
+	if ((size != 3) || !LEAFFIX(&items[1], "entity") ||
+	    !LEAF(&items[2]))
+	{
+		THROW(SYNTAX, "Malformed 'destroy' command");
+	}
+	__clear__(target, MVCMD_DESTROY_ENTITY, 1);
+	mv_strarr_append(&target->vars, ast->items[2].value.leaf);
+	mv_ast_release(ast);
+	return NULL;	
+} 
 
 mv_error* __showcmd_parse(mv_command* cmd, mv_ast* ast) {
 	int size = ast->size;
@@ -380,7 +398,8 @@ mv_error* mv_command_parse(mv_command* cmd, char* data) {
 	char* cmdname = ast.items[0].value.leaf;
 
 	if (STREQ(cmdname, "assign")) return __assign__(cmd, &ast);
-	if (STREQ(cmdname, "create")) return __createcmd_parse(cmd, &ast);
+	if (STREQ(cmdname, "create")) return __create__(cmd, &ast);
+	if (STREQ(cmdname, "destroy")) return __destroy__(cmd, &ast);
 	if (STREQ(cmdname, "lookup")) return __lookup__(cmd, &ast);
 	if (STREQ(cmdname, "show")) return __showcmd_parse(cmd, &ast);
 	if (STREQ(cmdname, "quit")) return __quitcmd_parse(cmd, &ast);

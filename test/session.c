@@ -87,3 +87,44 @@ TEST execute_REQ11() {
 	mv_command_release(&action);
 }
 
+TEST execute_REQ12() {
+	mv_command action;
+	mv_session state;
+
+	__prepare_for_REQ10_11(&state, 0);
+
+	FAILFAST(mv_command_parse(&action, REQ12));
+	FAILFAST(mv_session_execute(&state, &action));
+
+	mv_session_release(&state);
+	mv_command_release(&action);
+}
+
+TEST lookup_after_destroy() {
+	mv_command lookup, destroy; 
+	mv_session state;
+	mv_intset result;
+
+	__prepare_for_REQ10_11(&state, 1);
+
+	mv_intset_alloc(&result, 8);
+
+	FAILFAST(mv_command_parse(&lookup, REQ11));
+	FAILFAST(mv_command_parse(&destroy, REQ12));
+	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+
+	ASSERT_INT(result.used, 1);
+	ASSERT_INT(result.items[0], 0);
+	result.used = 0;
+
+	FAILFAST(mv_session_execute(&state, &destroy));
+	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+
+	ASSERT_INT(result.used, 0);
+
+	mv_intset_release(&result);
+	mv_command_release(&lookup);
+	mv_command_release(&destroy);
+	mv_session_release(&state);
+}
+
