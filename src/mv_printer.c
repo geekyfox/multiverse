@@ -84,26 +84,6 @@ void mv_entity_show(mv_strbuf* buf, mv_entity* obj) {
 	mv_attrlist_show(buf, &(obj->data));
 }
 
-mv_error* mv_error_unmatched(int objcode, char* command) {
-	char* meaning = NULL;
-
-	switch (objcode) {
-	case MVAST_TEMPAPOSTROPHE:
-		meaning = "\"'\"";
-		break;
-	case MVAST_TEMPOPENBRACE:
-		meaning = "'{'";
-		break;
-	}
-
-	if (meaning != NULL) {
-		THROW(SYNTAX, "Unmatched %s in \"%s\"", meaning, command);
-	}
-
-	THROW(SYNTAX, "Unmatched temporary objects of type %d in %s",
-		objcode, command);
-}
-
 void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr) {
 	int i;
 	__appendimpl(buf, "{\n");

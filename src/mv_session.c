@@ -121,6 +121,26 @@ static mv_error* __assign_execute(mv_session* state, mv_command* cmd) {
 	return NULL;
 }
 
+static mv_error* __create_enty_ex(mv_session* state, mv_command* cmd) {
+	if (cmd->vars.used == 0) {
+		return __mv_create_entity(NULL, state, cmd->attrs);
+	} else if (cmd->vars.used == 1) {
+		char* varname = cmd->vars.items[0];
+		int ref = mv_varbind_lookup(&state->vars, varname);
+		if (ref != -1) {
+			THROW(BADVAR, "Variable already bound");
+		}
+		mv_error* error;
+		if ((error = __mv_create_entity(&ref, state, cmd->attrs))) {
+			return error;
+		}
+		mv_varbind_insert(&state->vars, varname, ref);
+		return NULL;
+	} else {
+		THROW(INTERNAL, "Malformed action");
+	}
+}
+
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 	mv_error* error;
 	char* clsname;
@@ -129,22 +149,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 	case MVCMD_ASSIGN:
 		return __assign_execute(state, action);
 	case MVCMD_CREATE_ENTITY:
-		if (action->vars.used == 0) {
-			return __mv_create_entity(NULL, state, action->attrs);
-		} else if (action->vars.used == 1) {
-			char* varname = action->vars.items[0];
-			int ref = mv_varbind_lookup(&state->vars, varname);
-			if (ref != -1) {
-				THROW(BADVAR, "Variable already bound");
-			}
-			if ((error = __mv_create_entity(&ref, state, action->attrs))) {
-				return error;
-			}
-			mv_varbind_insert(&state->vars, varname, ref);
-			return NULL;
-		} else {
-			THROW(INTERNAL, "Malformed action");
-		}
+		return __create_enty_ex(state, action);
 	case MVCMD_CREATE_CLASS:
 		if (action->vars.used != 1) {
 			THROW(INTERNAL, "Strange number of variables");

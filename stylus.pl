@@ -32,14 +32,15 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 		elsif ($line =~ m/^}/) {
 			die "Unmatched '}' @ $ARGV[$i]:$loc" if (not $inside);
 			$inside = 0;
-			$mark = $loc - $mark;
-			if ($mark > 25) {
+			$size = $loc - $mark;
+			if ($size > 25) {
 				my $limit;
 				if ($line =~ /style:[0-9]+/) {
 					($limit) = $line =~ m/style\:([0-9]+)/;
-					print "$mark ($limit)\t$fname\t$ARGV[$i]\n";
+					print "$size ($limit)\t$fname\t$ARGV[$i]:$mark\n"
+						if $size > $limit;
 				} else {
-					print "$mark\t$fname\t$ARGV[$i]\n";
+					print "$size\t$fname\t$ARGV[$i]:$mark\n";
 				}
 			}
 		}

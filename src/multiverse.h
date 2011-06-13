@@ -5,48 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "consts.h"
+#include "error.h"
+
 /*******************************/
 /* Common utility functions    */
 /*                             */
 /* Implementation: mv_common.c */
 /*******************************/
-
-/******************/
-/* Error handling */
-/******************/
-
-#define MVERROR_SYNTAX 1
-#define MVERROR_INTERNAL 2
-#define MVERROR_BADVAR 3
-#define MVERROR_BADCMD 4
-
-typedef struct {
-	char* message;
-	int code;
-} mv_error;
-
-void  mv_error_display(mv_error* error, FILE* file);
-char* mv_error_show(mv_error* error);
-void  mv_error_release(mv_error* error);
-
-mv_error* mv_error_unmatched(int objcode, char* command);
-
-#define PREPARE_ERROR(__errvar, __errcd, ...) do { \
-__errvar = malloc(sizeof(mv_error));               \
-asprintf(&(__errvar->message), __VA_ARGS__);       \
-__errvar->code = MVERROR_##__errcd; } while (0)    \
-
-#define THROW(__errcd, ...) do {                 \
-mv_error* __errtmp__;                            \
-PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
-return __errtmp__; } while (0)
-
-#define DIE(...) do {                              \
-fprintf(stderr, "[ !!! Fatal error | %s %s:%d ] ", \
-__func__, __FILE__, __LINE__);                     \
-fprintf(stderr, __VA_ARGS__);                      \
-fprintf(stderr, "\n");                             \
-abort(); } while (0)
 
 /***************************/
 /* Common string functions */
@@ -257,20 +223,6 @@ void mv_clscache_release(mv_clscache* ptr);
 /*                             */
 /* Implementation: mv_parser.c */
 /*******************************/
-
-#define MVAST_TEMPCOLON        -2008
-#define MVAST_TEMPEQUALS       -2007
-#define MVAST_TEMPCOMMA        -2006
-#define MVAST_TEMPAPOSTROPHE   -2005
-#define MVAST_TEMPATTRSPECLIST -2004
-#define MVAST_TEMPCLOSEBRACE   -2003
-#define MVAST_TEMPOPENBRACE    -2002
-#define MVAST_TEMPATTRLIST     -2001
-#define MVAST_LEAF              2001
-#define MVAST_ATTRLIST          2002
-#define MVAST_ATTRPAIR          2003
-#define MVAST_TYPESPEC          2004
-#define MVAST_ATTRSPECLIST      2005
 
 typedef struct {
 	int size;

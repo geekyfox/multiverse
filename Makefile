@@ -1,9 +1,9 @@
 
-CORE_HEADERS = src/multiverse.h
+CORE_HEADERS = src/multiverse.h src/error.h src/consts.h
 TEST_HEADERS = test/test.h
 
 MODULES      = data parser matcher printer session
-CORE_MODULES = $(MODULES) common local
+CORE_MODULES = $(MODULES) common local error
 TEST_MODULES = $(MODULES) misc 
 DEMO_MODULES = demo
 

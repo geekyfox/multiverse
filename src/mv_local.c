@@ -6,7 +6,7 @@
 mv_session* __LOCAL_SESSION__ = NULL;
 
 void mv_local_start() {
-	__LOCAL_SESSION__ = (mv_session*)malloc(sizeof(mv_session));
+	__LOCAL_SESSION__ = malloc(sizeof(mv_session));
 	mv_session_init(__LOCAL_SESSION__);
 }
 
@@ -29,6 +29,22 @@ mv_error* __local_lookup(mv_command* c) {
 	return error;
 }
 
+inline static void __display_success(mv_command* cmd) {
+	switch(cmd->code) {
+	case MVCMD_CREATE_ENTITY:
+		printf ("OK, entity created\n");
+		break;
+	case MVCMD_CREATE_CLASS:
+		printf ("OK, class created\n");
+		break;
+	case MVCMD_ASSIGN:
+		printf ("OK, class '%s' assigned to '%s'\n",
+		        cmd->vars.items[0],
+		        cmd->vars.items[1]);
+		break;
+	}
+}
+
 void mv_local_execute(mv_command* cmd) {
 	mv_error* error = NULL;
 	char *tmpstr = NULL;
@@ -36,21 +52,11 @@ void mv_local_execute(mv_command* cmd) {
 	switch(cmd->code) {
 	case MVCMD_DO_NOTHING:
 		break;
+	case MVCMD_ASSIGN:
+	case MVCMD_CREATE_CLASS:
 	case MVCMD_CREATE_ENTITY:
 		error = mv_session_execute(__LOCAL_SESSION__, cmd);
-		if (error == NULL) printf ("OK, entity created\n");
-		break;
-	case MVCMD_CREATE_CLASS:
-		error = mv_session_execute(__LOCAL_SESSION__, cmd);
-		if (error == NULL) printf ("OK, class created\n");
-		break;
-	case MVCMD_ASSIGN:
-		error = mv_session_execute(__LOCAL_SESSION__, cmd);
-		if (error == NULL) {
-			printf ("OK, class '%s' assigned to '%s'\n",
-                    cmd->vars.items[0],
-                    cmd->vars.items[1]);
-		}
+		if (error == NULL) __display_success(cmd);
 		break;
 	case MVCMD_SHOW:
 		error = mv_session_show(&tmpstr,

@@ -13,22 +13,7 @@
 #define LEAFFIX(var, text) (LEAF(var) && STREQ((var)->value.leaf, text))
 #define TEMPFIX(var, code) ((var->type) == MVAST_TEMP##code)
 
-static void __cmd_clear(mv_command* cmd, int code, int vars) {
-	cmd->code = code;
-	cmd->attrs.size = 0;
-	cmd->attrs.attrs = NULL;
-	cmd->spec.size = 0;
-	cmd->spec.specs = NULL;
-	if (vars != 0) {
-		mv_strarr_alloc(&cmd->vars, vars);
-	} else {
-		cmd->vars.used = 0;
-		cmd->vars.size = 0;
-		cmd->vars.items = NULL;
-	}
-}
-
-static void __pair_merge(mv_ast_entry* stack, int* count) {
+inline static void __pair__(mv_ast_entry* stack, int* count) {
 	if (*count < 3) return;
 	mv_ast_entry *a = &(stack[*count - 3]);
 	if (!LEAF(a)) return;
@@ -51,7 +36,7 @@ static void __pair_merge(mv_ast_entry* stack, int* count) {
 	(*count)-=2;
 }
 
-static void __comma_merge(mv_ast_entry* stack, int *count) {
+inline static void __comma__(mv_ast_entry* stack, int *count) {
 	if (*count < 3) return;
 	mv_ast_entry *sep = &(stack[*count - 2]);
 	if (! TEMPFIX(sep, COMMA)) return;
@@ -88,9 +73,9 @@ static void __comma_merge(mv_ast_entry* stack, int *count) {
 		*count -= 2;
 		return;
 	}
-}
+} // style:40
 
-static void __emptylist_merge(mv_ast_entry* stack, int* size) {
+inline static void __emptylist__(mv_ast_entry* stack, int* size) {
 	if (*size < 2) return;
 
 	mv_ast_entry *a = &(stack[*size - 2]), *b = &(stack[*size - 1]);
@@ -103,7 +88,7 @@ static void __emptylist_merge(mv_ast_entry* stack, int* size) {
 	}
 }
 
-void __list_merge(mv_ast_entry* stack, int* count) {
+inline static void __list__(mv_ast_entry* stack, int* count) {
 	if ((*count) < 3) return;
 
 	mv_ast_entry *e1 = &(stack[*count - 3]);
@@ -141,7 +126,7 @@ void __list_merge(mv_ast_entry* stack, int* count) {
 	}
 }
 
-static mv_ast_entry __maketoken(char* token) {
+inline static mv_ast_entry __make_token__(char* token) {
 	mv_ast_entry result;
 
 	if (STREQ(token, "{")) result.type = MVAST_TEMPOPENBRACE;
@@ -169,20 +154,19 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	int scan = 0, size = 0;
 
 	while (scan < tokens.used) {
-		stack[size++] = __maketoken(tokens.items[scan++]);
+		stack[size++] = __make_token__(tokens.items[scan++]);
 		int oldsize;
 		do {
 			oldsize = size;
-			__comma_merge(stack, &size);
-			__emptylist_merge(stack, &size);
-			__pair_merge(stack, &size);
-			__list_merge(stack, &size);
+			__emptylist__(stack, &size);
+			__pair__(stack, &size);
+			__comma__(stack, &size);
+			__list__(stack, &size);
 		} while (oldsize != size);
 	}
 	
-	stack = realloc(stack, sizeof(mv_ast_entry) * size);
 	free(tokens.items);
-	
+
 	target->size = size;
 	target->items = stack;
 
@@ -193,6 +177,8 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 			return mv_error_unmatched(stack[i].type, data);
 		}
 	}
+
+	target->items = realloc(stack, sizeof(mv_ast_entry) * size);
 	return NULL;
 }
 
@@ -221,20 +207,14 @@ void mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source) {
 	int i;
 	for (i=0; i<source->size; i++) {
 		mv_ast_entry srcitem = source->items[i];
-		if (srcitem.type != MVAST_ATTRPAIR) {
-			DIE("AttrPair expected");
-		}
+		EXPECT(srcitem.type == MVAST_ATTRPAIR, "AttrPair expected");
 		mv_ast astpair = srcitem.value.subtree;
-		if (astpair.size != 2) {
-			DIE("Two elements expected");
-		}
+		EXPECT(astpair.size == 2, "Two elements expected");
 		mv_ast_entry* items = astpair.items;
-		if (items[0].type != MVAST_LEAF || items[1].type != MVAST_LEAF) {
-			DIE("Leafs expected");
-		}
-		mv_attr_parse(&target->attrs[i],
-                      items[0].value.leaf,
-                      items[1].value.leaf);
+		EXPECT(LEAF(&items[0]), "Leafs expected");
+		EXPECT(LEAF(&items[1]), "Leafs expected");
+		char *key = items[0].value.leaf, *value = items[1].value.leaf;
+		mv_attr_parse(&target->attrs[i], key, value);
 	}
 }
 
@@ -272,6 +252,21 @@ void mv_attr_parse(mv_attr* target, char* name, char* value) {
 	}
 }
 
+inline static void __clear__(mv_command* cmd, int code, int vars) {
+	cmd->code = code;
+	cmd->attrs.size = 0;
+	cmd->attrs.attrs = NULL;
+	cmd->spec.size = 0;
+	cmd->spec.specs = NULL;
+	if (vars != 0) {
+		mv_strarr_alloc(&cmd->vars, vars);
+	} else {
+		cmd->vars.used = 0;
+		cmd->vars.size = 0;
+		cmd->vars.items = NULL;
+	}
+}
+
 mv_error* __createentity_parse(mv_command* target, mv_ast* ast) {
 	if (ast->size < 3) {
 		THROW(SYNTAX, "'create entity' command is incomplete");
@@ -287,10 +282,10 @@ mv_error* __createentity_parse(mv_command* target, mv_ast* ast) {
 			      "Expected Leaf for 'create entity' command, got %d",
 			      ast->items[3].type);
 		}
-		__cmd_clear(target, MVCMD_CREATE_ENTITY, 1);
+		__clear__(target, MVCMD_CREATE_ENTITY, 1);
 		mv_strarr_append(&target->vars, ast->items[3].value.leaf);
 	} else {
-		__cmd_clear(target, MVCMD_CREATE_ENTITY, 0);
+		__clear__(target, MVCMD_CREATE_ENTITY, 0);
 	}
 
 	mv_ast_to_attrlist(&target->attrs, &ast->items[2].value.subtree);
@@ -334,7 +329,7 @@ mv_error* __showcmd_parse(mv_command* cmd, mv_ast* ast) {
 	mv_ast_entry* items = ast->items;
 	assert(size == 2);
 	assert(items[1].type == MVAST_LEAF);
-	__cmd_clear(cmd, MVCMD_SHOW, 1);
+	__clear__(cmd, MVCMD_SHOW, 1);
 	mv_strarr_append(&cmd->vars, items[1].value.leaf);
 	mv_ast_release(ast);
 	return NULL;
@@ -344,67 +339,53 @@ static mv_error* __quitcmd_parse(mv_command* cmd, mv_ast* ast) {
 	if (ast->size != 1) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
-	__cmd_clear(cmd, MVCMD_QUIT, 0);
+	__clear__(cmd, MVCMD_QUIT, 0);
 	mv_ast_release(ast);
 	return NULL;
 }
 
-mv_error* __assigncmd_parse(mv_command* cmd, mv_ast* ast) {
+inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 	int size = ast->size;
 	mv_ast_entry* items = ast->items;
 	assert(size == 4);
 	assert(LEAF(&(items[1])));
 	assert(LEAFFIX(&(items[2]), "to"));
 	assert(LEAF(&(items[3])));
-	__cmd_clear(cmd, MVCMD_ASSIGN, 2);
+	__clear__(cmd, MVCMD_ASSIGN, 2);
 	mv_strarr_append(&cmd->vars, items[1].value.leaf);
 	mv_strarr_append(&cmd->vars, items[3].value.leaf);
 	mv_ast_release(ast);
 	return NULL;
 }
 
-mv_error* mv_command_parse(mv_command* target, char* data) {
+inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
+	assert(ast->size == 4);
+	assert(LEAF(&(ast->items[1])));
+	assert(LEAFFIX(&(ast->items[2]), "with"));
+	assert(ast->items[3].type == MVAST_ATTRLIST);
+	__clear__(cmd, MVCMD_LOOKUP, 1);
+	mv_strarr_append(&cmd->vars, ast->items[1].value.leaf);
+	mv_ast_to_attrlist(&cmd->attrs, &ast->items[3].value.subtree);
+	mv_ast_release(ast);
+	return NULL;
+}
+
+mv_error* mv_command_parse(mv_command* cmd, char* data) {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, data);
 	if (error != NULL) return error;
-
-	if (LEAFFIX(ast.items, "create")) {
-		return __createcmd_parse(target, &ast);
-	}
-
-	if (LEAFFIX(ast.items, "show")) {
-		return __showcmd_parse(target, &ast);
-	}
-
-	if (LEAFFIX(ast.items, "quit")) {
-		return __quitcmd_parse(target, &ast);
-	}
-
-	if (LEAFFIX(&(ast.items[0]), "assign")) {
-		return __assigncmd_parse(target, &ast);
-	}
-
-	if (LEAFFIX(&(ast.items[0]), "lookup"))
-	{
-		assert(ast.size == 4);
-		assert(LEAF(&(ast.items[1])));
-		assert(LEAFFIX(&(ast.items[2]), "with"));
-		assert(ast.items[3].type == MVAST_ATTRLIST);
-		target->code = MVCMD_LOOKUP;
-		mv_strarr_alloc(&target->vars, 1);
-		mv_strarr_append(&target->vars, ast.items[1].value.leaf);
-		mv_ast_to_attrlist(&target->attrs, &ast.items[3].value.subtree);
-		target->spec.size = 0;
-		target->spec.specs = NULL;
-		mv_ast_release(&ast);
-		return NULL;
-	}
-
-	if (LEAF(&(ast.items[0]))) {
-		THROW(BADCMD, ast.items[0].value.leaf);
-	} else {
+	if (!LEAF(&(ast.items[0]))) {
 		THROW(SYNTAX, "Syntax error");
 	}
+	char* cmdname = ast.items[0].value.leaf;
+
+	if (STREQ(cmdname, "assign")) return __assign__(cmd, &ast);
+	if (STREQ(cmdname, "create")) return __createcmd_parse(cmd, &ast);
+	if (STREQ(cmdname, "lookup")) return __lookup__(cmd, &ast);
+	if (STREQ(cmdname, "show")) return __showcmd_parse(cmd, &ast);
+	if (STREQ(cmdname, "quit")) return __quitcmd_parse(cmd, &ast);
+
+	THROW(BADCMD, ast.items[0].value.leaf);
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
