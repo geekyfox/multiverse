@@ -243,4 +243,17 @@ TEST cmdparse_REQ12() {
 	mv_command_release(&action);
 }
 
+TEST cmdparse_REQ13() {
+	mv_command action;
+	FAILFAST(mv_command_parse(&action, REQ13));
+	ASSERT_INT(action.code, MVCMD_LOOKUP);
+	ASSERT_INT(action.spec.size, 0);
+	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.vars.used, 1);
+	ASSERT_NOTNULL(action.vars.items);
+	ASSERT_STRING(action.vars.items[0], "person");
+	ASSERT_INT(action.attrs.size, 0);
+	ASSERT_NULL(action.attrs.attrs);
+	mv_command_release(&action);
+}
 

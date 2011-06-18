@@ -128,3 +128,23 @@ TEST lookup_after_destroy() {
 	mv_session_release(&state);
 }
 
+TEST lookup_all_items() {
+	mv_command lookup;
+	mv_session state;
+	mv_intset result;
+
+	__prepare_for_REQ10_11(&state, 1);
+
+	mv_intset_alloc(&result, 8);
+
+	FAILFAST(mv_command_parse(&lookup, REQ13));
+	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+
+	ASSERT_INT(result.used, 1);
+	ASSERT_INT(result.items[0], 0);
+	
+	mv_intset_release(&result);
+	mv_command_release(&lookup);
+	mv_session_release(&state);
+}
+

@@ -55,6 +55,7 @@ void mv_local_execute(mv_command* cmd) {
 	case MVCMD_ASSIGN:
 	case MVCMD_CREATE_CLASS:
 	case MVCMD_CREATE_ENTITY:
+	case MVCMD_DESTROY_ENTITY:
 		error = mv_session_execute(__LOCAL_SESSION__, cmd);
 		if (error == NULL) __display_success(cmd);
 		break;

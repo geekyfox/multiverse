@@ -377,8 +377,14 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 }
 
 inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
-	assert(ast->size == 4);
 	assert(LEAF(&(ast->items[1])));
+	if (ast->size == 2) {
+		__clear__(cmd, MVCMD_LOOKUP, 1);
+		mv_strarr_append(&cmd->vars, ast->items[1].value.leaf);
+		mv_ast_release(ast);
+		return NULL;
+	}
+	assert(ast->size == 4);
 	assert(LEAFFIX(&(ast->items[2]), "with"));
 	assert(ast->items[3].type == MVAST_ATTRLIST);
 	__clear__(cmd, MVCMD_LOOKUP, 1);
