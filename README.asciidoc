@@ -1,0 +1,61 @@
+
+== Multiverse
+
+On one hand, Multiverse is nothing less than a "NoSQL object-oriented 
+<blah blah> database system", so it might be interesting.
+
+On the other hand, it's nothing more than an exercise to keep my
+C programming skills in good shape, so handle with care.
+
+Here's a sample multiverse session:
+
+------
+# create entity {
+name = 'Umberto Eco'
+} umberto_eco;
+OK, entity created
+# create entity {
+title = 'Baudolino',
+author = umberto_eco
+} baudolino;
+OK, entity created
+# show umberto_eco;
+umberto_eco = entity {
+  name = 'Umberto Eco'
+}
+# show baudolino;
+baudolino = entity {
+  title = 'Baudolino',
+  author = ##0
+}
+# show ##0;
+##0 = entity {
+  name = 'Umberto Eco'
+}
+# create class person {
+name : string
+};
+OK, class created
+# assign person to umberto_eco;
+OK, class 'person' assigned to 'umberto_eco'
+# create class book {
+title : string
+};
+OK, class created
+# assign book to baudolino;
+OK, class 'book' assigned to 'baudolino'
+# lookup book with { name = 'Brief history of time' };
+OK, no matching objects found
+# lookup book with { title = 'Baudolino' };
+OK, matching objects found: [1]
+# lookup book;
+OK, matching objects found: [1]
+# show ##1;
+##1 = entity {
+  title = 'Baudolino',
+  author = ##0
+}
+# destroy entity ##1;
+# lookup book;
+OK, no matching objects found
+------
