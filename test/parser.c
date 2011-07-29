@@ -63,19 +63,6 @@ TEST tokenize_test() {
 	mv_strarr_release(&tokens);
 }
 
-TEST astparse_REQ1() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ1);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
-	ASSERT_STRING(ast.items[0].value.leaf, "create");
-	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[2].value.subtree.size, 1);
-	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
-}
-
 TEST astparse_REQ2() {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, REQ2);
@@ -186,101 +173,5 @@ TEST cmdparse_failures() {
 	__cmdparse_fail(BADREQ1);
 	__cmdparse_fail(BADREQ2);
 	__cmdparse_fail(BADREQ3);
-}
-
-TEST cmdparse_REQ1() {
-	mv_command action;
-	mv_error* error = mv_command_parse(&action, REQ1);
-	FAIL(error);
-	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "umberto_eco");
-	ASSERT_INT(action.attrs.size, 1);
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
-	ASSERT_STRING(action.attrs.attrs[0].name, "name");
-	ASSERT_STRING(action.attrs.attrs[0].value.string, "Umberto Eco");
-	mv_command_release(&action);
-}
-
-TEST cmdparse_REQ10() {
-	mv_command action;
-	mv_error* error = mv_command_parse(&action, REQ10);
-	FAIL(error);
-	ASSERT_INT(action.code, MVCMD_ASSIGN);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 2);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
-	ASSERT_STRING(action.vars.items[1], "umberto_eco");
-	ASSERT_INT(action.attrs.size, 0);
-	ASSERT_NULL(action.attrs.attrs);
-	mv_command_release(&action);
-}
-
-TEST cmdparse_REQ11() {
-	mv_command action;
-	mv_error* error = mv_command_parse(&action, REQ11);
-	FAIL(error);
-	ASSERT_INT(action.code, MVCMD_LOOKUP);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
-	ASSERT_INT(action.attrs.size, 1);
-	ASSERT_NOTNULL(action.attrs.attrs);
-	ASSERT_STRING(action.attrs.attrs[0].name, "name");
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
-	ASSERT_STRING(action.attrs.attrs[0].value.string, "Umberto Eco");
-	mv_command_release(&action);
-}
-
-TEST cmdparse_REQ12() {
-	mv_command action;
-	FAILFAST(mv_command_parse(&action, REQ12));
-	ASSERT_INT(action.code, MVCMD_DESTROY_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "umberto_eco");
-	ASSERT_INT(action.attrs.size, 0);
-	ASSERT_NULL(action.attrs.attrs);
-	mv_command_release(&action);
-}
-
-TEST cmdparse_REQ13() {
-	mv_command action;
-	FAILFAST(mv_command_parse(&action, REQ13));
-	ASSERT_INT(action.code, MVCMD_LOOKUP);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
-	ASSERT_INT(action.attrs.size, 0);
-	ASSERT_NULL(action.attrs.attrs);
-	mv_command_release(&action);
-}
-
-TEST cmdparse_REQ14() {
-	mv_command action;
-	mv_error* error = mv_command_parse(&action, REQ14);
-	FAIL(error);
-	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "eiffel_tower");
-	ASSERT_INT(action.attrs.size, 1);
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_INTEGER);
-	ASSERT_STRING(action.attrs.attrs[0].name, "height");
-	ASSERT_INT(action.attrs.attrs[0].value.integer, 324);
-	mv_command_release(&action);
 }
 

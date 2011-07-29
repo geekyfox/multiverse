@@ -8,7 +8,10 @@ if ($#ARGV != 1) {
 open IN, "<$ARGV[0]" or die "Unable to open $ARGV[0] for reading";
 open OUT, ">$ARGV[1]" or die "Unable to open $ARGV[1] for writing";
 
+my ($suitename) = ($ARGV[0] =~ m/([a-z]+)\.c/);
+
 my $inside = 0;
+my $testreq = 0;
 my @tests = ();
 
 while (<IN>) {
@@ -19,8 +22,20 @@ while (<IN>) {
 		print OUT "TEST $testname() { ENTER();\n";
 		push(@tests, $testname);
 		$inside = 1;
+	} elsif ($line =~ /^TESTREQ [0-9]+ {$/) {
+		die "Nested tests are not allowed" if $inside;
+		my ($testid) = ($line =~ m/TESTREQ ([0-9]+)/);
+		my $testname = "$suitename\_REQ$testid";
+		print OUT "TEST $testname() { ENTER(); BEFORE(REQ$testid);\n";
+		push(@tests, $testname);
+		$inside = 1;
+		$testreq = 1;
 	} elsif ($line =~ /^}/) {
 		if ($inside) {
+			if ($testreq) {
+				print OUT "AFTER; ";
+				$testreq = 0;
+			}
 			print OUT "SUCCESS(); ";
 			$inside = 0;
 		}

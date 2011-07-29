@@ -41,15 +41,6 @@ TEST mv_command_test() {
 	assert(action.attrs.attrs[1].type == MVTYPE_RAWREF);
 	assert(strcmp(action.attrs.attrs[1].value.rawref, "umberto_eco") == 0);
 	mv_command_release(&action);
-
-	error = mv_command_parse(&action, REQ7);
-	FAIL(error);
-	assert(action.code == MVCMD_CREATE_CLASS);
-	assert(action.attrs.size == 0);
-	assert(action.attrs.attrs == NULL);
-	assert(action.spec.size == 1);
-	assert(action.spec.specs != NULL);
-	mv_command_release(&action);
 }
 
 TEST mv_execute_test() {
