@@ -17,6 +17,8 @@ int __attrmatch(mv_attr* x, mv_attr* y) {
 	switch (x->type) {
 	case MVTYPE_STRING:
 		return STREQ(x->value.string, y->value.string);
+	case MVTYPE_INTEGER:
+		return x->value.integer == y->value.integer;
 	default:
 		DIE("Invalid code (%d)", x->type);
 	}

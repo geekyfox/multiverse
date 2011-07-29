@@ -21,6 +21,9 @@ mv_attr mv_attr_copy(mv_attr* attr) {
 	case MVTYPE_REF:
 		result.value.ref = attr->value.ref;
 		break;
+	case MVTYPE_INTEGER:
+		result.value.integer = attr->value.integer;
+		break;
 	default:
 		DIE("Invalid code (%d)", attr->type);
 	}
@@ -286,6 +289,7 @@ void mv_strbuf_alloc(mv_strbuf* buf, int size) {
 void mv_typespec_release(mv_typespec* spec) {
 	switch (spec->type) {
 	case MVTYPE_STRING:
+	case MVTYPE_INTEGER:
 		break;
 	case MVTYPE_RAWREF:
 		free(spec->classname);

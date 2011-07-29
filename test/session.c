@@ -168,3 +168,29 @@ TEST lookup_all_items() {
 	mv_session_release(&state);
 }
 
+TEST numlookup() {
+	mv_session session;
+	mv_session_init(&session);
+	mv_strarr script;
+	mv_strarr_alloc(&script, 3);
+	mv_strarr_append(&script, REQ14);
+	mv_strarr_append(&script, REQ15);
+	mv_strarr_append(&script, REQ16);
+	FAILFAST(mv_session_perform(&session, &script));
+	mv_strarr_release(&script);
+
+	mv_intset result;
+	mv_intset_alloc(&result, 8);
+
+	mv_command lookup;
+	FAILFAST(mv_command_parse(&lookup, REQ17));
+	FAILFAST(mv_session_lookup(&result, &session, &lookup));
+
+	ASSERT_INT(result.used, 1);
+	ASSERT_INT(result.items[0], 0);
+
+	mv_intset_release(&result);
+	mv_command_release(&lookup);
+	mv_session_release(&session);
+}
+

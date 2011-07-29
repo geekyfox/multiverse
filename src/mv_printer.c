@@ -45,6 +45,9 @@ void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
 		__appendimpl(buf, "##");
 		__appendimpli(buf, attr->value.ref);
 		break;
+	case MVTYPE_INTEGER:
+		__appendimpli(buf, attr->value.integer);
+		break;
 	default:
 		DIE("Invalid code (%d)", attr->type);
 	}

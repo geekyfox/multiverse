@@ -88,4 +88,17 @@ TESTREQ 14 {
 	ASSERT_INT(action.attrs.attrs[0].value.integer, 324);
 }
 
+TESTREQ 15 {
+	ASSERT_INT(action.code, MVCMD_CREATE_CLASS);
+	ASSERT_INT(action.attrs.size, 0);
+	ASSERT_NULL(action.attrs.attrs);
+	ASSERT_INT(action.spec.size, 1);
+	ASSERT_NOTNULL(action.spec.specs);
+	mv_attrspec asp = action.spec.specs[0];
+	ASSERT_INT(asp.type, MVSPEC_TYPE);
+	ASSERT_STRING(asp.name, "height");
+	ASSERT_INT(asp.value.typespec.type, MVTYPE_INTEGER);
+	ASSERT_NULL(asp.value.typespec.classname);
+}
+
 

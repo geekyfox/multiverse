@@ -437,16 +437,22 @@ mv_error* mv_command_parse(mv_command* cmd, char* data) {
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
+	int code;
+
 	switch(rel) {
 		case MVAST_TYPESPEC:
 			ptr->type = MVSPEC_TYPE;
+			code = -1;
+			ptr->value.typespec.classname = NULL;
 			if (STREQ(value, "string")) {
-				ptr->value.typespec.type = MVTYPE_STRING;
-				ptr->value.typespec.classname = NULL;
+				code = MVTYPE_STRING;
+			} else if (STREQ(value, "integer")) {
+				code = MVTYPE_INTEGER;
 			} else {
-				ptr->value.typespec.type = MVTYPE_RAWREF;
+				code = MVTYPE_RAWREF;
 				ptr->value.typespec.classname = strdup(value);
-			}	
+			}
+			ptr->value.typespec.type = code;
 			break;
 		default:
 			DIE("Unknown relationship code (%d)", rel);

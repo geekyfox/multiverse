@@ -59,6 +59,9 @@ country = italy, hometown = bologna }"
 #define REQ12 "destroy entity umberto_eco"
 #define REQ13 "lookup person"
 #define REQ14 "create entity { height = 324 } eiffel_tower"
+#define REQ15 "create class tower { height : integer }"
+#define REQ16 "assign tower to eiffel_tower"
+#define REQ17 "lookup tower with { height = 324 }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"
