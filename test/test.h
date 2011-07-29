@@ -9,8 +9,6 @@
 mv_error_display(__err, stderr);               \
 DIE("Unexpected error"); }} while (0)
 
-void assert_string(char* pattern, char* value);
-
 #define ASSERT_INT(__value, __pattern)              \
 do { if ((__value) != (__pattern)) {                \
 DIE("Expected '%d', got '%d'", __pattern, __value); \
@@ -43,10 +41,6 @@ FAIL(__err); } while (0)
 
 #define TEST static void
 #define TESTCASE void
-
-void perform_data_test();
-void perform_parser_test();
-void perform_printer_test();
 
 #define REQ1 "create entity { name = 'Umberto Eco' } umberto_eco"
 #define REQ2 "create entity { country = italy, name = 'Umberto Eco' \

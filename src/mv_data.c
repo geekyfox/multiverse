@@ -46,7 +46,11 @@ void mv_attr_release(mv_attr* attr) {
 
 void mv_attrlist_alloc(mv_attrlist* ptr, int size) {
 	ptr->size = size;
-	ptr->attrs = malloc(sizeof(mv_attr) * size);
+	if (size == 0) {
+		ptr->attrs = NULL;
+	} else {
+		ptr->attrs = malloc(sizeof(mv_attr) * size);
+	}
 }
 
 mv_attrlist mv_attrlist_copy(mv_attrlist* ptr) {
@@ -60,13 +64,13 @@ mv_attrlist mv_attrlist_copy(mv_attrlist* ptr) {
 }
 
 void mv_attrlist_release(mv_attrlist* ptr) {
-	if (ptr->size == 0) return;
-
 	int i;
 	for (i=0; i<ptr->size; i++) {
 		mv_attr_release(&ptr->attrs[i]);
 	}
-	free(ptr->attrs);
+	if (ptr->attrs != NULL) {
+		free(ptr->attrs);
+	}
 }
 
 void mv_attrspec_release(mv_attrspec* ptr) {

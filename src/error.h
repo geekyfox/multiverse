@@ -40,5 +40,8 @@ abort(); } while (0)
 #define EXPECT(cond, ...) do { if (!(cond)) \
 DIE(__VA_ARGS__); } while (0)
 
+#define FAILRET(expr) do { mv_error* __err = (expr); \
+if (__err != NULL) return __err; } while (0)
+
 #endif
 

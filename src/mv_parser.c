@@ -144,41 +144,42 @@ inline static mv_ast_entry __make_token__(char* token) {
 	return result;
 }
 
+static inline void __compress__(mv_ast_entry* stack, int* size) {
+	int oldsize;
+	do {
+		oldsize = *size;
+		__emptylist__(stack, size);
+		__pair__(stack, size);
+		__comma__(stack, size);
+		__list__(stack, size);
+	} while (oldsize != *size);
+}
+
 mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	mv_strarr tokens;
-	mv_error* error;
-	if ((error = mv_tokenize(&tokens, data))) {
-		return error;
-	}
+	FAILRET(mv_tokenize(&tokens, data));
 	mv_ast_entry* stack = malloc(sizeof(mv_ast_entry) * tokens.used);
-	int scan = 0, size = 0;
+	int i, scan = 0, size = 0;
 
 	while (scan < tokens.used) {
 		stack[size++] = __make_token__(tokens.items[scan++]);
-		int oldsize;
-		do {
-			oldsize = size;
-			__emptylist__(stack, &size);
-			__pair__(stack, &size);
-			__comma__(stack, &size);
-			__list__(stack, &size);
-		} while (oldsize != size);
+		__compress__(stack, &size);
 	}
 	
 	free(tokens.items);
 
 	target->size = size;
+	stack = realloc(stack, sizeof(mv_ast_entry) * size);
 	target->items = stack;
 
-	int i;
 	for (i=0; i < size; i++) {
 		if (stack[i].type < 0) {
+			mv_error* err = mv_error_unmatched(stack[i].type, data);
 			mv_ast_release(target);
-			return mv_error_unmatched(stack[i].type, data);
+			return err;
 		}
 	}
 
-	target->items = realloc(stack, sizeof(mv_ast_entry) * size);
 	return NULL;
 }
 
