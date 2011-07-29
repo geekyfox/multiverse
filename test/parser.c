@@ -143,6 +143,16 @@ TEST astparse_REQ11() {
 	mv_ast_release(&ast);
 }
 
+TEST astparse_REQ14() {
+	mv_ast ast;
+	mv_error* error = mv_ast_parse(&ast, REQ14);
+	FAIL(error);
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 1);
+	mv_ast_release(&ast);
+}
+
 static void __astparse_fail(char* request) {
 	mv_ast ast;
 	mv_error* error;
@@ -254,6 +264,23 @@ TEST cmdparse_REQ13() {
 	ASSERT_STRING(action.vars.items[0], "person");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
+	mv_command_release(&action);
+}
+
+TEST cmdparse_REQ14() {
+	mv_command action;
+	mv_error* error = mv_command_parse(&action, REQ14);
+	FAIL(error);
+	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
+	ASSERT_INT(action.spec.size, 0);
+	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.vars.used, 1);
+	ASSERT_NOTNULL(action.vars.items);
+	ASSERT_STRING(action.vars.items[0], "eiffel_tower");
+	ASSERT_INT(action.attrs.size, 1);
+	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_INTEGER);
+	ASSERT_STRING(action.attrs.attrs[0].name, "height");
+	ASSERT_INT(action.attrs.attrs[0].value.integer, 324);
 	mv_command_release(&action);
 }
 

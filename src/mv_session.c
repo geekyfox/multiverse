@@ -27,11 +27,14 @@ mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
 	case MVTYPE_REF:
 		dst->value.ref = src->value.ref;
 		break;
+	case MVTYPE_INTEGER:
+		dst->value.integer = src->value.integer;
+		break;
 	case MVTYPE_STRING:
 		dst->value.string = strdup(src->value.string);
 		break;
 	default:
-		THROW(INTERNAL, "Unknown type");
+		DIE("Unknown type");
 	}
 
 	dst->name = strdup(src->name);

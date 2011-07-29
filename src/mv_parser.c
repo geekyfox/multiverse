@@ -1,5 +1,6 @@
 
 #include <assert.h>
+#include <ctype.h>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -242,15 +243,36 @@ void mv_ast_to_speclist(mv_speclist* target, mv_ast* source) {
 	}
 }
 
+static inline int __parse_number__(mv_attr* target, char* value) {
+	int ival = 0;
+	if (*value == '\0') return 0;
+	while (1) {
+		if (isdigit(*value)) {
+			ival = ival * 10 + (*value - '0');
+			value++;
+			continue;
+		} else if (*value == '\0') {
+			target->type = MVTYPE_INTEGER;
+			target->value.integer = ival;
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
+
 void mv_attr_parse(mv_attr* target, char* name, char* value) {
 	target->name = strdup(name);
 	if (value[0] == '\'') {
 		target->type = MVTYPE_STRING;
 		target->value.string = strdup(value + 1);
-	} else {
-		target->type = MVTYPE_RAWREF;
-		target->value.rawref = strdup(value);
+		return;
 	}
+	if (__parse_number__(target, value)) {
+		return;
+	}
+	target->type = MVTYPE_RAWREF;
+	target->value.rawref = strdup(value);
 }
 
 inline static void __clear__(mv_command* cmd, int code, int vars) {

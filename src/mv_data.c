@@ -37,6 +37,7 @@ void mv_attr_release(mv_attr* attr) {
 		free(attr->value.rawref);
 		break;
 	case MVTYPE_REF:
+	case MVTYPE_INTEGER:
 		break;
 	default:
 		DIE("Invalid code (%d)", attr->type);

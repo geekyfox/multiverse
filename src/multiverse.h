@@ -44,9 +44,10 @@ void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
 /* Name-value pair */
 /*******************/
 
-#define MVTYPE_STRING 1001
-#define MVTYPE_RAWREF 1002
-#define MVTYPE_REF    1003
+#define MVTYPE_STRING  1001
+#define MVTYPE_RAWREF  1002
+#define MVTYPE_REF     1003
+#define MVTYPE_INTEGER 1004
 
 typedef struct {
 	char* name;
@@ -55,6 +56,7 @@ typedef struct {
 		char* string;
 		char* rawref;
 		int ref;
+		int integer;
 	} value;
 } mv_attr;
 

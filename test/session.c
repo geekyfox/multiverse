@@ -1,6 +1,13 @@
 
 #include <test.h>
 
+static inline void __perform__(mv_session* state, char* cmd) {
+	mv_command action;
+	FAILFAST(mv_command_parse(&action, cmd));
+	FAILFAST(mv_session_execute(state, &action));
+	mv_command_release(&action);
+}
+
 TEST session_init() {
 	mv_session state;
 	state.clsnames.used = 12345;
@@ -10,11 +17,9 @@ TEST session_init() {
 }
 
 TEST execute_REQ1() {
-	mv_command action;
 	mv_session state;
 	mv_session_init(&state);
-	FAILFAST(mv_command_parse(&action, REQ1));
-	FAILFAST(mv_session_execute(&state, &action));
+	__perform__(&state, REQ1);
 	ASSERT_INT(state.vars.used, 1);
 	ASSERT_INT(state.entities.used, 1);
 	
@@ -23,7 +28,6 @@ TEST execute_REQ1() {
 	ASSERT_INT(attrs.attrs[0].type, MVTYPE_STRING);
 	ASSERT_STRING(attrs.attrs[0].name, "name");
 	ASSERT_STRING(attrs.attrs[0].value.string, "Umberto Eco");
-	mv_command_release(&action);
 	mv_session_release(&state);
 }
 
@@ -98,6 +102,22 @@ TEST execute_REQ12() {
 
 	mv_session_release(&state);
 	mv_command_release(&action);
+}
+
+TEST execute_REQ14() {
+	mv_session state;
+	mv_session_init(&state);
+	__perform__(&state, REQ14);
+	
+	ASSERT_INT(state.vars.used, 1);
+	ASSERT_INT(state.entities.used, 1);
+	
+	mv_attrlist attrs = state.entities.items[0].data;
+	ASSERT_INT(attrs.size, 1);
+	ASSERT_INT(attrs.attrs[0].type, MVTYPE_INTEGER);
+	ASSERT_STRING(attrs.attrs[0].name, "height");
+	ASSERT_INT(attrs.attrs[0].value.integer, 324);
+	mv_session_release(&state);
 }
 
 TEST lookup_after_destroy() {
