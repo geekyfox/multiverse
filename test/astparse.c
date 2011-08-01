@@ -5,6 +5,13 @@
 
 #define AFTER mv_ast_release(&ast);
 
+#define BEFOREBAD(RQ) \
+mv_ast ast; \
+mv_error* error = mv_ast_parse(&ast, RQ); \
+ASSERT_NOTNULL(error)
+
+#define AFTERBAD mv_error_release(error);
+
 TESTREQ 1 {
 	ASSERT_INT(ast.size, 4);
 	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
@@ -13,3 +20,63 @@ TESTREQ 1 {
 	ASSERT_INT(ast.items[2].value.subtree.size, 1);
 	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
 }
+
+TESTREQ 2 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
+	ASSERT_STRING(ast.items[0].value.leaf, "create");
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 2);
+	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
+}
+
+TESTREQ 4 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
+	ASSERT_STRING(ast.items[0].value.leaf, "create");
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 1);
+	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
+}
+
+TESTREQ 6 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[3].type, MVAST_ATTRSPECLIST);
+	ASSERT_INT(ast.items[3].value.subtree.size, 1);
+	ASSERT_INT(ast.items[3].value.subtree.items[0].type, MVAST_TYPESPEC);
+}
+
+TESTREQ 9 {
+	ASSERT_INT(ast.size, 3);
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 3);
+}
+
+TESTREQ 10 {
+	ASSERT_INT(ast.size, 4);
+}
+
+TESTREQ 11 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[3].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[3].value.subtree.size, 1);
+}
+
+TESTREQ 14 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
+	ASSERT_INT(ast.items[2].value.subtree.size, 1);
+}
+
+TESTBADREQ 1 {
+	ASSERT_INT(error->code, MVERROR_SYNTAX);
+}
+
+TESTBADREQ 2 {
+	ASSERT_INT(error->code, MVERROR_SYNTAX);
+}
+
+TESTBADREQ 3 {
+	ASSERT_INT(error->code, MVERROR_SYNTAX);
+}
+

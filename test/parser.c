@@ -22,31 +22,6 @@ TEST attr_test1() {
 	mv_attr_release(&pair);
 }
 
-TEST tokenize_REQ1() {
-	char* expect[] = {
-		"create", "entity", "{", "name", "=", "'Umberto Eco", "}",
-        "umberto_eco"
-	};
-	__tokenizeimpl(REQ1, expect, 8);
-}
-
-TEST tokenize_REQ2() {
-	char* expect[] = {
-		"create", "entity", "{", "country", "=", "italy", ",", "name",
-        "=", "'Umberto Eco", "}", "umberto_eco"
-	};
-
-	__tokenizeimpl(REQ2, expect, 12);
-}
-
-TEST tokenize_REQ7() {
-	char* expect[] = {
-		"create", "class", "person", "{", "name", ":", "string", "}"
-	};
-
-	__tokenizeimpl(REQ7, expect, 8);
-}
-
 TEST tokenize_fails() {
 	mv_strarr tokens;
 	mv_error* error = mv_tokenize(&tokens, BADREQ1);
@@ -63,83 +38,6 @@ TEST tokenize_test() {
 	mv_strarr_release(&tokens);
 }
 
-TEST astparse_REQ2() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ2);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
-	ASSERT_STRING(ast.items[0].value.leaf, "create");
-	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[2].value.subtree.size, 2);
-	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ4() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ4);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[0].type, MVAST_LEAF);
-	ASSERT_STRING(ast.items[0].value.leaf, "create");
-	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[2].value.subtree.size, 1);
-	ASSERT_INT(ast.items[2].value.subtree.items[0].type, MVAST_ATTRPAIR);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ6() {
-	mv_ast ast;
-	mv_error* error;
-	
-	error = mv_ast_parse(&ast, REQ6);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[3].type, MVAST_ATTRSPECLIST);
-	ASSERT_INT(ast.items[3].value.subtree.size, 1);
-	ASSERT_INT(ast.items[3].value.subtree.items[0].type, MVAST_TYPESPEC);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ9() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ9);
-	FAIL(error);
-	ASSERT_INT(ast.size, 3);
-	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[2].value.subtree.size, 3);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ10() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ10);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ11() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ11);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[3].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[3].value.subtree.size, 1);
-	mv_ast_release(&ast);
-}
-
-TEST astparse_REQ14() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, REQ14);
-	FAIL(error);
-	ASSERT_INT(ast.size, 4);
-	ASSERT_INT(ast.items[2].type, MVAST_ATTRLIST);
-	ASSERT_INT(ast.items[2].value.subtree.size, 1);
-	mv_ast_release(&ast);
-}
-
 static void __astparse_fail(char* request) {
 	mv_ast ast;
 	mv_error* error;
@@ -151,9 +49,7 @@ static void __astparse_fail(char* request) {
 }
 
 TEST astparse_failures() {
-	__astparse_fail(BADREQ1);
 	__astparse_fail(BADREQ2);
-	__astparse_fail(BADREQ3);
 }
 
 static void __cmdparse_fail(char* request) {
