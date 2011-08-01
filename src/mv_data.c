@@ -82,6 +82,9 @@ void mv_attrspec_release(mv_attrspec* ptr) {
 	case MVSPEC_TYPE:
 		mv_typespec_release(&(ptr->value.typespec));
 		break;
+	case MVSPEC_SUBQUERY:
+		mv_query_release(&(ptr->value.subquery));
+		break;
 	default:
 		DIE("Unknown type (%d)", ptr->type);
 	}
@@ -222,6 +225,11 @@ void mv_command_release(mv_command* sess) {
 	mv_attrlist_release(&sess->attrs);
 	mv_strarr_release(&sess->vars);
 	mv_speclist_release(&sess->spec);
+}
+
+void mv_query_release(mv_query* query) {
+	free(query->classname);
+	mv_attrlist_release(&(query->attrs));
 }
 
 void mv_speclist_alloc(mv_speclist* ptr, int size) {

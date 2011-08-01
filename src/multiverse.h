@@ -7,6 +7,7 @@
 
 #include "consts.h"
 #include "error.h"
+#include "model.h"
 
 /*******************************/
 /* Common utility functions    */
@@ -44,22 +45,6 @@ void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
 /* Name-value pair */
 /*******************/
 
-#define MVTYPE_STRING  1001
-#define MVTYPE_RAWREF  1002
-#define MVTYPE_REF     1003
-#define MVTYPE_INTEGER 1004
-
-typedef struct {
-	char* name;
-	int type;
-	union {
-		char* string;
-		char* rawref;
-		int ref;
-		int integer;
-	} value;
-} mv_attr;
-
 mv_attr mv_attr_copy(mv_attr* attr);
 void    mv_attr_release(mv_attr* attr);
 void    mv_attr_show(mv_strbuf* buf, mv_attr* attr);
@@ -67,11 +52,6 @@ void    mv_attr_show(mv_strbuf* buf, mv_attr* attr);
 /****************************************/
 /* Fixed-size array of name-value pairs */
 /****************************************/
-
-typedef struct {
-	mv_attr* attrs;
-	int size;
-} mv_attrlist;
 
 void        mv_attrlist_alloc(mv_attrlist* ptr, int size);
 mv_attrlist mv_attrlist_copy(mv_attrlist* src);
@@ -86,13 +66,15 @@ typedef struct {
 void mv_typespec_release(mv_typespec* spec);
 void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
 
-#define MVSPEC_TYPE  4001
+void mv_query_release(mv_query* query);
+void mv_query_show(mv_strbuf* buf, mv_query* query);
 
 typedef struct {
 	char* name;
 	int type;
 	union {
 		mv_typespec typespec;
+		mv_query subquery;
 	} value;	
 } mv_attrspec;
 
@@ -237,6 +219,7 @@ void      mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source);
 void      mv_ast_to_speclist(mv_speclist* target, mv_ast* source);
 
 void       mv_attr_parse(mv_attr* target, char* name, char* value);
+void	   mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value);
 void       mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
 mv_error*  mv_command_parse(mv_command* target, char* request);
 mv_error*  mv_tokenize(mv_strarr* target, char* request);

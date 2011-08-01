@@ -44,6 +44,12 @@ TESTREQ 7 {
 		"create", "class", "person", "{", "name", ":", "string", "}");
 }
 
+TESTREQ 18 {
+	__validate__(&tokens, 16,
+		"create", "class", "writer", "{", "books", "=", "[", "book",
+	    "with", "{", "author", "=", "$$", "}", "]", "}");
+}
+
 TESTBADREQ 1 {
 	ASSERT_INT(error->code, MVERROR_SYNTAX);
 }

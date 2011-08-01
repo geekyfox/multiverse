@@ -44,3 +44,11 @@ TEST showcmd2() {
 	__showcmdimpl(&script, "person", RESP3);
 }
 
+TEST showcmd3() {
+	mv_strarr script;
+	mv_strarr_alloc(&script, 1);
+	mv_strarr_append(&script, REQ18);
+
+	__showcmdimpl(&script, "writer", RESP4);
+}
+

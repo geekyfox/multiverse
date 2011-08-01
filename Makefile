@@ -1,10 +1,11 @@
 
-CORE_HEADERS = src/multiverse.h src/error.h src/consts.h
+CORE_HEADERS = src/multiverse.h src/error.h src/consts.h \
+src/model.h
 TEST_HEADERS = test/test.h
 
 MODULES      = data parser matcher printer session
 CORE_MODULES = $(MODULES) common local error
-TEST_MODULES = $(MODULES) misc cmdparse astparse tokenize
+TEST_MODULES = $(MODULES) misc tokenize astparse cmdparse
 DEMO_MODULES = demo
 
 COPTS = -Wall -g

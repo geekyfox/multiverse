@@ -62,10 +62,15 @@ country = italy, hometown = bologna }"
 #define REQ15 "create class tower { height : integer }"
 #define REQ16 "assign tower to eiffel_tower"
 #define REQ17 "lookup tower with { height = 324 }"
+#define REQ18 "create class writer { \
+books = [book with { author = $$ }] }"
+#define REQ19 "create class book { title : string }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"
 #define RESP3 "person = class {\n  name : string\n}\n"
+#define RESP4 "writer = class {\n  books = book with {\n  \
+author = $$ (UNRESOLVED)\n}\n\n}\n"
 
 #define BADREQ1 "create entity { name = 'Umberto "
 #define ERRRESP1 "Unmatched \"'\" in \"create entity { name = 'Umberto \"" 

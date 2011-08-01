@@ -101,4 +101,15 @@ TESTREQ 15 {
 	ASSERT_NULL(asp.value.typespec.classname);
 }
 
+TESTREQ 18 {
+	ASSERT_INT(action.code, MVCMD_CREATE_CLASS);
+	ASSERT_INT(action.spec.size, 1);
+	ASSERT_NOTNULL(action.spec.specs);
+	mv_attrspec asp = action.spec.specs[0];
+	ASSERT_INT(asp.type, MVSPEC_SUBQUERY);
+	ASSERT_STRING(asp.name, "books");
+	ASSERT_STRING(asp.value.subquery.classname, "book");
+}
+
+
 

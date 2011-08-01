@@ -194,3 +194,23 @@ TEST numlookup() {
 	mv_session_release(&session);
 }
 
+TEST subquery() {
+	mv_session session;
+	mv_session_init(&session);
+	mv_strarr script;
+	mv_strarr_alloc(&script, 2);
+	mv_strarr_append(&script, REQ19);
+	mv_strarr_append(&script, REQ18);
+	FAILFAST(mv_session_perform(&session, &script));
+	ASSERT_INT(session.classes.used, 2);
+	ASSERT_INT(session.classes.items[1].data.size, 1);
+
+	mv_attrspec spc = session.classes.items[1].data.specs[0];
+	ASSERT_INT(spc.type, MVSPEC_SUBQUERY);
+	mv_query qr = spc.value.subquery;
+	ASSERT_STRING(qr.classname, "book");
+	
+	mv_strarr_release(&script);
+	mv_session_release(&session);
+}
+

@@ -68,6 +68,39 @@ TESTREQ 14 {
 	ASSERT_INT(ast.items[2].value.subtree.size, 1);
 }
 
+TEST selfquery() {
+	BEFORE("author = $$");
+	ASSERT_INT(ast.size, 1);
+	AFTER;
+}
+
+TEST subquery() {
+	BEFORE("[book with { author = $$ }]");
+	ASSERT_INT(ast.size, 1);
+	ASSERT_INT(ast.items[0].type, MVAST_SUBQUERY);
+	ASSERT_INT(ast.items[0].value.subtree.size, 2);
+	AFTER;
+}
+
+TEST subquery2() {
+	BEFORE("[book with {}]");
+	ASSERT_INT(ast.size, 1);
+	AFTER;
+} 
+
+TEST subquery3() {
+	BEFORE("{ foo = [book with {}] }");
+	ASSERT_INT(ast.size, 1);
+	AFTER;
+}
+
+TESTREQ 18 {
+	ASSERT_INT(ast.size, 4);
+	ASSERT_INT(ast.items[3].type, MVAST_ATTRSPECLIST);
+	ASSERT_INT(ast.items[3].value.subtree.size, 1);
+	ASSERT_INT(ast.items[3].value.subtree.items[0].type, MVAST_ATTRQUERY);
+}
+
 TESTBADREQ 1 {
 	ASSERT_INT(error->code, MVERROR_SYNTAX);
 }

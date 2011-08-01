@@ -8,9 +8,12 @@
 #include <string.h>
 #include "multiverse.h"
 
-#define PAIR(var) ((var->type) == MVAST_ATTRPAIR)
-#define SPEC(var) ((var->type) == MVAST_TYPESPEC)
-#define LEAF(var) ((var)->type == MVAST_LEAF)
+#define LIST(var)  ((var)->type == MVAST_ATTRLIST)
+#define PAIR(var)  ((var)->type == MVAST_ATTRPAIR)
+#define QPAIR(var) ((var)->type == MVAST_ATTRQUERY)
+#define SPEC(var)  ((var)->type == MVAST_TYPESPEC)
+#define SUBQ(var)  ((var)->type == MVAST_SUBQUERY)
+#define LEAF(var)  ((var)->type == MVAST_LEAF)
 #define LEAFFIX(var, text) (LEAF(var) && STREQ((var)->value.leaf, text))
 #define TEMPFIX(var, code) ((var->type) == MVAST_TEMP##code)
 
@@ -19,13 +22,24 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 	mv_ast_entry *a = &(stack[*count - 3]);
 	if (!LEAF(a)) return;
 	mv_ast_entry *b = &(stack[*count - 1]);
-	if (!LEAF(b)) return;
 	mv_ast_entry *sep = &(stack[*count - 2]);
 
 	int typecode = 0;
-	if (TEMPFIX(sep, EQUALS)) typecode = MVAST_ATTRPAIR;
-	else if (TEMPFIX(sep, COLON)) typecode = MVAST_TYPESPEC;
-	else return;
+	if (TEMPFIX(sep, EQUALS)) {
+		if (LEAF(b)) {
+			typecode = MVAST_ATTRPAIR;
+		} else if (SUBQ(b)) {
+			typecode = MVAST_ATTRQUERY;
+		} else {
+			return;
+		}
+	} else if (TEMPFIX(sep, COLON)) {
+		if (LEAF(b)) {
+			typecode = MVAST_TYPESPEC;
+		} else {
+			return;
+		}
+	} else return;
 
 	mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
 	tmp[0] = *a;
@@ -101,7 +115,7 @@ inline static void __list__(mv_ast_entry* stack, int* count) {
 
 	mv_ast_entry *e2 = &(stack[*count - 2]);
 
-	if (PAIR(e2) || SPEC(e2)) {
+	if (PAIR(e2) || SPEC(e2) || QPAIR(e2)) {
 		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
 		tmp[0] = *e2;
 		if (PAIR(e2)) {
@@ -127,21 +141,59 @@ inline static void __list__(mv_ast_entry* stack, int* count) {
 	}
 }
 
+inline static void __subquery__(mv_ast_entry* stack, int* count) {
+	if ((*count) < 5) return;
+
+	mv_ast_entry *e1 = &(stack[*count - 5]);
+	mv_ast_entry *e5 = &(stack[*count - 1]);
+	if (!TEMPFIX(e1, OPENBRACKET) || !TEMPFIX(e5, CLOSEBRACKET)) return;
+
+	mv_ast_entry *e2 = &(stack[*count - 4]);
+	if (!LEAF(e2)) return;
+
+	mv_ast_entry *e3 = &(stack[*count - 3]);
+	if (!LEAFFIX(e3, "with")) return;
+
+	mv_ast_entry *e4 = &(stack[*count - 2]);
+	if (!LIST(e4)) return;
+
+	free(e3->value.leaf);
+
+	e1->type = MVAST_SUBQUERY;
+	e1->value.subtree.size = 2;
+	e1->value.subtree.items = malloc(sizeof(mv_ast_entry) * 2);
+	e1->value.subtree.items[0] = *e2;
+	e1->value.subtree.items[1] = *e4;
+
+	(*count) -= 4;
+}
+
+inline static int __make_char_token__(char token) {
+	switch (token) {
+	case '{': return MVAST_TEMPOPENBRACE;
+	case '}': return MVAST_TEMPCLOSEBRACE;
+	case ',': return MVAST_TEMPCOMMA;
+	case ':': return MVAST_TEMPCOLON;
+	case '=': return MVAST_TEMPEQUALS;
+	case '[': return MVAST_TEMPOPENBRACKET;
+	case ']': return MVAST_TEMPCLOSEBRACKET;
+	default:  return MVAST_LEAF;
+	}
+}
+
 inline static mv_ast_entry __make_token__(char* token) {
 	mv_ast_entry result;
 
-	if (STREQ(token, "{")) result.type = MVAST_TEMPOPENBRACE;
-	else if (STREQ(token, "}")) result.type = MVAST_TEMPCLOSEBRACE;
-	else if (STREQ(token, ",")) result.type = MVAST_TEMPCOMMA;
-	else if (STREQ(token, ":")) result.type = MVAST_TEMPCOLON;
-	else if (STREQ(token, "=")) result.type = MVAST_TEMPEQUALS;
-	else {
-		result.type = MVAST_LEAF;
-		result.value.leaf = token;
-		return result;
+	if (strlen(token) == 1) {
+		int code = __make_char_token__(token[0]);
+		if (code != MVAST_LEAF) {
+			result.type = code;
+			free(token);
+			return result;	
+		}
 	}
-
-	free(token);
+	result.type = MVAST_LEAF;
+	result.value.leaf = token;
 	return result;
 }
 
@@ -153,6 +205,7 @@ static inline void __compress__(mv_ast_entry* stack, int* size) {
 		__pair__(stack, size);
 		__comma__(stack, size);
 		__list__(stack, size);
+		__subquery__(stack, size);
 	} while (oldsize != *size);
 }
 
@@ -225,21 +278,33 @@ void mv_ast_to_speclist(mv_speclist* target, mv_ast* source) {
 	int i;
 	for (i=0; i<source->size; i++) {
 		mv_ast_entry src = source->items[i];
-		assert(
-			(src.type == MVAST_ATTRPAIR) ||
-        	(src.type == MVAST_TYPESPEC)
+		EXPECT(
+		    src.value.subtree.size == 2,
+			"Two elements expected"
 		);
-		assert(src.value.subtree.size == 2);
 		mv_ast_entry* items = src.value.subtree.items;
-		assert(LEAF(&items[0]));
-		assert(LEAF(&items[1]));
-		//
-		mv_spec_parse(
-			&(target->specs[i]),
-			items[0].value.leaf,
-			items[1].value.leaf,
-			src.type
-		);
+		EXPECT(LEAF(&items[0]), "Leaf expected as a first item");
+		char* key = items[0].value.leaf;
+		switch (src.type) {
+		case MVAST_ATTRQUERY:
+			EXPECT(
+			    SUBQ(&items[1]),
+			    "First item of AttrQuery should be a Subquery"
+			);
+			mv_attrquery_parse(
+			    &(target->specs[i]), key, items[1].value.subtree
+			);
+			break;
+		case MVAST_ATTRPAIR:
+		case MVAST_TYPESPEC:
+			EXPECT(LEAF(&items[1]), "Leaf expected as a second item");
+			mv_spec_parse(
+				&(target->specs[i]), key, items[1].value.leaf, src.type
+			);
+			break;
+		default:
+			DIE("Invalid AST element code: %d", src.type);
+		}
 	}
 }
 
@@ -460,6 +525,14 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 	ptr->name = strdup(key);
 }
 
+void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value) {
+	ptr->type = MVSPEC_SUBQUERY;
+	mv_ast_entry* items = value.items;
+	ptr->value.subquery.classname = strdup(items[0].value.leaf);
+	mv_ast_to_attrlist(&ptr->value.subquery.attrs, &items[1].value.subtree);
+	ptr->name = strdup(key);
+}
+
 mv_error* mv_tokenize(mv_strarr* target, char* data) {
 	assert(data != NULL);
 	assert(target != NULL);
@@ -487,6 +560,7 @@ mv_error* mv_tokenize(mv_strarr* target, char* data) {
 			}
 			break;
 		case ',': case '{': case '}': case ':':
+		case '[': case ']':
 			if (state == WHITESPACE) {
 				mv_strarr_appslice(target, data, scan, scan + 1);
 			} else if (state == TOKEN) {

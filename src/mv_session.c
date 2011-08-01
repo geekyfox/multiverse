@@ -44,6 +44,7 @@ mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
 
 mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 	mv_typespec *dtype, *stype;
+	mv_query *dquery, *squery;
 	dst->type = src->type;
 
 	switch (src->type) {
@@ -53,6 +54,12 @@ mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 		dtype->type = stype->type;
 		dtype->classname = (stype->classname == NULL) ? NULL :
 			strdup(stype->classname);
+		break;
+	case MVSPEC_SUBQUERY:
+		dquery = &(dst->value.subquery);
+		squery = &(src->value.subquery);
+		dquery->classname = strdup(squery->classname);
+		dquery->attrs = mv_attrlist_copy(&(squery->attrs));
 		break;
 	default:
 		THROW(INTERNAL, "Unknown attrspec code (%d)", src->type);
@@ -87,16 +94,16 @@ mv_error* __mv_create_entity(int* ref,
 
 mv_error* __mv_create_class(int* ref,
                             mv_session* sess,
-                            mv_speclist specs)
+                            mv_speclist* specs)
 {
 	int i, j;
 	mv_speclist cls;
 	mv_error *error;
 	mv_attrspec *src, *dst;
 	//
-	mv_speclist_alloc(&cls, specs.size);
-	for (i=0; i<specs.size; i++) {
-		src = &specs.specs[i];
+	mv_speclist_alloc(&cls, specs->size);
+	for (i=0; i<specs->size; i++) {
+		src = &specs->specs[i];
 		dst = &cls.specs[i];
 		if ((error = __mv_copy_spec(dst, src))) {
 			for (j=0; j<i; j++) mv_attrspec_release(&cls.specs[j]);
@@ -177,7 +184,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
 		}
-		if ((error = __mv_create_class(&ref, state, action->spec))) {
+		if ((error = __mv_create_class(&ref, state, &(action->spec)))) {
 			return error;
 		}
 		mv_varbind_insert(&state->clsnames, clsname, ref);

@@ -41,6 +41,10 @@ void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
 		__appendimpl(buf, attr->value.string);
 		__appendimpl(buf, "'");
 		break;
+	case MVTYPE_RAWREF:
+		__appendimpl(buf, attr->value.rawref);
+		__appendimpl(buf, " (UNRESOLVED)");
+		break;
 	case MVTYPE_REF:
 		__appendimpl(buf, "##");
 		__appendimpli(buf, attr->value.ref);
@@ -72,6 +76,11 @@ void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* spec) {
 		__appendimpl(buf, " : ");
 		mv_typespec_show(buf, &(spec->value.typespec));
 		break;
+	case MVSPEC_SUBQUERY:
+		__appendimpl(buf, spec->name);
+		__appendimpl(buf, " = ");
+		mv_query_show(buf, &(spec->value.subquery));
+		break;
 	default:
 		DIE("Invalid code (%d)", spec->type);
 	}
@@ -85,6 +94,12 @@ void mv_class_show(mv_strbuf* buf, mv_class* cls) {
 void mv_entity_show(mv_strbuf* buf, mv_entity* obj) {
 	__appendimpl(buf, "entity ");
 	mv_attrlist_show(buf, &(obj->data));
+}
+
+void mv_query_show(mv_strbuf* buf, mv_query* query) {
+	__appendimpl(buf, query->classname);
+	__appendimpl(buf, " with ");
+	mv_attrlist_show(buf, &(query->attrs));
 }
 
 void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr) {
@@ -103,6 +118,10 @@ void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec) {
 	switch (spec->type) {
 	case MVTYPE_STRING:
 		__appendimpl(buf, "string");
+		break;
+	case MVTYPE_RAWREF:
+		__appendimpl(buf, spec->classname);
+		__appendimpl(buf, " (UNRESOLVED)");
 		break;
 	default:
 		DIE("Invalid code (%d)\n", spec->type);
