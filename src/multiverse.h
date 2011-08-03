@@ -48,6 +48,7 @@ void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
 /*******************/
 
 mv_attr mv_attr_copy(mv_attr* attr);
+void    mv_attr_update(mv_attr* dst, mv_attr* src);
 void    mv_attr_release(mv_attr* attr);
 void    mv_attr_show(mv_strbuf* buf, mv_attr* attr);
 
@@ -57,13 +58,10 @@ void    mv_attr_show(mv_strbuf* buf, mv_attr* attr);
 
 void        mv_attrlist_alloc(mv_attrlist* ptr, int size);
 mv_attrlist mv_attrlist_copy(mv_attrlist* src);
+void        mv_attrlist_realloc(mv_attrlist* ptr, int newsize);
 void        mv_attrlist_release(mv_attrlist* ptr);
 void        mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr);
 
-typedef struct {
-	int type;
-	char* classname;
-} mv_typespec;
 
 void mv_typespec_release(mv_typespec* spec);
 void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
@@ -71,22 +69,10 @@ void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
 void mv_query_release(mv_query* query);
 void mv_query_show(mv_strbuf* buf, mv_query* query);
 
-typedef struct {
-	char* name;
-	int type;
-	union {
-		mv_typespec typespec;
-		mv_query subquery;
-	} value;	
-} mv_attrspec;
 
 void mv_attrspec_release(mv_attrspec* ptr);
 void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* ptr);
 
-typedef struct {
-	mv_attrspec* specs;
-	int size;
-} mv_speclist;
 
 void mv_speclist_alloc(mv_speclist* ptr, int size);
 void mv_speclist_release(mv_speclist* ptr);
@@ -95,12 +81,6 @@ void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr);
 /******************************/
 /* Expandable array of string */
 /******************************/
-
-typedef struct {
-	char** items;
-	int size;
-	int used;
-} mv_strarr;
 
 void mv_strarr_alloc(mv_strarr* ptr, int size);
 void mv_strarr_append(mv_strarr* ptr, char* value);
@@ -122,13 +102,6 @@ void mv_intset_remove(mv_intset* ptr, int value);
 /**********************/
 /* Executable command */
 /**********************/
-
-typedef struct {
-	int code;
-	mv_attrlist attrs;
-	mv_speclist spec;
-	mv_strarr vars;
-} mv_command;
 
 void mv_command_release(mv_command* action);
 
@@ -155,15 +128,11 @@ void mv_varbind_show(mv_varbind* ptr);
 /* Single entity */
 /*****************/
 
-typedef struct {
-	int exist;
-	mv_attrlist data;
-	mv_strarr classes;
-} mv_entity;
 
 void mv_entity_alloc(mv_entity* entity, int attrs, int classes);
 void mv_entity_show(mv_strbuf* buf, mv_entity* entity);
 void mv_entity_release(mv_entity* entity);
+mv_error* mv_entity_update(mv_entity* entity, mv_attrlist attrs);
 
 /*********************/
 /* Cache of entities */

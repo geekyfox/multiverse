@@ -42,6 +42,9 @@ inline static void __display_success(mv_command* cmd) {
 		        cmd->vars.items[0],
 		        cmd->vars.items[1]);
 		break;
+	case MVCMD_UPDATE_ENTITY:
+		printf ("OK, entity updated\n");
+		break;
 	}
 }
 
@@ -56,6 +59,7 @@ void mv_local_execute(mv_command* cmd) {
 	case MVCMD_CREATE_CLASS:
 	case MVCMD_CREATE_ENTITY:
 	case MVCMD_DESTROY_ENTITY:
+	case MVCMD_UPDATE_ENTITY:
 		error = mv_session_execute(__LOCAL_SESSION__, cmd);
 		if (error == NULL) __display_success(cmd);
 		break;

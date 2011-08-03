@@ -151,7 +151,7 @@ static mv_error* __create_enty_ex(mv_session* state, mv_command* cmd) {
 	}
 }
 
-static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
+inline static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
 	EXPECT(cmd->vars.used == 1, "Command is damaged");
 	char* name = cmd->vars.items[0];
 	int objref = mv_session_findvar(state, name);
@@ -165,6 +165,16 @@ static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
 	}
 	return NULL;
 } 
+
+inline static mv_error* __update_entity__(mv_session* state, mv_command* cmd) {
+	EXPECT(cmd->vars.used == 1, "Command is damaged");
+	char* name = cmd->vars.items[0];
+	int objref = mv_session_findvar(state, name);
+	if (objref == -1) {
+		THROW(BADVAR, "Unknown variable '%s'", name);
+	}
+	return mv_entity_update(&state->entities.items[objref], cmd->attrs);
+}
 
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 	mv_error* error;
@@ -191,6 +201,8 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 		return NULL;
 	case MVCMD_DESTROY_ENTITY:
 		return __destroy_enty__(state, action);
+	case MVCMD_UPDATE_ENTITY:
+		return __update_entity__(state, action);
 	default:
 		THROW(INTERNAL, "Unknown action (%d)", action->code);
 	}

@@ -65,6 +65,9 @@ country = italy, hometown = bologna }"
 #define REQ18 "create class writer { \
 books = [book with { author = $$ }] }"
 #define REQ19 "create class book { title : string }"
+#define REQ20 "update entity eiffel_tower with { location = london }"
+#define REQ21 "update entity eiffel_tower with { location = paris }"
+#define REQ22 "update entity eiffel_tower remove location"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

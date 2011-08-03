@@ -21,6 +21,13 @@ for ($i = 0; $i <= $#ARGV; $i++) {
 			$mark = $loc;
 			$fname = $name;
 		}
+		elsif ($line =~ /^TESTREQ [0-9]+ {/) {
+			die "Nested function @ $ARGV[$i]:$loc" if ($inside);
+			my ($name) = $line =~ m/^TESTREQ ([0-9]+)/;
+			$inside = 1;
+			$mark = $loc;
+			$fname = "TESTREQ #$name";
+		}
 		elsif ($line =~ /^(inline )*(static )*[a-z_\*]+ [a-zA-Z0-9_]+\(/) {
 			die "Nested function @ $ARGV[$i]:$loc" if ($inside); 
 			my ($inline, $stat, $name) = $line =~

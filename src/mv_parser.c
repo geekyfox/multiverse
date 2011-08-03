@@ -197,7 +197,7 @@ inline static mv_ast_entry __make_token__(char* token) {
 	return result;
 }
 
-static inline void __compress__(mv_ast_entry* stack, int* size) {
+inline static void __compress__(mv_ast_entry* stack, int* size) {
 	int oldsize;
 	do {
 		oldsize = *size;
@@ -308,7 +308,7 @@ void mv_ast_to_speclist(mv_speclist* target, mv_ast* source) {
 	}
 }
 
-static inline int __parse_number__(mv_attr* target, char* value) {
+inline static int __parse_number__(mv_attr* target, char* value) {
 	int ival = 0;
 	if (*value == '\0') return 0;
 	while (1) {
@@ -355,17 +355,23 @@ inline static void __clear__(mv_command* cmd, int code, int vars) {
 	}
 }
 
-mv_error* __createentity_parse(mv_command* target, mv_ast* ast) {
+mv_error* __create_entity__(mv_command* target, mv_ast* ast) {
 	if (ast->size < 3) {
 		THROW(SYNTAX, "'create entity' command is incomplete");
 	} else if (ast->size > 4) {
 		THROW(SYNTAX, "'create entity' command is malformed");
-	} else if (ast->items[2].type != MVAST_ATTRLIST) {
+	}
+
+	mv_ast_entry* items = ast->items;
+
+	if (!LIST(&items[2])) {
 		THROW(INTERNAL,
 		     "Expected AttrList in 'create entity', got %d",
-		     ast->items[2].type);
-	} else if (ast->size == 4) {
-		if (ast->items[3].type != MVAST_LEAF) {
+		     items[2].type);
+	}
+
+	if (ast->size == 4) {
+		if (!LEAF(&items[3])) {
 			THROW(INTERNAL,
 			      "Expected Leaf for 'create entity' command, got %d",
 			      ast->items[3].type);
@@ -388,11 +394,11 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 		THROW(INTERNAL, "Malformed 'create' command");
 	}
 
-	if (LEAFFIX(items + 1, "entity")) {
-		return __createentity_parse(target, ast);
+	if (LEAFFIX(&items[1], "entity")) {
+		return __create_entity__(target, ast);
 	}
 
-	if (LEAFFIX(items + 1, "class")) {
+	if (LEAFFIX(&items[1], "class")) {
 		target->code = MVCMD_CREATE_CLASS;
 		if (!LEAF(&items[2])) {
 			THROW(INTERNAL,
@@ -413,7 +419,9 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 		return NULL;
 	}
 	
-	THROW(SYNTAX, "Invalid task for create - '%s'", items[1].value.leaf);
+	THROW(SYNTAX,
+	      "Invalid task for create - '%s'",
+	      items[1].value.leaf);
 }
 
 mv_error* __destroy__(mv_command* target, mv_ast* ast) {
@@ -430,7 +438,7 @@ mv_error* __destroy__(mv_command* target, mv_ast* ast) {
 	return NULL;	
 } 
 
-mv_error* __showcmd_parse(mv_command* cmd, mv_ast* ast) {
+inline static mv_error* __show__(mv_command* cmd, mv_ast* ast) {
 	int size = ast->size;
 	mv_ast_entry* items = ast->items;
 	assert(size == 2);
@@ -441,7 +449,7 @@ mv_error* __showcmd_parse(mv_command* cmd, mv_ast* ast) {
 	return NULL;
 }
 
-static mv_error* __quitcmd_parse(mv_command* cmd, mv_ast* ast) {
+inline static mv_error* __quit__(mv_command* cmd, mv_ast* ast) {
 	if (ast->size != 1) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
@@ -482,6 +490,41 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	return NULL;
 }
 
+inline static
+mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
+	if (ast->size != 5) goto wrong; 
+	mv_ast_entry* items = ast->items;
+	if (!LEAF(&items[2])) goto wrong;
+	if (LEAFFIX(&items[3], "with")) {
+		if (!LIST(&items[4])) goto wrong;
+		__clear__(target, MVCMD_UPDATE_ENTITY, 1);
+		mv_strarr_append(&target->vars, items[2].value.leaf);
+		mv_ast_to_attrlist(&target->attrs, &items[4].value.subtree);
+		mv_ast_release(ast);
+		return NULL;
+	} 
+
+wrong:
+	THROW(SYNTAX, "'update entity' command is malformed");
+}
+
+inline static
+mv_error* __update__(mv_command* target, mv_ast* ast) {
+	int size = ast->size;
+	mv_ast_entry* items = ast->items;
+	if ((size == 1) || !(LEAF(&items[1]))) {
+		THROW(INTERNAL, "Malformed 'update' command");
+	}
+
+	if (LEAFFIX(&items[1], "entity")) {
+		return __update_entity__(target, ast);
+	}	
+
+	THROW(SYNTAX,
+	      "Invalid task for update - '%s'",
+		  items[1].value.leaf);
+}
+
 mv_error* mv_command_parse(mv_command* cmd, char* data) {
 	mv_ast ast;
 	mv_error* error = mv_ast_parse(&ast, data);
@@ -491,14 +534,15 @@ mv_error* mv_command_parse(mv_command* cmd, char* data) {
 	}
 	char* cmdname = ast.items[0].value.leaf;
 
-	if (STREQ(cmdname, "assign")) return __assign__(cmd, &ast);
-	if (STREQ(cmdname, "create")) return __create__(cmd, &ast);
+	if (STREQ(cmdname, "assign"))  return __assign__(cmd, &ast);
+	if (STREQ(cmdname, "create"))  return __create__(cmd, &ast);
 	if (STREQ(cmdname, "destroy")) return __destroy__(cmd, &ast);
-	if (STREQ(cmdname, "lookup")) return __lookup__(cmd, &ast);
-	if (STREQ(cmdname, "show")) return __showcmd_parse(cmd, &ast);
-	if (STREQ(cmdname, "quit")) return __quitcmd_parse(cmd, &ast);
+	if (STREQ(cmdname, "lookup"))  return __lookup__(cmd, &ast);
+	if (STREQ(cmdname, "show"))    return __show__(cmd, &ast);
+	if (STREQ(cmdname, "quit"))    return __quit__(cmd, &ast);
+	if (STREQ(cmdname, "update"))  return __update__(cmd, &ast);
 
-	THROW(BADCMD, ast.items[0].value.leaf);
+	THROW(BADCMD, cmdname);
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {

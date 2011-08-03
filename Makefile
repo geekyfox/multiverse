@@ -5,7 +5,7 @@ TEST_HEADERS = test/test.h
 
 MODULES      = data parser matcher printer session
 CORE_MODULES = $(MODULES) common local error
-TEST_MODULES = $(MODULES) misc tokenize astparse cmdparse
+TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc
 DEMO_MODULES = demo
 
 COPTS = -Wall -g

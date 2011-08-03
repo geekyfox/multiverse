@@ -111,5 +111,16 @@ TESTREQ 18 {
 	ASSERT_STRING(asp.value.subquery.classname, "book");
 }
 
+TESTREQ 20 {
+	ASSERT_INT(action.code, MVCMD_UPDATE_ENTITY);
+	ASSERT_INT(action.spec.size, 0);
+	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.attrs.size, 1);
+	ASSERT_NOTNULL(action.attrs.attrs);
+	ASSERT_INT(action.vars.used, 1);
+	ASSERT_NOTNULL(action.vars.items);
+	ASSERT_STRING(action.vars.items[0], "eiffel_tower");
+}
+
 
 
