@@ -292,6 +292,7 @@ void mv_strbuf_alloc(mv_strbuf* buf, int size) {
 	buf->data = (char*)malloc(sizeof(char) * size);
 	buf->used = 0;
 	buf->size = size;
+	buf->pad  = 0;
 }
 
 void mv_typespec_release(mv_typespec* spec) {

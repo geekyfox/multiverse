@@ -4,16 +4,24 @@
 
 inline static void __appendimpl(mv_strbuf* buf, char* text) {
 	int available = buf->size - buf->used;
+	int pad = buf->pad, i;
 	char* fill = buf->data + buf->used;
 	while (*text != '\0') {
-		if (available == 0) {
-			available = buf->size;
-			buf->size *= 2;
+		int spc = *text == '\n' ? pad : 0;
+		int req = spc + 1;
+		if (available <= req) {
+			int sizenow = buf->size;
+			buf->size += MAX(buf->size, req);
 			buf->data = realloc(buf->data, sizeof(char) * buf->size);
-			fill = buf->data + available;
+			fill = buf->data + sizenow;
+			available = buf->size - sizenow;
 		}
 		*(fill++) = *(text++);
 		available--;
+		for (; spc > 0; spc--) {
+			*(fill++) = ' ';
+			available--;
+		} 
 	}
 	buf->used = fill - buf->data;
 }
@@ -66,7 +74,7 @@ void mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr) {
 		if (i != ptr->size - 1) __appendimpl(buf, ",");
 		__appendimpl(buf, "\n");
 	}
-	__appendimpl(buf, "}\n");
+	__appendimpl(buf, "}");
 }
 
 void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* spec) {
@@ -94,12 +102,15 @@ void mv_class_show(mv_strbuf* buf, mv_class* cls) {
 void mv_entity_show(mv_strbuf* buf, mv_entity* obj) {
 	__appendimpl(buf, "entity ");
 	mv_attrlist_show(buf, &(obj->data));
+	__appendimpl(buf, "\n");
 }
 
 void mv_query_show(mv_strbuf* buf, mv_query* query) {
 	__appendimpl(buf, query->classname);
 	__appendimpl(buf, " with ");
+	buf->pad += 2;
 	mv_attrlist_show(buf, &(query->attrs));
+	buf->pad -= 2;
 }
 
 void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr) {

@@ -20,6 +20,7 @@
 /***************************/
 
 #define STREQ(x, y) (strcmp((x), (y)) == 0)
+#define MAX(x, y) ( ((x) < (y)) ? (y) : (x) )
 
 int   mv_strhash(char* str);
 char* mv_strslice(char* source, int start, int end);
@@ -34,6 +35,7 @@ typedef struct {
 	char* data;
 	int size;
 	int used;
+	int pad;
 } mv_strbuf;
 
 char* mv_strbuf_align(mv_strbuf* ptr);
