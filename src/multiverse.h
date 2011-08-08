@@ -212,14 +212,9 @@ mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
 void      mv_session_release(mv_session* state);
 mv_error* mv_session_show(char** target, mv_session* source, char* name);
 
-typedef struct {
-	char* clsname;
-	mv_attrlist attrs;
-} mv_pattern;
-
-mv_error* mv_pattern_compile(mv_pattern* pat, mv_command* cmd);
-int       mv_pattern_match(mv_pattern* pat, mv_entity* e);
-void      mv_pattern_release(mv_pattern* pat);
+mv_error* mv_query_compile(mv_query* pat, mv_command* cmd);
+int       mv_query_match(mv_query* pat, mv_entity* e);
+void      mv_query_release(mv_query* pat);
 
 void      mv_local_end();
 mv_error* mv_local_read(mv_command* target);

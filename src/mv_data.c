@@ -204,8 +204,8 @@ void mv_entity_release(mv_entity* entity) {
 }
 
 mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
-	int sz = attrs.size, add = 0;
-	int* tmp = malloc(sz * sizeof(int)), i, j;
+	int sz = attrs.size, add = 0, i, j;
+	int tmp[sz];
 	int fill = enty->data.size;
 	mv_attr* data = enty->data.attrs;
 	for (i=0; i<sz; i++) {
@@ -233,6 +233,7 @@ mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 			mv_attr_update(&data[tmp[i]], src);
 		}
 	}
+	
 	return NULL;
 }
 

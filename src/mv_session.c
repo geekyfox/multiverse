@@ -230,20 +230,20 @@ int mv_session_findclass(mv_session* session, char* name) {
 }
 
 mv_error* mv_session_lookup(mv_intset* tr, mv_session* s, mv_command* c) {
-	mv_pattern query;
-	mv_error* error = mv_pattern_compile(&query, c);
+	mv_query query;
+	mv_error* error = mv_query_compile(&query, c);
 
 	if (error != NULL) return error;
 	
 	int i;
 	for (i=0; i<s->entities.used; i++) {
 		if (!s->entities.items[i].exist) continue;
-		if (mv_pattern_match(&query, &(s->entities.items[i]))) {
+		if (mv_query_match(&query, &(s->entities.items[i]))) {
 			mv_intset_put(tr, i);
 		}
 	}
 
-	mv_pattern_release(&query);
+	mv_query_release(&query);
 	return NULL;
 }
 
