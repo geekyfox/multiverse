@@ -514,6 +514,7 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 	int size = ast->size;
 	mv_ast_entry* items = ast->items;
 	if ((size == 1) || !(LEAF(&items[1]))) {
+		mv_ast_release(ast);
 		THROW(INTERNAL, "Malformed 'update' command");
 	}
 
@@ -521,9 +522,12 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 		return __update_entity__(target, ast);
 	}	
 
-	THROW(SYNTAX,
+	mv_error* err;
+	PREPARE_ERROR(err, SYNTAX,
 	      "Invalid task for update - '%s'",
 		  items[1].value.leaf);
+	mv_ast_release(ast);
+	return err;
 }
 
 mv_error* mv_command_parse(mv_command* cmd, char* data) {

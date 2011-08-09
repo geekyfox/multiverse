@@ -88,6 +88,7 @@ author = $$ (UNRESOLVED)\n  }\n}\n"
 #define ERRRESP1 "Unmatched \"'\" in \"create entity { name = 'Umberto \"" 
 #define BADREQ2 "create entity { name = 'Umberto' "
 #define BADREQ3 "create entity { name = 'Umberto' , }"
+#define BADREQ4 "update dummy with { name = 'Dummy' }"
 
 #endif
 
