@@ -1,4 +1,5 @@
 
+#include "parser.h"
 #include "test.h"
 
 #define BEFORE(RQ) mv_ast ast; FAILFAST(mv_ast_parse(&ast, RQ));

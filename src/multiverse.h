@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "consts.h"
 #include "error.h"
 #include "model.h"
 
@@ -165,35 +164,7 @@ void mv_clscache_alloc(mv_clscache* ptr, int size);
 void mv_clscache_put(mv_clscache* ptr, int* ref, mv_speclist* obj);
 void mv_clscache_release(mv_clscache* ptr);
 
-/*******************************/
-/* Text parsing                */
-/*                             */
-/* Implementation: mv_parser.c */
-/*******************************/
-
-typedef struct {
-	int size;
-	struct mv_ast_entry* items;
-} mv_ast;
-
-typedef struct mv_ast_entry {
-	int type;
-	union {
-		char* leaf;
-		mv_ast subtree;
-	} value;
-} mv_ast_entry;
-
-mv_error* mv_ast_parse(mv_ast* target, char* request);
-void      mv_ast_release(mv_ast* ast);
-void      mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source);
-void      mv_ast_to_speclist(mv_speclist* target, mv_ast* source);
-
-void       mv_attr_parse(mv_attr* target, char* name, char* value);
-void	   mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value);
-void       mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
-mv_error*  mv_command_parse(mv_command* target, char* request);
-mv_error*  mv_tokenize(mv_strarr* target, char* request);
+mv_error* mv_validate_assign(mv_entity* entity, mv_class* class);
 
 typedef struct {
 	mv_varbind vars;

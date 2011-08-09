@@ -7,15 +7,6 @@
 
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
 
-TEST mv_attr_test() {
-	mv_attr pair;
-	mv_attr_parse(&pair, "name", "'Umberto Eco");
-	assert(pair.type == MVTYPE_STRING);
-	assert(strcmp(pair.name, "name") == 0);
-	assert(strcmp(pair.value.string, "Umberto Eco") == 0);
-	mv_attr_release(&pair);
-}
-
 TEST mv_command_test() {
 	mv_command action;
 

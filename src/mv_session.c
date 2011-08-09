@@ -4,6 +4,8 @@
 #include <string.h>
 #include "multiverse.h"
 
+#include "parser.h"
+
 mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
 	int ref;
 
@@ -114,7 +116,7 @@ mv_error* __mv_create_class(int* ref,
 	return NULL;
 }
 
-static mv_error* __assign_execute(mv_session* state, mv_command* cmd) {
+static mv_error* __assign__(mv_session* state, mv_command* cmd) {
 	assert(cmd->vars.used == 2);
 	char* clsname = cmd->vars.items[0];
 	char* objname = cmd->vars.items[1];
@@ -127,6 +129,8 @@ static mv_error* __assign_execute(mv_session* state, mv_command* cmd) {
 		THROW(BADVAR, "Unknown class '%s'", clsname);
 	}
 	mv_entity* entity = &(state->entities.items[objref]);
+	mv_class* class = &(state->classes.items[clsref]);
+	FAILRET(mv_validate_assign(entity, class));
 	mv_strarr_append(&(entity->classes), clsname); 
 	return NULL;
 }
@@ -182,7 +186,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 
 	switch (action->code) {
 	case MVCMD_ASSIGN:
-		return __assign_execute(state, action);
+		return __assign__(state, action);
 	case MVCMD_CREATE_ENTITY:
 		return __create_enty_ex(state, action);
 	case MVCMD_CREATE_CLASS:

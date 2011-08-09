@@ -16,7 +16,7 @@ ASSERT_NOTNULL(error)
 
 #define AFTERBAD mv_error_release(error);
 
-static inline void __validate__(mv_strarr* tokens, int ct, ...) {
+inline static void __validate__(mv_strarr* tokens, int ct, ...) {
 	ASSERT_INT(tokens->size, ct);
 	ASSERT_INT(tokens->used, ct);
 	va_list args;

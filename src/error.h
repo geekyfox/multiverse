@@ -5,10 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MVERROR_SYNTAX 1
+#define MVERROR_SYNTAX   1
 #define MVERROR_INTERNAL 2
-#define MVERROR_BADVAR 3
-#define MVERROR_BADCMD 4
+#define MVERROR_BADVAR   3
+#define MVERROR_BADCMD   4
+#define MVERROR_INVALID  5
 
 typedef struct {
 	char* message;

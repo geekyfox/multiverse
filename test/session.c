@@ -1,7 +1,7 @@
 
 #include <test.h>
 
-static inline void __perform__(mv_session* state, char* cmd) {
+inline static void __perform__(mv_session* state, char* cmd) {
 	mv_command action;
 	FAILFAST(mv_command_parse(&action, cmd));
 	FAILFAST(mv_session_execute(state, &action));

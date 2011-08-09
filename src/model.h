@@ -78,6 +78,11 @@ typedef struct {
 	int size;
 } mv_speclist;
 
+//
+// mv_attrspec value selector
+//
+#define MVSPEC_TYPE     4001
+#define MVSPEC_SUBQUERY 4002
 
 // Multiverse can execute commands. So, there's
 // a special datatype for commands as well.

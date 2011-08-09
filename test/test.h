@@ -5,6 +5,8 @@
 #include <string.h>
 #include <multiverse.h>
 
+#include <parser.h>
+
 #define FAIL(__err) do { if (__err != NULL) {  \
 mv_error_display(__err, stderr);               \
 DIE("Unexpected error"); }} while (0)
@@ -31,6 +33,11 @@ if (__value == NULL) DIE("Unexpected NULL"); \
 #define ASSERT_NULL(__value) do {         \
 if (__value != NULL) DIE("Unexpected non-NULL value"); \
 } while (0)
+
+#define ASSERT_ERROR(__err, __code) do { if (__err == NULL) { \
+DIE("Expected errorcode = %d, got null\n", __code); } else    \
+if (__err->code != __code) { mv_error_display(__err, stderr); \
+DIE("Expected errorcode = %d\n", __code); }}  while (0)
 
 #define ENTER() printf("%s ENTERED\n", __FUNCTION__)
 
@@ -68,6 +75,8 @@ books = [book with { author = $$ }] }"
 #define REQ20 "update entity eiffel_tower with { location = london }"
 #define REQ21 "update entity eiffel_tower with { location = paris }"
 #define REQ22 "update entity eiffel_tower remove location"
+#define REQ23 "create entity {} dummy"
+#define REQ24 "assign person to dummy"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

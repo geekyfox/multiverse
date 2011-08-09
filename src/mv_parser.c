@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "multiverse.h"
+#include "parser.h"
 
 #define LIST(var)  ((var)->type == MVAST_ATTRLIST)
 #define PAIR(var)  ((var)->type == MVAST_ATTRPAIR)
@@ -257,7 +258,7 @@ void mv_ast_release(mv_ast* ast) {
 	free(ast->items);
 }
 
-void mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source) {
+void mv_attrlist_parse(mv_attrlist* target, mv_ast* source) {
 	mv_attrlist_alloc(target, source->size);
 	int i;
 	for (i=0; i<source->size; i++) {
@@ -273,7 +274,7 @@ void mv_ast_to_attrlist(mv_attrlist* target, mv_ast* source) {
 	}
 }
 
-void mv_ast_to_speclist(mv_speclist* target, mv_ast* source) {
+void mv_speclist_parse(mv_speclist* target, mv_ast* source) {
 	mv_speclist_alloc(target, source->size);
 	int i;
 	for (i=0; i<source->size; i++) {
@@ -382,7 +383,7 @@ mv_error* __create_entity__(mv_command* target, mv_ast* ast) {
 		__clear__(target, MVCMD_CREATE_ENTITY, 0);
 	}
 
-	mv_ast_to_attrlist(&target->attrs, &ast->items[2].value.subtree);
+	mv_attrlist_parse(&target->attrs, &ast->items[2].value.subtree);
 	mv_ast_release(ast);
 	return NULL;
 }
@@ -410,7 +411,7 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 			      "Expected AttrSpecList, got %d",
 			      items[3].type);
 		}
-		mv_ast_to_speclist(&(target->spec), &(items[3].value.subtree));
+		mv_speclist_parse(&(target->spec), &(items[3].value.subtree));
 		mv_strarr_alloc(&target->vars, 1);
 		mv_strarr_append(&target->vars, items[2].value.leaf);
 		target->attrs.size = 0;
@@ -485,7 +486,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	assert(ast->items[3].type == MVAST_ATTRLIST);
 	__clear__(cmd, MVCMD_LOOKUP, 1);
 	mv_strarr_append(&cmd->vars, ast->items[1].value.leaf);
-	mv_ast_to_attrlist(&cmd->attrs, &ast->items[3].value.subtree);
+	mv_attrlist_parse(&cmd->attrs, &ast->items[3].value.subtree);
 	mv_ast_release(ast);
 	return NULL;
 }
@@ -499,7 +500,7 @@ mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
 		if (!LIST(&items[4])) goto wrong;
 		__clear__(target, MVCMD_UPDATE_ENTITY, 1);
 		mv_strarr_append(&target->vars, items[2].value.leaf);
-		mv_ast_to_attrlist(&target->attrs, &items[4].value.subtree);
+		mv_attrlist_parse(&target->attrs, &items[4].value.subtree);
 		mv_ast_release(ast);
 		return NULL;
 	} 
@@ -573,7 +574,7 @@ void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value) {
 	ptr->type = MVSPEC_SUBQUERY;
 	mv_ast_entry* items = value.items;
 	ptr->value.subquery.classname = strdup(items[0].value.leaf);
-	mv_ast_to_attrlist(&ptr->value.subquery.attrs, &items[1].value.subtree);
+	mv_attrlist_parse(&ptr->value.subquery.attrs, &items[1].value.subtree);
 	ptr->name = strdup(key);
 }
 

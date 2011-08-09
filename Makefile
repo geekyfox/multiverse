@@ -1,9 +1,8 @@
 
-CORE_HEADERS = src/multiverse.h src/error.h src/consts.h \
-src/model.h
+CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h
 TEST_HEADERS = test/test.h
 
-MODULES      = data parser matcher printer session
+MODULES      = data parser matcher printer session validator
 CORE_MODULES = $(MODULES) common local error
 TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc
 DEMO_MODULES = demo
