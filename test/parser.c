@@ -9,7 +9,7 @@ static void __tokenizeimpl(char* request, char** expect, int count) {
 	ASSERT_INT(tokens.used, count);
 	ASSERT_NOTNULL(tokens.items);
 	int i;
-	for (i=0; i<count; i++) ASSERT_STRING(tokens.items[i], expect[i]);
+	for (i=0; i<count; i++) ASSERT_STRREF(tokens.items[i], expect[i]);
 	mv_strarr_release(&tokens);
 }
 

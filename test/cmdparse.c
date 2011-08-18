@@ -12,7 +12,7 @@ TESTREQ 1 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "umberto_eco");
+	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
@@ -33,8 +33,8 @@ TESTREQ 10 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 2);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
-	ASSERT_STRING(action.vars.items[1], "umberto_eco");
+	ASSERT_STRREF(action.vars.items[0], "person");
+	ASSERT_STRREF(action.vars.items[1], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -45,7 +45,7 @@ TESTREQ 11 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
+	ASSERT_STRREF(action.vars.items[0], "person");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_NOTNULL(action.attrs.attrs);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
@@ -59,7 +59,7 @@ TESTREQ 12 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "umberto_eco");
+	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -70,7 +70,7 @@ TESTREQ 13 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "person");
+	ASSERT_STRREF(action.vars.items[0], "person");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -81,7 +81,7 @@ TESTREQ 14 {
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "eiffel_tower");
+	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_INTEGER);
 	ASSERT_STRING(action.attrs.attrs[0].name, "height");
@@ -119,7 +119,7 @@ TESTREQ 20 {
 	ASSERT_NOTNULL(action.attrs.attrs);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRING(action.vars.items[0], "eiffel_tower");
+	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
 }
 
 

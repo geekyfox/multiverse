@@ -35,9 +35,9 @@ static void __prepare_for_REQ10_11(mv_session* session, int bind) {
 	mv_session_init(session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ1);
-	mv_strarr_append(&script, REQ6);
-	if (bind) mv_strarr_append(&script, REQ10);
+	mv_strarr_append(&script, strdup(REQ1));
+	mv_strarr_append(&script, strdup(REQ6));
+	if (bind) mv_strarr_append(&script, strdup(REQ10));
 	FAILFAST(mv_session_perform(session, &script));
 	mv_strarr_release(&script);
 }
@@ -51,7 +51,7 @@ TEST execute_REQ10() {
 	FAILFAST(mv_session_execute(&state, &action));
 
 	ASSERT_INT(state.entities.items[0].classes.used, 1);
-	ASSERT_STRING(state.entities.items[0].classes.items[0], "person");
+	ASSERT_STRREF(state.entities.items[0].classes.items[0], "person");
 
 	mv_session_release(&state);
 	mv_command_release(&action);
@@ -173,9 +173,9 @@ TEST numlookup() {
 	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 3);
-	mv_strarr_append(&script, REQ14);
-	mv_strarr_append(&script, REQ15);
-	mv_strarr_append(&script, REQ16);
+	mv_strarr_append(&script, strdup(REQ14));
+	mv_strarr_append(&script, strdup(REQ15));
+	mv_strarr_append(&script, strdup(REQ16));
 	FAILFAST(mv_session_perform(&session, &script));
 	mv_strarr_release(&script);
 
@@ -199,8 +199,8 @@ TEST subquery() {
 	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ19);
-	mv_strarr_append(&script, REQ18);
+	mv_strarr_append(&script, strdup(REQ19));
+	mv_strarr_append(&script, strdup(REQ18));
 	FAILFAST(mv_session_perform(&session, &script));
 	ASSERT_INT(session.classes.used, 2);
 	ASSERT_INT(session.classes.items[1].data.size, 1);
@@ -219,8 +219,8 @@ TEST update() {
 	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ14);
-	mv_strarr_append(&script, REQ20);
+	mv_strarr_append(&script, strdup(REQ14));
+	mv_strarr_append(&script, strdup(REQ20));
 	FAILFAST(mv_session_perform(&session, &script));
 
 	ASSERT_INT(session.entities.used, 1);
@@ -236,8 +236,8 @@ TEST badupdate() {
 	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ23);
-	mv_strarr_append(&script, BADREQ4);
+	mv_strarr_append(&script, strdup(REQ23));
+	mv_strarr_append(&script, strdup(BADREQ4));
 	mv_error* err = mv_session_perform(&session, &script);
 	ASSERT_ERROR(err, MVERROR_SYNTAX);
 

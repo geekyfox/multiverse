@@ -4,8 +4,8 @@
 TEST validity_assign() {
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ23);
-	mv_strarr_append(&script, REQ6);
+	mv_strarr_append(&script, strdup(REQ23));
+	mv_strarr_append(&script, strdup(REQ6));
 
 	mv_session session;
 	mv_session_init(&session);

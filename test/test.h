@@ -26,6 +26,8 @@ do { if (strcmp(__value, __pattern) != 0) {         \
 DIE("Expected '%s', got '%s'", __pattern, __value); \
 }} while (0)
 
+#define ASSERT_STRREF(__ref, __pattern) ASSERT_STRING(__ref.ptr, __pattern)
+
 #define ASSERT_NOTNULL(__value) do {         \
 if (__value == NULL) DIE("Unexpected NULL"); \
 } while (0)

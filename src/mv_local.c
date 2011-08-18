@@ -40,8 +40,8 @@ inline static void __display_success(mv_command* cmd) {
 		break;
 	case MVCMD_ASSIGN:
 		printf ("OK, class '%s' assigned to '%s'\n",
-		        cmd->vars.items[0],
-		        cmd->vars.items[1]);
+		        cmd->vars.items[0].ptr,
+		        cmd->vars.items[1].ptr);
 		break;
 	case MVCMD_UPDATE_ENTITY:
 		printf ("OK, entity updated\n");
@@ -67,7 +67,7 @@ void mv_local_execute(mv_command* cmd) {
 	case MVCMD_SHOW:
 		error = mv_session_show(&tmpstr,
                                 __LOCAL_SESSION__,
-                                cmd->vars.items[0]);
+                                cmd->vars.items[0].ptr);
 		if (error != NULL) break;
 		printf("%s", tmpstr);
 		fflush(stdout);

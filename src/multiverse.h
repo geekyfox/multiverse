@@ -21,8 +21,13 @@
 #define STREQ(x, y) (strcmp((x), (y)) == 0)
 #define MAX(x, y) ( ((x) < (y)) ? (y) : (x) )
 
-int   mv_strhash(char* str);
-char* mv_strslice(char* source, int start, int end);
+int       mv_strhash(char* str);
+mv_strref mv_strslice(char* source, int start, int end);
+
+mv_strref mv_strref_alloc(int size);
+mv_strref mv_strref_wrap(char* str);
+void      mv_strref_free(mv_strref* ref);
+mv_strref mv_strref_copy(mv_strref* ref);
 
 /*****************************/
 /* Common data structures    */
@@ -84,6 +89,7 @@ void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr);
 void mv_strarr_alloc(mv_strarr* ptr, int size);
 void mv_strarr_append(mv_strarr* ptr, char* value);
 void mv_strarr_appslice(mv_strarr* ptr, char* source, int start, int end);
+void mv_strarr_appref(mv_strarr* ptr, mv_strref* ref);
 void mv_strarr_release(mv_strarr* ptr);
 
 typedef struct {

@@ -15,7 +15,7 @@
 #define SPEC(var)  ((var)->type == MVAST_TYPESPEC)
 #define SUBQ(var)  ((var)->type == MVAST_SUBQUERY)
 #define LEAF(var)  ((var)->type == MVAST_LEAF)
-#define LEAFFIX(var, text) (LEAF(var) && STREQ((var)->value.leaf, text))
+#define LEAFFIX(var, text) (LEAF(var) && STREQ((var)->value.leaf.ptr, text))
 #define TEMPFIX(var, code) ((var->type) == MVAST_TEMP##code)
 
 inline static void __pair__(mv_ast_entry* stack, int* count) {
@@ -158,7 +158,7 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 	mv_ast_entry *e4 = &(stack[*count - 2]);
 	if (!LIST(e4)) return;
 
-	free(e3->value.leaf);
+	mv_strref_free(&(e3->value.leaf));
 
 	e1->type = MVAST_SUBQUERY;
 	e1->value.subtree.size = 2;
@@ -182,19 +182,19 @@ inline static int __make_char_token__(char token) {
 	}
 }
 
-inline static mv_ast_entry __make_token__(char* token) {
+inline static mv_ast_entry __make_token__(mv_strref* token) {
 	mv_ast_entry result;
 
-	if (strlen(token) == 1) {
-		int code = __make_char_token__(token[0]);
+	if (strlen(token->ptr) == 1) {
+		int code = __make_char_token__(token->ptr[0]);
 		if (code != MVAST_LEAF) {
 			result.type = code;
-			free(token);
+			mv_strref_free(token);
 			return result;	
 		}
 	}
 	result.type = MVAST_LEAF;
-	result.value.leaf = token;
+	result.value.leaf = *token;
 	return result;
 }
 
@@ -217,7 +217,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	int i, scan = 0, size = 0;
 
 	while (scan < tokens.used) {
-		stack[size++] = __make_token__(tokens.items[scan++]);
+		stack[size++] = __make_token__(&(tokens.items[scan++]));
 		__compress__(stack, &size);
 	}
 	
@@ -243,7 +243,7 @@ void mv_ast_release(mv_ast* ast) {
 	for (i=0; i<ast->size; i++) {
 		switch(ast->items[i].type) {
 		case MVAST_LEAF:
-			free(ast->items[i].value.leaf);
+			mv_strref_free(&(ast->items[i].value.leaf));
 			break;
 		case MVAST_TEMPOPENBRACE:
 		case MVAST_TEMPCLOSEBRACE:
@@ -269,7 +269,7 @@ void mv_attrlist_parse(mv_attrlist* target, mv_ast* source) {
 		mv_ast_entry* items = astpair.items;
 		EXPECT(LEAF(&items[0]), "Leafs expected");
 		EXPECT(LEAF(&items[1]), "Leafs expected");
-		char *key = items[0].value.leaf, *value = items[1].value.leaf;
+		char *key = items[0].value.leaf.ptr, *value = items[1].value.leaf.ptr;
 		mv_attr_parse(&target->attrs[i], key, value);
 	}
 }
@@ -285,7 +285,7 @@ void mv_speclist_parse(mv_speclist* target, mv_ast* source) {
 		);
 		mv_ast_entry* items = src.value.subtree.items;
 		EXPECT(LEAF(&items[0]), "Leaf expected as a first item");
-		char* key = items[0].value.leaf;
+		char* key = items[0].value.leaf.ptr;
 		switch (src.type) {
 		case MVAST_ATTRQUERY:
 			EXPECT(
@@ -300,7 +300,7 @@ void mv_speclist_parse(mv_speclist* target, mv_ast* source) {
 		case MVAST_TYPESPEC:
 			EXPECT(LEAF(&items[1]), "Leaf expected as a second item");
 			mv_spec_parse(
-				&(target->specs[i]), key, items[1].value.leaf, src.type
+				&(target->specs[i]), key, items[1].value.leaf.ptr, src.type
 			);
 			break;
 		default:
@@ -378,7 +378,7 @@ mv_error* __create_entity__(mv_command* target, mv_ast* ast) {
 			      ast->items[3].type);
 		}
 		__clear__(target, MVCMD_CREATE_ENTITY, 1);
-		mv_strarr_append(&target->vars, ast->items[3].value.leaf);
+		mv_strarr_appref(&target->vars, &ast->items[3].value.leaf);
 	} else {
 		__clear__(target, MVCMD_CREATE_ENTITY, 0);
 	}
@@ -413,7 +413,7 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 		}
 		mv_speclist_parse(&(target->spec), &(items[3].value.subtree));
 		mv_strarr_alloc(&target->vars, 1);
-		mv_strarr_append(&target->vars, items[2].value.leaf);
+		mv_strarr_appref(&target->vars, &items[2].value.leaf);
 		target->attrs.size = 0;
 		target->attrs.attrs = NULL;
 		mv_ast_release(ast);
@@ -434,7 +434,7 @@ mv_error* __destroy__(mv_command* target, mv_ast* ast) {
 		THROW(SYNTAX, "Malformed 'destroy' command");
 	}
 	__clear__(target, MVCMD_DESTROY_ENTITY, 1);
-	mv_strarr_append(&target->vars, ast->items[2].value.leaf);
+	mv_strarr_appref(&target->vars, &ast->items[2].value.leaf);
 	mv_ast_release(ast);
 	return NULL;	
 } 
@@ -445,7 +445,7 @@ inline static mv_error* __show__(mv_command* cmd, mv_ast* ast) {
 	assert(size == 2);
 	assert(items[1].type == MVAST_LEAF);
 	__clear__(cmd, MVCMD_SHOW, 1);
-	mv_strarr_append(&cmd->vars, items[1].value.leaf);
+	mv_strarr_appref(&cmd->vars, &items[1].value.leaf);
 	mv_ast_release(ast);
 	return NULL;
 }
@@ -467,8 +467,8 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 	assert(LEAFFIX(&(items[2]), "to"));
 	assert(LEAF(&(items[3])));
 	__clear__(cmd, MVCMD_ASSIGN, 2);
-	mv_strarr_append(&cmd->vars, items[1].value.leaf);
-	mv_strarr_append(&cmd->vars, items[3].value.leaf);
+	mv_strarr_appref(&cmd->vars, &items[1].value.leaf);
+	mv_strarr_appref(&cmd->vars, &items[3].value.leaf);
 	mv_ast_release(ast);
 	return NULL;
 }
@@ -477,7 +477,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	assert(LEAF(&(ast->items[1])));
 	if (ast->size == 2) {
 		__clear__(cmd, MVCMD_LOOKUP, 1);
-		mv_strarr_append(&cmd->vars, ast->items[1].value.leaf);
+		mv_strarr_appref(&cmd->vars, &ast->items[1].value.leaf);
 		mv_ast_release(ast);
 		return NULL;
 	}
@@ -485,7 +485,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	assert(LEAFFIX(&(ast->items[2]), "with"));
 	assert(ast->items[3].type == MVAST_ATTRLIST);
 	__clear__(cmd, MVCMD_LOOKUP, 1);
-	mv_strarr_append(&cmd->vars, ast->items[1].value.leaf);
+	mv_strarr_appref(&cmd->vars, &ast->items[1].value.leaf);
 	mv_attrlist_parse(&cmd->attrs, &ast->items[3].value.subtree);
 	mv_ast_release(ast);
 	return NULL;
@@ -499,7 +499,7 @@ mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
 	if (LEAFFIX(&items[3], "with")) {
 		if (!LIST(&items[4])) goto wrong;
 		__clear__(target, MVCMD_UPDATE_ENTITY, 1);
-		mv_strarr_append(&target->vars, items[2].value.leaf);
+		mv_strarr_appref(&target->vars, &items[2].value.leaf);
 		mv_attrlist_parse(&target->attrs, &items[4].value.subtree);
 		mv_ast_release(ast);
 		return NULL;
@@ -537,7 +537,7 @@ mv_error* mv_command_parse(mv_command* cmd, char* data) {
 	if (!LEAF(&(ast.items[0]))) {
 		THROW(SYNTAX, "Syntax error");
 	}
-	char* cmdname = ast.items[0].value.leaf;
+	char* cmdname = ast.items[0].value.leaf.ptr;
 
 	if (STREQ(cmdname, "assign"))  return __assign__(cmd, &ast);
 	if (STREQ(cmdname, "create"))  return __create__(cmd, &ast);
@@ -577,7 +577,7 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value) {
 	ptr->type = MVSPEC_SUBQUERY;
 	mv_ast_entry* items = value.items;
-	ptr->value.subquery.classname = strdup(items[0].value.leaf);
+	ptr->value.subquery.classname = strdup(items[0].value.leaf.ptr);
 	mv_attrlist_parse(&ptr->value.subquery.attrs, &items[1].value.subtree);
 	ptr->name = strdup(key);
 }
@@ -632,7 +632,7 @@ mv_error* mv_tokenize(mv_strarr* target, char* data) {
 	if (state == 2) {
 		mv_strarr_appslice(target, data, base, scan);
 	}
-	target->items = realloc(target->items, sizeof(char*) * target->used);
+	target->items = realloc(target->items, sizeof(mv_strref) * target->used);
 	target->size = target->used;
 	return NULL;
 } // style:60

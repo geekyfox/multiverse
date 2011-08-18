@@ -21,7 +21,7 @@ TEST mv_command_test() {
 	assert(action.code == MVCMD_SHOW);
 	assert(action.attrs.size == 0);
 	assert(action.vars.used == 1);
-	assert(strcmp(action.vars.items[0], "umberto_eco") == 0);
+	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
 	mv_command_release(&action);
 
 	error = mv_command_parse(&action, REQ5);

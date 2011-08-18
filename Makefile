@@ -9,7 +9,10 @@ DEMO_MODULES = demo
 
 COPTS = -Wall -g
 
+PERFOPTS = -Wall -O3
+
 CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o)
+OPT_OBJS     = $(foreach i,$(CORE_MODULES),build/op_$(i).o)
 DEMO_OBJS    = $(foreach i,$(DEMO_MODULES),build/dm_$(i).o)
 TEST_SRCS    = $(foreach i,$(TEST_MODULES),build/$i.c)
 TEST_OBJS    = $(foreach i,$(TEST_MODULES) suite,build/ts_$(i).o)
@@ -23,7 +26,7 @@ selftest : testsuite
 	./testsuite > /dev/null
 
 testsuite : $(CORE_OBJS) $(TEST_OBJS) $(HEADERS)
-	gcc $(CORE_OBJS) $(TEST_OBJS) -o testsuite
+	gcc $(COPTS) $(CORE_OBJS) $(TEST_OBJS) -o testsuite
 
 .PHONY : stylecheck
 stylecheck :
@@ -51,10 +54,21 @@ build/%.c : test/%.c
 build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
 	gcc $(COPTS) -c $< -o $@
 
+build/op_%.o : src/mv_%.c $(CORE_HEADERS)
+	gcc $(PERFOPTS) -c $< -o $@
+
+build/perftest.o : test/perftest.c $(CORE_HEADERS) $(TEST_HEADERS)
+	gcc $(PERFOPTS) -I src -I test -c $< -o $@
+
+perftest : $(OPT_OBJS) $(HEADERS) build/perftest.o
+	gcc $(PERFOPTS) $(OPT_OBJS) build/perftest.o -o perftest
+
 .PHONY : clean
 clean :
 	rm -f build/*.o
 	rm -f build/*.c
 	rm -f testsute
 	rm -f demo
+	rm -f perftest
+
 

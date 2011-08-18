@@ -29,8 +29,8 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 TEST showcmd1() {
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, REQ1);
-	mv_strarr_append(&script, REQ5);
+	mv_strarr_append(&script, strdup(REQ1));
+	mv_strarr_append(&script, strdup(REQ5));
 
 	__showcmdimpl(&script, "name_of_the_rose", RESP2);
 }
@@ -39,7 +39,7 @@ TEST showcmd2() {
 	mv_strarr script;
 
 	mv_strarr_alloc(&script, 1);
-	mv_strarr_append(&script, REQ7);
+	mv_strarr_append(&script, strdup(REQ7));
 
 	__showcmdimpl(&script, "person", RESP3);
 }
@@ -47,7 +47,7 @@ TEST showcmd2() {
 TEST showcmd3() {
 	mv_strarr script;
 	mv_strarr_alloc(&script, 1);
-	mv_strarr_append(&script, REQ18);
+	mv_strarr_append(&script, strdup(REQ18));
 
 	__showcmdimpl(&script, "writer", RESP4);
 }

@@ -32,7 +32,7 @@ typedef struct mv_ast_entry {
 	 * mv_ast_release() for a full list), there's no value.
 	 */
 	union {
-		char* leaf;
+		mv_strref leaf;
 		mv_ast subtree;
 	} value;
 } mv_ast_entry;

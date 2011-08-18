@@ -23,7 +23,10 @@ inline static void __validate__(mv_strarr* tokens, int ct, ...) {
 	va_start(args, ct);
 	int i;
 	for (i=0; i<ct; i++) {
-		ASSERT_STRING(tokens->items[i], va_arg(args, char*));
+		printf("ptr #%d = %lx | '%s'\n", i, tokens->items[i].ptr, tokens->items[i].ptr);
+		fflush(stdout);
+		char* expect = va_arg(args, char*);
+		ASSERT_STRREF(tokens->items[i], expect);
 	}
 }
 

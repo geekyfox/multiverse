@@ -6,7 +6,7 @@
 mv_error* mv_query_compile(mv_query* pat, mv_command* cmd) {
 	assert(cmd->code == MVCMD_LOOKUP);
 	assert(cmd->vars.used == 1);
-	pat->classname = strdup(cmd->vars.items[0]);
+	pat->classname = strdup(cmd->vars.items[0].ptr);
 	pat->attrs = mv_attrlist_copy(&(cmd->attrs));
 	return NULL;
 }
@@ -27,7 +27,7 @@ int __attrmatch(mv_attr* x, mv_attr* y) {
 int mv_query_match(mv_query* pat, mv_entity* entity) {
 	int i, j, match = 0;
 	for (i=0; i<entity->classes.used; i++) {
-		if (STREQ(pat->classname, entity->classes.items[i])) {
+		if (STREQ(pat->classname, entity->classes.items[i].ptr)) {
 			match = 1;
 			break;
 		}

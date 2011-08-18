@@ -13,10 +13,11 @@ int mv_strhash(char* str) {
 	return result;
 }
 
-char* mv_strslice(char* source, int first, int last) {
+mv_strref mv_strslice(char* source, int first, int last) {
 	int len = last - first;
-	char* result = malloc(sizeof(char) * (len + 1));
-	strncpy(result, source + first, len);
-	result[len] = '\0';
-	return result;
+	mv_strref ref = mv_strref_alloc(len);
+	strncpy(ref.ptr, source + first, len);
+	ref.ptr[len] = '\0';
+	return ref;
 }
+

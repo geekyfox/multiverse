@@ -3,7 +3,13 @@
 #define __MULTIVERSE_MODEL_HEADER__
 
 typedef struct {
-	char** items;
+	char* ptr;
+	int* ctr;
+	int alc;
+} mv_strref;
+
+typedef struct {
+	mv_strref* items;
 	int size;
 	int used;
 } mv_strarr;

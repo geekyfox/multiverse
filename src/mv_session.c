@@ -118,20 +118,20 @@ mv_error* __mv_create_class(int* ref,
 
 static mv_error* __assign__(mv_session* state, mv_command* cmd) {
 	assert(cmd->vars.used == 2);
-	char* clsname = cmd->vars.items[0];
-	char* objname = cmd->vars.items[1];
+	mv_strref clsname = cmd->vars.items[0];
+	char* objname = cmd->vars.items[1].ptr;
 	int objref = mv_session_findvar(state, objname);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", objname);
 	}
-	int clsref = mv_session_findclass(state, clsname);
+	int clsref = mv_session_findclass(state, clsname.ptr);
 	if (clsref == -1) {
-		THROW(BADVAR, "Unknown class '%s'", clsname);
+		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
 	mv_entity* entity = &(state->entities.items[objref]);
 	mv_class* class = &(state->classes.items[clsref]);
 	FAILRET(mv_validate_assign(entity, class));
-	mv_strarr_append(&(entity->classes), clsname); 
+	mv_strarr_appref(&(entity->classes), &clsname); 
 	return NULL;
 }
 
@@ -139,7 +139,7 @@ static mv_error* __create_enty_ex(mv_session* state, mv_command* cmd) {
 	if (cmd->vars.used == 0) {
 		return __mv_create_entity(NULL, state, cmd->attrs);
 	} else if (cmd->vars.used == 1) {
-		char* varname = cmd->vars.items[0];
+		char* varname = cmd->vars.items[0].ptr;
 		int ref = mv_varbind_lookup(&state->vars, varname);
 		if (ref != -1) {
 			THROW(BADVAR, "Variable already bound");
@@ -157,7 +157,7 @@ static mv_error* __create_enty_ex(mv_session* state, mv_command* cmd) {
 
 inline static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
 	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0];
+	char* name = cmd->vars.items[0].ptr;
 	int objref = mv_session_findvar(state, name);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
@@ -172,7 +172,7 @@ inline static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
 
 inline static mv_error* __update_entity__(mv_session* state, mv_command* cmd) {
 	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0];
+	char* name = cmd->vars.items[0].ptr;
 	int objref = mv_session_findvar(state, name);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
@@ -193,7 +193,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 		if (action->vars.used != 1) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
-		clsname = action->vars.items[0];
+		clsname = action->vars.items[0].ptr;
 		int ref = mv_varbind_lookup(&state->clsnames, clsname);
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
@@ -255,7 +255,7 @@ mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
 	int i;
 	mv_command cmd;
 	for (i=0; i<script->used; i++) {
-		mv_error* error = mv_command_parse(&cmd, script->items[i]);
+		mv_error* error = mv_command_parse(&cmd, script->items[i].ptr);
 		if (error != NULL) return error;
 		error = mv_session_execute(session, &cmd);
 		mv_command_release(&cmd);
