@@ -48,27 +48,21 @@ TEST mv_varbind_test() {
 }
 
 TEST intset_test() {
-	mv_intset set;
-	mv_intset_alloc(&set, 1);
-	ASSERT_INT(set.size, 1);
-	ASSERT_INT(set.used, 0);
-	ASSERT_NOTNULL(set.items);
+	mvIntset set(1);
+	ASSERT_INT(set.cardinality(), 0);
 
-	int ret = mv_intset_contains(&set, 12);
+	int ret = set.contains(12);
 	ASSERT_INT(ret, 0);
 
-	mv_intset_put(&set, 12);
-	ASSERT_INT(set.used, 1);
-	ret = mv_intset_contains(&set, 12);
+	set.put(12);
+	ASSERT_INT(set.cardinality(), 1);
+	ret = set.contains(12);
 	ASSERT_INT(ret, 1);
 
-	mv_intset_put(&set, 6);
-	ASSERT_INT(set.used, 2);
-	ASSERT_NOLESS(set.size, set.used);
+	set.put(6);
+	ASSERT_INT(set.cardinality(), 2);
 
-	mv_intset_remove(&set, 6);
-	
-	ASSERT_INT(set.used, 1);
-	mv_intset_release(&set);
+	set.remove(6);
+	ASSERT_INT(set.cardinality(), 1);
 }
 

@@ -307,48 +307,6 @@ mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 	return NULL;
 }
 
-void mv_intset_alloc(mv_intset* ptr, int size) {
-	ptr->items = (int*)malloc(sizeof(int) * size);
-	ptr->size = size;
-	ptr->used = 0;
-}
-
-int mv_intset_contains(mv_intset* ptr, int value) {
-	int i;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i] == value) return 1;
-	}
-	return 0;
-}
-
-void mv_intset_put(mv_intset* ptr, int value) {
-	if (mv_intset_contains(ptr, value)) return;
-	if (ptr->used == ptr->size) {
-		ptr->size *= 2;
-		ptr->items = (int*)realloc(ptr->items, ptr->size * sizeof(int));
-	}
-	ptr->items[ptr->used] = value;
-	ptr->used++;
-}
-
-void mv_intset_release(mv_intset* ptr) {
-	free(ptr->items);
-}
-
-void mv_intset_remove(mv_intset* ptr, int value) {
-	int ix = -1, i;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i] == value) {
-			ix = i;
-			break;
-		}
-	}
-	if (ix != -1) {
-		ptr->used--;
-		if (ix < ptr->used) ptr->items[ix] = ptr->items[ptr->used];
-	}
-}
-
 void mv_command_release(mv_command* sess) {
 	mv_attrlist_release(&sess->attrs);
 	mv_strarr_release(&sess->vars);

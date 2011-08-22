@@ -12,21 +12,20 @@ void mv_local_start() {
 }
 
 mv_error* __local_lookup(mv_command* c) {
-	mv_intset res;
-	mv_intset_alloc(&res, 1);
+	mvIntset res(1);
 	
-	mv_error* error = mv_session_lookup(&res, __LOCAL_SESSION__, c);
+	mv_error* error = mv_session_lookup(res, __LOCAL_SESSION__, c);
 	if (error == NULL) {
-		if (res.used == 0) {
+		int size = res.cardinality();
+		if (size == 0) {
 			printf ("OK, no matching objects found\n");
 		} else {
 			int i;
-			printf ("OK, matching objects found: [%d", res.items[0]);
-			for (i=1; i<res.used; i++) printf(", %d", res.items[i]);
+			printf ("OK, matching objects found: [%d", res.get(0));
+			for (i=size - 1; i>=1; i--) printf(", %d", res.get(i));
 			printf ("]\n");
 		}
 	}
-	mv_intset_release(&res);
 	return error;
 }
 

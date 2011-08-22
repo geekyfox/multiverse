@@ -1,5 +1,9 @@
 
-CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h
+CXX_MODULES  = Intset
+CXX_HEADERS  = $(foreach i,$(CXX_MODULES),src/mv$(i).h)
+
+CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h \
+$(CXX_HEADERS)
 TEST_HEADERS = test/test.h
 
 MODULES      = data parser matcher printer session validator
@@ -11,7 +15,8 @@ COPTS = -Wall -g
 
 PERFOPTS = -Wall -O3
 
-CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o)
+CXX_OBJS     = $(foreach i,$(CXX_MODULES),build/mvxx_$(i).o)
+CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o) $(CXX_OBJS)
 OPT_OBJS     = $(foreach i,$(CORE_MODULES),build/op_$(i).o)
 DEMO_OBJS    = $(foreach i,$(DEMO_MODULES),build/dm_$(i).o)
 TEST_SRCS    = $(foreach i,$(TEST_MODULES),build/$i.c)
@@ -36,7 +41,7 @@ stylecheck :
 memtest : testsuite
 	valgrind --leak-check=full --show-reachable=yes ./testsuite
 
-demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS)
+demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS) 
 	g++ $(COPTS) $(CORE_OBJS) $(DEMO_OBJS) -o demo
 
 build/dm_%.o : src/%.c $(CORE_HEADERS)
@@ -56,6 +61,9 @@ build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
 
 build/op_%.o : src/mv_%.c $(CORE_HEADERS)
 	g++ $(PERFOPTS) -c $< -o $@
+
+build/mvxx_%.o : src/mv%.cxx $(CORE_HEADERS)
+	g++ $(COPTS) -c $< -o $@
 
 build/perftest.o : test/perftest.c $(CORE_HEADERS) $(TEST_HEADERS)
 	g++ $(PERFOPTS) -I src -I test -c $< -o $@

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "mvIntset.h"
 #include "error.h"
 #include "model.h"
 
@@ -92,18 +93,6 @@ void mv_strarr_appslice(mv_strarr* ptr, char* source, int start, int end);
 void mv_strarr_appref(mv_strarr* ptr, mv_strref* ref);
 void mv_strarr_release(mv_strarr* ptr);
 
-typedef struct {
-	int* items;
-	int size;
-	int used;
-} mv_intset;
-
-void mv_intset_alloc(mv_intset* ptr, int size);
-int  mv_intset_contains(mv_intset* ptr, int value);
-void mv_intset_put(mv_intset* ptr, int value);
-void mv_intset_release(mv_intset* ptr);
-void mv_intset_remove(mv_intset* ptr, int value);
-
 /**********************/
 /* Executable command */
 /**********************/
@@ -184,7 +173,7 @@ void      mv_session_init(mv_session* state);
 mv_error* mv_session_execute(mv_session* state, mv_command* action);
 int       mv_session_findclass(mv_session* session, char* name);
 int       mv_session_findvar(mv_session* session, char* name);
-mv_error* mv_session_lookup(mv_intset*, mv_session*, mv_command*);
+mv_error* mv_session_lookup(mvIntset&, mv_session*, mv_command*);
 mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
 void      mv_session_release(mv_session* state);
 mv_error* mv_session_show(char** target, mv_session* source, char* name);

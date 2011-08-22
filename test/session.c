@@ -74,19 +74,16 @@ TEST fail_REQ10() {
 TEST execute_REQ11() {
 	mv_command action;
 	mv_session state;
-	mv_intset result;
+	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	mv_intset_alloc(&result, 8);
-
 	FAILFAST(mv_command_parse(&action, REQ11));
-	FAILFAST(mv_session_lookup(&result, &state, &action));
+	FAILFAST(mv_session_lookup(result, &state, &action));
 
-	ASSERT_INT(result.used, 1);
-	ASSERT_INT(result.items[0], 0);
+	ASSERT_INT(result.cardinality(), 1);
+	ASSERT_INT(result.get(0), 0);
 
-	mv_intset_release(&result);
 	mv_session_release(&state);
 	mv_command_release(&action);
 }
@@ -123,26 +120,23 @@ TEST execute_REQ14() {
 TEST lookup_after_destroy() {
 	mv_command lookup, destroy; 
 	mv_session state;
-	mv_intset result;
+	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	mv_intset_alloc(&result, 8);
-
 	FAILFAST(mv_command_parse(&lookup, REQ11));
 	FAILFAST(mv_command_parse(&destroy, REQ12));
-	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+	FAILFAST(mv_session_lookup(result, &state, &lookup));
 
-	ASSERT_INT(result.used, 1);
-	ASSERT_INT(result.items[0], 0);
-	result.used = 0;
+	ASSERT_INT(result.cardinality(), 1);
+	ASSERT_INT(result.get(0), 0);
+	result.clear();
 
 	FAILFAST(mv_session_execute(&state, &destroy));
-	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+	FAILFAST(mv_session_lookup(result, &state, &lookup));
 
-	ASSERT_INT(result.used, 0);
+	ASSERT_INT(result.cardinality(), 0);
 
-	mv_intset_release(&result);
 	mv_command_release(&lookup);
 	mv_command_release(&destroy);
 	mv_session_release(&state);
@@ -151,19 +145,16 @@ TEST lookup_after_destroy() {
 TEST lookup_all_items() {
 	mv_command lookup;
 	mv_session state;
-	mv_intset result;
+	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	mv_intset_alloc(&result, 8);
-
 	FAILFAST(mv_command_parse(&lookup, REQ13));
-	FAILFAST(mv_session_lookup(&result, &state, &lookup));
+	FAILFAST(mv_session_lookup(result, &state, &lookup));
 
-	ASSERT_INT(result.used, 1);
-	ASSERT_INT(result.items[0], 0);
+	ASSERT_INT(result.cardinality(), 1);
+	ASSERT_INT(result.contains(0), 1);
 	
-	mv_intset_release(&result);
 	mv_command_release(&lookup);
 	mv_session_release(&state);
 }
@@ -179,17 +170,15 @@ TEST numlookup() {
 	FAILFAST(mv_session_perform(&session, &script));
 	mv_strarr_release(&script);
 
-	mv_intset result;
-	mv_intset_alloc(&result, 8);
+	mvIntset result(8);
 
 	mv_command lookup;
 	FAILFAST(mv_command_parse(&lookup, REQ17));
-	FAILFAST(mv_session_lookup(&result, &session, &lookup));
+	FAILFAST(mv_session_lookup(result, &session, &lookup));
 
-	ASSERT_INT(result.used, 1);
-	ASSERT_INT(result.items[0], 0);
+	ASSERT_INT(result.cardinality(), 1);
+	ASSERT_INT(result.contains(0), 1);
 
-	mv_intset_release(&result);
 	mv_command_release(&lookup);
 	mv_session_release(&session);
 }

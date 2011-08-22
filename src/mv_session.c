@@ -234,7 +234,7 @@ int mv_session_findclass(mv_session* session, char* name) {
 	return mv_varbind_lookup(&(session->clsnames), name);
 }
 
-mv_error* mv_session_lookup(mv_intset* tr, mv_session* s, mv_command* c) {
+mv_error* mv_session_lookup(mvIntset& tr, mv_session* s, mv_command* c) {
 	mv_query query;
 	mv_error* error = mv_query_compile(&query, c);
 
@@ -244,7 +244,7 @@ mv_error* mv_session_lookup(mv_intset* tr, mv_session* s, mv_command* c) {
 	for (i=0; i<s->entities.used; i++) {
 		if (!s->entities.items[i].exist) continue;
 		if (mv_query_match(&query, &(s->entities.items[i]))) {
-			mv_intset_put(tr, i);
+			tr.put(i);
 		}
 	}
 
