@@ -26,7 +26,7 @@ selftest : testsuite
 	./testsuite > /dev/null
 
 testsuite : $(CORE_OBJS) $(TEST_OBJS) $(HEADERS)
-	gcc $(COPTS) $(CORE_OBJS) $(TEST_OBJS) -o testsuite
+	g++ $(COPTS) $(CORE_OBJS) $(TEST_OBJS) -o testsuite
 
 .PHONY : stylecheck
 stylecheck :
@@ -37,13 +37,13 @@ memtest : testsuite
 	valgrind --leak-check=full --show-reachable=yes ./testsuite
 
 demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS)
-	gcc $(COPTS) $(CORE_OBJS) $(DEMO_OBJS) -o demo
+	g++ $(COPTS) $(CORE_OBJS) $(DEMO_OBJS) -o demo
 
 build/dm_%.o : src/%.c $(CORE_HEADERS)
-	gcc $(COPTS) -c $< -o $@
+	g++ $(COPTS) -c $< -o $@
 
 build/ts_%.o : build/%.c $(CORE_HEADERS) $(TEST_HEADERS)
-	gcc $(COPTS) -I src -I test -c $< -o $@
+	g++ $(COPTS) -I src -I test -c $< -o $@
 
 build/suite.c : $(TEST_SRCS)
 	./gensuite.pl $@ $(TEST_SRCS)
@@ -52,16 +52,16 @@ build/%.c : test/%.c
 	./gentest.pl $< $@
 
 build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
-	gcc $(COPTS) -c $< -o $@
+	g++ $(COPTS) -c $< -o $@
 
 build/op_%.o : src/mv_%.c $(CORE_HEADERS)
-	gcc $(PERFOPTS) -c $< -o $@
+	g++ $(PERFOPTS) -c $< -o $@
 
 build/perftest.o : test/perftest.c $(CORE_HEADERS) $(TEST_HEADERS)
-	gcc $(PERFOPTS) -I src -I test -c $< -o $@
+	g++ $(PERFOPTS) -I src -I test -c $< -o $@
 
 perftest : $(OPT_OBJS) $(HEADERS) build/perftest.o
-	gcc $(PERFOPTS) $(OPT_OBJS) build/perftest.o -o perftest
+	g++ $(PERFOPTS) $(OPT_OBJS) build/perftest.o -o perftest
 
 .PHONY : clean
 clean :

@@ -12,7 +12,7 @@ inline static void __appendimpl(mv_strbuf* buf, char* text) {
 		if (available <= req) {
 			int sizenow = buf->size;
 			buf->size += MAX(buf->size, req);
-			buf->data = realloc(buf->data, sizeof(char) * buf->size);
+			buf->data = (char*)realloc(buf->data, sizeof(char) * buf->size);
 			fill = buf->data + sizenow;
 			available = buf->size - sizenow;
 		}

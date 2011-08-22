@@ -22,7 +22,7 @@ void      mv_error_release(mv_error* error);
 mv_error* mv_error_unmatched(int objcode, char* command);
 
 #define PREPARE_ERROR(__errvar, __errcd, ...) do { \
-__errvar = malloc(sizeof(mv_error));               \
+__errvar = (mv_error*)malloc(sizeof(mv_error));    \
 asprintf(&(__errvar->message), __VA_ARGS__);       \
 __errvar->code = MVERROR_##__errcd; } while (0)    \
 

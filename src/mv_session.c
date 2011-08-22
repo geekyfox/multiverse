@@ -129,8 +129,8 @@ static mv_error* __assign__(mv_session* state, mv_command* cmd) {
 		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
 	mv_entity* entity = &(state->entities.items[objref]);
-	mv_class* class = &(state->classes.items[clsref]);
-	FAILRET(mv_validate_assign(entity, class));
+	mv_class* cls = &(state->classes.items[clsref]);
+	FAILRET(mv_validate_assign(entity, cls));
 	mv_strarr_appref(&(entity->classes), &clsname); 
 	return NULL;
 }
@@ -181,6 +181,7 @@ inline static mv_error* __update_entity__(mv_session* state, mv_command* cmd) {
 }
 
 mv_error* mv_session_execute(mv_session* state, mv_command* action) {
+	int ref;
 	mv_error* error;
 	char* clsname;
 
@@ -194,7 +195,7 @@ mv_error* mv_session_execute(mv_session* state, mv_command* action) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
 		clsname = action->vars.items[0].ptr;
-		int ref = mv_varbind_lookup(&state->clsnames, clsname);
+		ref = mv_varbind_lookup(&state->clsnames, clsname);
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
 		}

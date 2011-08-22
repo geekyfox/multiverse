@@ -35,10 +35,10 @@ mv_error* __check_absent__(char* name, mv_attrlist attrs) {
 	return NULL;
 }
 
-mv_error* mv_validate_assign(mv_entity* entity, mv_class* class) {
+mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls) {
 	int i;
-	for (i=class->data.size - 1; i >= 0; i--) {
-		mv_attrspec* spec = &(class->data.specs[i]);
+	for (i=cls->data.size - 1; i >= 0; i--) {
+		mv_attrspec* spec = &(cls->data.specs[i]);
 		char* name = spec->name;
 		switch (spec->type) {
 		case MVSPEC_TYPE:

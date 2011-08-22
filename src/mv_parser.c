@@ -42,7 +42,7 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 		}
 	} else return;
 
-	mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+	mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
 	tmp[0] = *a;
 	tmp[1] = *b;
 
@@ -63,13 +63,13 @@ inline static void __comma__(mv_ast_entry* stack, int *count) {
 	if (TEMPFIX(a, ATTRLIST) && PAIR(b)) {	
 		mv_ast* stree = &(a->value.subtree);
 		int sz = ++(stree->size);
-		stree->items = realloc(stree->items, sizeof(mv_ast_entry)*sz);
+		stree->items = (mv_ast_entry*)realloc(stree->items, sizeof(mv_ast_entry)*sz);
 		stree->items[sz - 1] = *b;
 		*count -= 2;
 	}
 
 	if (PAIR(a) && PAIR(b)) {
-		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+		mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
 		tmp[0] = *a;
 		tmp[1] = *b;
 		a->type = MVAST_TEMPATTRLIST;
@@ -80,7 +80,7 @@ inline static void __comma__(mv_ast_entry* stack, int *count) {
 	}
 
 	if (SPEC(a) && SPEC(b)) {
-		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry) * 2);
+		mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
 		tmp[0] = *a;
 		tmp[1] = *b;
 		a->type = MVAST_TEMPATTRSPECLIST;
@@ -117,7 +117,7 @@ inline static void __list__(mv_ast_entry* stack, int* count) {
 	mv_ast_entry *e2 = &(stack[*count - 2]);
 
 	if (PAIR(e2) || SPEC(e2) || QPAIR(e2)) {
-		mv_ast_entry* tmp = malloc(sizeof(mv_ast_entry));
+		mv_ast_entry* tmp = (mv_ast_entry*)malloc(sizeof(mv_ast_entry));
 		tmp[0] = *e2;
 		if (PAIR(e2)) {
 			e1->type = MVAST_ATTRLIST;
@@ -162,7 +162,7 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 
 	e1->type = MVAST_SUBQUERY;
 	e1->value.subtree.size = 2;
-	e1->value.subtree.items = malloc(sizeof(mv_ast_entry) * 2);
+	e1->value.subtree.items = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * 2);
 	e1->value.subtree.items[0] = *e2;
 	e1->value.subtree.items[1] = *e4;
 
@@ -213,7 +213,7 @@ inline static void __compress__(mv_ast_entry* stack, int* size) {
 mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	mv_strarr tokens;
 	FAILRET(mv_tokenize(&tokens, data));
-	mv_ast_entry* stack = malloc(sizeof(mv_ast_entry) * tokens.used);
+	mv_ast_entry* stack = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * tokens.used);
 	int i, scan = 0, size = 0;
 
 	while (scan < tokens.used) {
@@ -224,7 +224,7 @@ mv_error* mv_ast_parse(mv_ast* target, char* data) {
 	free(tokens.items);
 
 	target->size = size;
-	stack = realloc(stack, sizeof(mv_ast_entry) * size);
+	stack = (mv_ast_entry*)realloc(stack, sizeof(mv_ast_entry) * size);
 	target->items = stack;
 
 	for (i=0; i < size; i++) {
@@ -493,8 +493,8 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 
 inline static
 mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
-	if (ast->size != 5) goto wrong; 
 	mv_ast_entry* items = ast->items;
+	if (ast->size != 5) goto wrong; 
 	if (!LEAF(&items[2])) goto wrong;
 	if (LEAFFIX(&items[3], "with")) {
 		if (!LIST(&items[4])) goto wrong;
@@ -615,7 +615,7 @@ mv_error* mv_tokenize(mv_strarr* target, char* data) {
 			} else if (state == TOKEN) {
 				mv_strarr_appslice(target, data, base, scan);
 				mv_strarr_appslice(target, data, scan, scan + 1);
-				state = 0;
+				state = WHITESPACE;
 			}
 			break;
 		default:
@@ -632,7 +632,7 @@ mv_error* mv_tokenize(mv_strarr* target, char* data) {
 	if (state == 2) {
 		mv_strarr_appslice(target, data, base, scan);
 	}
-	target->items = realloc(target->items, sizeof(mv_strref) * target->used);
+	target->items = (mv_strref*)realloc(target->items, sizeof(mv_strref) * target->used);
 	target->size = target->used;
 	return NULL;
 } // style:60

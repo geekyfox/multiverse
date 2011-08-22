@@ -18,10 +18,10 @@ mv_strref mv_strref_alloc(int len) {
 	int alc;
 	
 	if (len >= 16) {
-		ptr = malloc(sizeof(char) * (len + 1));
+		ptr = (char*)malloc(sizeof(char) * (len + 1));
 		alc = -1;
 	} else if (stptrs_num == 0) {
-		ptr = malloc(sizeof(char) * 16);
+		ptr = (char*)malloc(sizeof(char) * 16);
 		alc = 16;
 	} else {
 		stptrs_num--;
@@ -133,7 +133,7 @@ void mv_attrlist_alloc(mv_attrlist* ptr, int size) {
 	if (size == 0) {
 		ptr->attrs = NULL;
 	} else {
-		ptr->attrs = malloc(sizeof(mv_attr) * size);
+		ptr->attrs = (mv_attr*)malloc(sizeof(mv_attr) * size);
 	}
 }
 
@@ -158,7 +158,7 @@ void mv_attrlist_realloc(mv_attrlist* ptr, int size) {
 		ptr->attrs = NULL;
 		return;
 	}
-	ptr->attrs = realloc(ptr->attrs, sizeof(mv_attr) * size);
+	ptr->attrs = (mv_attr*)realloc(ptr->attrs, sizeof(mv_attr) * size);
 }
 
 void mv_attrlist_release(mv_attrlist* ptr) {
@@ -186,7 +186,7 @@ void mv_attrspec_release(mv_attrspec* ptr) {
 }
 
 void mv_clscache_alloc(mv_clscache* ptr, int size) {
-	ptr->items = malloc(sizeof(mv_class) * size);
+	ptr->items = (mv_class*)malloc(sizeof(mv_class) * size);
 	ptr->size = size;
 	ptr->used = 0;
 }
@@ -202,7 +202,7 @@ void mv_clscache_put(mv_clscache* ptr, int* ref, mv_speclist* obj) {
 	if (index == -1) {
 		if (ptr->used == ptr->size) {
 			ptr->size *= 2;
-			ptr->items = realloc(ptr->items, sizeof(mv_class) * ptr->size);
+			ptr->items = (mv_class*)realloc(ptr->items, sizeof(mv_class) * ptr->size);
 		}
 		index = ptr->used;
 		ptr->used++;
@@ -224,7 +224,7 @@ void mv_clscache_release(mv_clscache* ptr) {
 }
 	
 void mv_entcache_alloc(mv_entcache* ptr, int size) {
-	ptr->items = malloc(sizeof(mv_entity) * size);
+	ptr->items = (mv_entity*)malloc(sizeof(mv_entity) * size);
 	ptr->size = size;
 	ptr->used = 0;
 }
@@ -241,7 +241,7 @@ void mv_entcache_put(mv_entcache* ptr, int* ref, mv_entity* obj) {
 		if (ptr->used == ptr->size) {
 			ptr->size *= 2;
 			size_t newsz = sizeof(mv_entity) * ptr->size;
-			ptr->items = realloc(ptr->items, newsz);
+			ptr->items = (mv_entity*)realloc(ptr->items, newsz);
 		}
 		index = ptr->used;
 		ptr->used++;
@@ -308,7 +308,7 @@ mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 }
 
 void mv_intset_alloc(mv_intset* ptr, int size) {
-	ptr->items = malloc(sizeof(int) * size);
+	ptr->items = (int*)malloc(sizeof(int) * size);
 	ptr->size = size;
 	ptr->used = 0;
 }
@@ -325,7 +325,7 @@ void mv_intset_put(mv_intset* ptr, int value) {
 	if (mv_intset_contains(ptr, value)) return;
 	if (ptr->used == ptr->size) {
 		ptr->size *= 2;
-		ptr->items = realloc(ptr->items, ptr->size * sizeof(int));
+		ptr->items = (int*)realloc(ptr->items, ptr->size * sizeof(int));
 	}
 	ptr->items[ptr->used] = value;
 	ptr->used++;
@@ -361,7 +361,7 @@ void mv_query_release(mv_query* query) {
 }
 
 void mv_speclist_alloc(mv_speclist* ptr, int size) {
-	ptr->specs = malloc(sizeof(mv_attrspec) * size);
+	ptr->specs = (mv_attrspec*)malloc(sizeof(mv_attrspec) * size);
 	ptr->size = size;
 }
 
@@ -377,7 +377,7 @@ void mv_speclist_release(mv_speclist* ptr) {
 
 void mv_strarr_alloc(mv_strarr* ptr, int size) {
 	if (size < 8) size = 8;
-	ptr->items = malloc(sizeof(mv_strref) * size);
+	ptr->items = (mv_strref*)malloc(sizeof(mv_strref) * size);
 	ptr->used = 0;
 	ptr->size = size;
 }
@@ -385,7 +385,7 @@ void mv_strarr_alloc(mv_strarr* ptr, int size) {
 static void __mv_strarr_expand(mv_strarr* ptr) {
 	if (ptr->used < ptr->size) return;
 	ptr->size *= 2;
-	ptr->items = realloc(ptr->items, sizeof(mv_strref) * ptr->size);
+	ptr->items = (mv_strref*)realloc(ptr->items, sizeof(mv_strref) * ptr->size);
 }
 
 void mv_strarr_append(mv_strarr* ptr, char* value) {
@@ -416,7 +416,7 @@ void mv_strarr_release(mv_strarr* ptr) {
 
 char* mv_strbuf_align(mv_strbuf* buf) {
 	buf->size = buf->used + 1;
-	buf->data = realloc(buf->data, sizeof(char) * buf->size);
+	buf->data = (char*)realloc(buf->data, sizeof(char) * buf->size);
 	buf->data[buf->used] = '\0';
 	return buf->data;
 }
@@ -442,11 +442,11 @@ void mv_typespec_release(mv_typespec* spec) {
 }
 
 void mv_varbind_alloc(mv_varbind* ptr, int size) {
-	ptr->keys = malloc(sizeof(char*) * size);
+	ptr->keys = (char**)malloc(sizeof(char*) * size);
 	int i;
 	for (i=0; i<size; i++) ptr->keys[i] = NULL;
-	ptr->values = malloc(sizeof(int) * size);
-	ptr->hashes = malloc(sizeof(int) * size);
+	ptr->values = (int*)malloc(sizeof(int) * size);
+	ptr->hashes = (int*)malloc(sizeof(int) * size);
 	ptr->size = size;
 	ptr->used = 0;
 }

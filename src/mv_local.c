@@ -7,7 +7,7 @@
 mv_session* __LOCAL_SESSION__ = NULL;
 
 void mv_local_start() {
-	__LOCAL_SESSION__ = malloc(sizeof(mv_session));
+	__LOCAL_SESSION__ = (mv_session*)malloc(sizeof(mv_session));
 	mv_session_init(__LOCAL_SESSION__);
 }
 
