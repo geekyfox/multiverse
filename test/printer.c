@@ -13,7 +13,6 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 	char* target;
 	mv_error* error;
 
-	mv_session_init(&state);
 	error = mv_session_perform(&state, script);
 	FAIL(error);
 
@@ -21,7 +20,6 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 	FAIL(error);
 	ASSERT_STRING(target, expect);
 
-	mv_session_release(&state);
 	mv_strarr_release(script);
 	free(target);
 }

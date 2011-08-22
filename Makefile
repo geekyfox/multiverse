@@ -1,5 +1,5 @@
 
-CXX_MODULES  = Intset
+CXX_MODULES  = Intset Session
 CXX_HEADERS  = $(foreach i,$(CXX_MODULES),src/mv$(i).h)
 
 CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h \

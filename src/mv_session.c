@@ -6,44 +6,6 @@
 
 #include "parser.h"
 
-mv_error* __mv_copy_attr(mv_attr* dst, mv_attr* src, mv_session* sess) {
-	int ref;
-
-	dst->type = src->type;
-
-	switch(src->type) {
-	case MVTYPE_RAWREF:
-		ref = mv_session_findvar(sess, src->value.rawref);
-		if (ref == -1) {
-			if (sess->autovalidate) {
-				THROW(BADVAR, "Unknown variable '%s'", src->name);
-			} else {
-				dst->type = MVTYPE_RAWREF;
-				dst->value.rawref = strdup(src->value.rawref);	
-			}
-		} else {
-			dst->type = MVTYPE_REF;
-			dst->value.ref = ref;
-		}
-		break;
-	case MVTYPE_REF:
-		dst->value.ref = src->value.ref;
-		break;
-	case MVTYPE_INTEGER:
-		dst->value.integer = src->value.integer;
-		break;
-	case MVTYPE_STRING:
-		dst->value.string = strdup(src->value.string);
-		break;
-	default:
-		DIE("Unknown type");
-	}
-
-	dst->name = strdup(src->name);
-
-	return NULL;
-}
-
 mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 	mv_typespec *dtype, *stype;
 	mv_query *dquery, *squery;
@@ -68,29 +30,6 @@ mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 	}
 
 	dst->name = strdup(src->name);
-	return NULL;
-}
-
-mv_error* __mv_create_entity(int* ref,
-                             mv_session* sess,
-                             mv_attrlist attrs)
-{
-	int i, j;
-	mv_entity entity;
-	mv_error *error;
-	mv_attr *src, *dst;
-	//
-	mv_entity_alloc(&entity, attrs.size, 0);
-	entity.exist = 1;
-	for (i=0; i<attrs.size; i++) {
-		src = &attrs.attrs[i];
-		dst = &entity.data.attrs[i];
-		if ((error = __mv_copy_attr(dst, src, sess))) {
-			for (j=0; j<i; j++) mv_attr_release(&entity.data.attrs[j]);
-			return error;
-		}
-	}
-	mv_entcache_put(&sess->entities, ref, &entity);
 	return NULL;
 }
 
@@ -120,11 +59,11 @@ static mv_error* __assign__(mv_session* state, mv_command* cmd) {
 	assert(cmd->vars.used == 2);
 	mv_strref clsname = cmd->vars.items[0];
 	char* objname = cmd->vars.items[1].ptr;
-	int objref = mv_session_findvar(state, objname);
+	int objref = state->findvar(objname);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", objname);
 	}
-	int clsref = mv_session_findclass(state, clsname.ptr);
+	int clsref = state->findclass(clsname.ptr);
 	if (clsref == -1) {
 		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
@@ -135,121 +74,48 @@ static mv_error* __assign__(mv_session* state, mv_command* cmd) {
 	return NULL;
 }
 
-static mv_error* __create_enty_ex(mv_session* state, mv_command* cmd) {
-	if (cmd->vars.used == 0) {
-		return __mv_create_entity(NULL, state, cmd->attrs);
-	} else if (cmd->vars.used == 1) {
-		char* varname = cmd->vars.items[0].ptr;
-		int ref = mv_varbind_lookup(&state->vars, varname);
-		if (ref != -1) {
-			THROW(BADVAR, "Variable already bound");
-		}
-		mv_error* error;
-		if ((error = __mv_create_entity(&ref, state, cmd->attrs))) {
-			return error;
-		}
-		mv_varbind_insert(&state->vars, varname, ref);
-		return NULL;
-	} else {
-		THROW(INTERNAL, "Malformed action");
-	}
-}
-
-inline static mv_error* __destroy_enty__(mv_session* state, mv_command* cmd) {
-	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0].ptr;
-	int objref = mv_session_findvar(state, name);
-	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", name);
-	}
-	mv_entity_release(&state->entities.items[objref]);
-	state->entities.items[objref].exist = 0;
-	if (name[0] != '#') {
-		mv_varbind_remove(&state->vars, name);
-	}
-	return NULL;
-} 
 
 inline static mv_error* __update_entity__(mv_session* state, mv_command* cmd) {
 	EXPECT(cmd->vars.used == 1, "Command is damaged");
 	char* name = cmd->vars.items[0].ptr;
-	int objref = mv_session_findvar(state, name);
+	int objref = state->findvar(name);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
 	}
 	return mv_entity_update(&state->entities.items[objref], cmd->attrs);
 }
 
-mv_error* mv_session_execute(mv_session* state, mv_command* action) {
+mv_error* mvSession::execute(mv_command* action) {
 	int ref;
 	mv_error* error;
 	char* clsname;
 
 	switch (action->code) {
 	case MVCMD_ASSIGN:
-		return __assign__(state, action);
+		return __assign__(this, action);
 	case MVCMD_CREATE_ENTITY:
-		return __create_enty_ex(state, action);
+		return createImpl(action);
 	case MVCMD_CREATE_CLASS:
 		if (action->vars.used != 1) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
 		clsname = action->vars.items[0].ptr;
-		ref = mv_varbind_lookup(&state->clsnames, clsname);
+		ref = mv_varbind_lookup(&clsnames, clsname);
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
 		}
-		if ((error = __mv_create_class(&ref, state, &(action->spec)))) {
+		if ((error = __mv_create_class(&ref, this, &(action->spec)))) {
 			return error;
 		}
-		mv_varbind_insert(&state->clsnames, clsname, ref);
+		mv_varbind_insert(&clsnames, clsname, ref);
 		return NULL;
 	case MVCMD_DESTROY_ENTITY:
-		return __destroy_enty__(state, action);
+		return destroyImpl(action);
 	case MVCMD_UPDATE_ENTITY:
-		return __update_entity__(state, action);
+		return __update_entity__(this, action);
 	default:
 		THROW(INTERNAL, "Unknown action (%d)", action->code);
 	}
-}
-
-void mv_session_init(mv_session* state) {
-	mv_varbind_alloc(&state->vars, 8);
-	mv_varbind_alloc(&state->clsnames, 8);
-	mv_entcache_alloc(&state->entities, 8);
-	mv_clscache_alloc(&state->classes, 8);
-	state->autovalidate = 1;
-}
-
-int mv_session_findvar(mv_session* session, char* name) {
-	if (name[0] == '#' && name[1] == '#') {
-		int ref = atoi(name + 2);
-		if ((ref < 0) || (session->entities.used <= ref) || (session->entities.items[ref].exist == 0)) return -1;
-		return ref;
-	}
-	return mv_varbind_lookup(&(session->vars), name);
-}
-
-int mv_session_findclass(mv_session* session, char* name) {
-	return mv_varbind_lookup(&(session->clsnames), name);
-}
-
-mv_error* mv_session_lookup(mvIntset& tr, mv_session* s, mv_command* c) {
-	mv_query query;
-	mv_error* error = mv_query_compile(&query, c);
-
-	if (error != NULL) return error;
-	
-	int i;
-	for (i=0; i<s->entities.used; i++) {
-		if (!s->entities.items[i].exist) continue;
-		if (mv_query_match(&query, &(s->entities.items[i]))) {
-			tr.put(i);
-		}
-	}
-
-	mv_query_release(&query);
-	return NULL;
 }
 
 mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
@@ -258,22 +124,15 @@ mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
 	for (i=0; i<script->used; i++) {
 		mv_error* error = mv_command_parse(&cmd, script->items[i].ptr);
 		if (error != NULL) return error;
-		error = mv_session_execute(session, &cmd);
+		error = session->execute(&cmd);
 		mv_command_release(&cmd);
 		if (error != NULL) return error;
 	}
 	return NULL;
 }
 
-void mv_session_release(mv_session* state) {
-	mv_varbind_release(&state->vars);
-	mv_varbind_release(&state->clsnames);
-	mv_entcache_release(&(state->entities));
-	mv_clscache_release(&state->classes);
-}
-
 mv_error* mv_session_show(char** target, mv_session* session, char* name) {
-	int ref = mv_session_findvar(session, name);
+	int ref = session->findvar(name);
 	if (ref != -1) {
 		mv_strbuf buf;
 		mv_strbuf_alloc(&buf, 1000);
@@ -283,7 +142,7 @@ mv_error* mv_session_show(char** target, mv_session* session, char* name) {
 		*target = mv_strbuf_align(&buf);
 		return NULL;
 	}
-	ref = mv_session_findclass(session, name);
+	ref = session->findclass(name);
 	if (ref != -1) {
 		mv_strbuf buf;
 		mv_strbuf_alloc(&buf, 1000);

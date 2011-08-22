@@ -7,14 +7,13 @@
 mv_session* __LOCAL_SESSION__ = NULL;
 
 void mv_local_start() {
-	__LOCAL_SESSION__ = (mv_session*)malloc(sizeof(mv_session));
-	mv_session_init(__LOCAL_SESSION__);
+	__LOCAL_SESSION__ = new mvSession();
 }
 
 mv_error* __local_lookup(mv_command* c) {
 	mvIntset res(1);
 	
-	mv_error* error = mv_session_lookup(res, __LOCAL_SESSION__, c);
+	mv_error* error = __LOCAL_SESSION__->lookup(res, c);
 	if (error == NULL) {
 		int size = res.cardinality();
 		if (size == 0) {
@@ -60,7 +59,7 @@ void mv_local_execute(mv_command* cmd) {
 	case MVCMD_CREATE_ENTITY:
 	case MVCMD_DESTROY_ENTITY:
 	case MVCMD_UPDATE_ENTITY:
-		error = mv_session_execute(__LOCAL_SESSION__, cmd);
+		error = __LOCAL_SESSION__->execute(cmd);
 		if (error == NULL) __display_success(cmd);
 		break;
 	case MVCMD_SHOW:
@@ -87,8 +86,7 @@ void mv_local_execute(mv_command* cmd) {
 }
 
 void mv_local_end() {
-	mv_session_release(__LOCAL_SESSION__);
-	free(__LOCAL_SESSION__);
+	delete __LOCAL_SESSION__;
 }
 
 mv_error* mv_local_read(mv_command* cmd) {

@@ -37,17 +37,15 @@ TEST mv_command_test() {
 TEST mv_execute_test() {
 	mv_command action;
 	mv_session state;
-	mv_session_init(&state);
 
 	FAILFAST(mv_command_parse(&action, REQ1));
-	FAILFAST(mv_session_execute(&state, &action));
+	FAILFAST(state.execute(&action));
 	mv_command_release(&action);
 
 	mv_error* error = mv_command_parse(&action, REQ5);
 	FAIL(error);
-	error = mv_session_execute(&state, &action);
-	FAIL(error);
-	assert(state.vars.used == 2);
+	FAILFAST(state.execute(&action));
+	ASSERT_INT(state.varcount(), 2);
 	assert(state.entities.used == 2);
 	assert(state.entities.items[1].data.size == 2);
 	assert(state.entities.items[1].data.attrs[1].type == MVTYPE_REF);
@@ -58,8 +56,7 @@ TEST mv_execute_test() {
 	ASSERT_INT(state.clsnames.used, 0);
 	error = mv_command_parse(&action, REQ6);
 	FAIL(error);
-	error = mv_session_execute(&state, &action);
-	FAIL(error);
+	FAILFAST(state.execute(&action));
 	ASSERT_INT(state.classes.used, 1);
 	ASSERT_INT(state.clsnames.used, 1);
 	ASSERT_INT(state.classes.items[0].data.size, 1);
@@ -68,11 +65,9 @@ TEST mv_execute_test() {
 
 	error = mv_command_parse(&action, REQ8);
 	FAIL(error);
-	error = mv_session_execute(&state, &action);
-	FAIL(error);
+	FAILFAST(state.execute(&action));
 
 	mv_command_release(&action);
-	mv_session_release(&state);
 }
 
 TEST mv_attrlist_show_test() {
@@ -88,19 +83,17 @@ TEST mv_attrlist_show_test() {
 
 TEST mv_session_findvar_test() {
 	mv_session state;
-	mv_session_init(&state);
-	int ref = mv_session_findvar(&state, "foobar");
+	int ref = state.findvar("foobar");
 	assert(ref == -1);
-	ref = mv_session_findvar(&state, "##0");
+	ref = state.findvar("##0");
 	assert(ref == -1);
 	mv_command action;
 	mv_error* error = mv_command_parse(&action, REQ1);
 	assert(error == NULL);
-	error = mv_session_execute(&state, &action);
-	assert(error == NULL);
-	ref = mv_session_findvar(&state, "##0");
+	FAILFAST(state.execute(&action));
+	ref = state.findvar("##0");
 	assert(ref == 0);
-	ref = mv_session_findvar(&state, "umberto_eco");
+	ref = state.findvar("umberto_eco");
 	assert(ref == 0);
 	char* text1;
 	error = mv_session_show(&text1, &state, "umberto_eco");
@@ -113,8 +106,6 @@ TEST mv_session_findvar_test() {
 	error = mv_session_show(&text1, &state, "##1");
 	assert(error != NULL);
 	mv_error_release(error);
-
-	mv_session_release(&state);
 }
 
 TEST mv_attrspec_release_test() {

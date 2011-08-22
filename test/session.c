@@ -4,23 +4,14 @@
 inline static void __perform__(mv_session* state, char* cmd) {
 	mv_command action;
 	FAILFAST(mv_command_parse(&action, cmd));
-	FAILFAST(mv_session_execute(state, &action));
+	FAILFAST(state->execute(&action));
 	mv_command_release(&action);
-}
-
-TEST session_init() {
-	mv_session state;
-	state.clsnames.used = 12345;
-	mv_session_init(&state);
-	ASSERT_INT(state.clsnames.used, 0);
-	mv_session_release(&state);
 }
 
 TEST execute_REQ1() {
 	mv_session state;
-	mv_session_init(&state);
 	__perform__(&state, REQ1);
-	ASSERT_INT(state.vars.used, 1);
+	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.used, 1);
 	
 	mv_attrlist attrs = state.entities.items[0].data;
@@ -28,11 +19,9 @@ TEST execute_REQ1() {
 	ASSERT_INT(attrs.attrs[0].type, MVTYPE_STRING);
 	ASSERT_STRING(attrs.attrs[0].name, "name");
 	ASSERT_STRING(attrs.attrs[0].value.string, "Umberto Eco");
-	mv_session_release(&state);
 }
 
 static void __prepare_for_REQ10_11(mv_session* session, int bind) {
-	mv_session_init(session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ1));
@@ -48,26 +37,23 @@ TEST execute_REQ10() {
 	__prepare_for_REQ10_11(&state, 0);
 
 	FAILFAST(mv_command_parse(&action, REQ10));
-	FAILFAST(mv_session_execute(&state, &action));
+	FAILFAST(state.execute(&action));
 
 	ASSERT_INT(state.entities.items[0].classes.used, 1);
 	ASSERT_STRREF(state.entities.items[0].classes.items[0], "person");
 
-	mv_session_release(&state);
 	mv_command_release(&action);
 }
 
 TEST fail_REQ10() {
 	mv_command action;
 	mv_session state;
-	mv_session_init(&state);
 
 	FAILFAST(mv_command_parse(&action, REQ10));
-	mv_error* err = mv_session_execute(&state, &action);
+	mv_error* err = state.execute(&action);
 	ASSERT_INT(err->code, MVERROR_BADVAR);
 
 	mv_error_release(err);
-	mv_session_release(&state);
 	mv_command_release(&action);
 }
 
@@ -79,12 +65,11 @@ TEST execute_REQ11() {
 	__prepare_for_REQ10_11(&state, 1);
 
 	FAILFAST(mv_command_parse(&action, REQ11));
-	FAILFAST(mv_session_lookup(result, &state, &action));
+	FAILFAST(state.lookup(result, &action));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.get(0), 0);
 
-	mv_session_release(&state);
 	mv_command_release(&action);
 }
 
@@ -95,18 +80,16 @@ TEST execute_REQ12() {
 	__prepare_for_REQ10_11(&state, 0);
 
 	FAILFAST(mv_command_parse(&action, REQ12));
-	FAILFAST(mv_session_execute(&state, &action));
+	FAILFAST(state.execute(&action));
 
-	mv_session_release(&state);
 	mv_command_release(&action);
 }
 
 TEST execute_REQ14() {
 	mv_session state;
-	mv_session_init(&state);
 	__perform__(&state, REQ14);
 	
-	ASSERT_INT(state.vars.used, 1);
+	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.used, 1);
 	
 	mv_attrlist attrs = state.entities.items[0].data;
@@ -114,7 +97,6 @@ TEST execute_REQ14() {
 	ASSERT_INT(attrs.attrs[0].type, MVTYPE_INTEGER);
 	ASSERT_STRING(attrs.attrs[0].name, "height");
 	ASSERT_INT(attrs.attrs[0].value.integer, 324);
-	mv_session_release(&state);
 }
 
 TEST lookup_after_destroy() {
@@ -126,20 +108,19 @@ TEST lookup_after_destroy() {
 
 	FAILFAST(mv_command_parse(&lookup, REQ11));
 	FAILFAST(mv_command_parse(&destroy, REQ12));
-	FAILFAST(mv_session_lookup(result, &state, &lookup));
+	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.get(0), 0);
 	result.clear();
 
-	FAILFAST(mv_session_execute(&state, &destroy));
-	FAILFAST(mv_session_lookup(result, &state, &lookup));
+	FAILFAST(state.execute(&destroy));
+	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 0);
 
 	mv_command_release(&lookup);
 	mv_command_release(&destroy);
-	mv_session_release(&state);
 }
 
 TEST lookup_all_items() {
@@ -150,18 +131,16 @@ TEST lookup_all_items() {
 	__prepare_for_REQ10_11(&state, 1);
 
 	FAILFAST(mv_command_parse(&lookup, REQ13));
-	FAILFAST(mv_session_lookup(result, &state, &lookup));
+	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
 	
 	mv_command_release(&lookup);
-	mv_session_release(&state);
 }
 
 TEST numlookup() {
 	mv_session session;
-	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 3);
 	mv_strarr_append(&script, strdup(REQ14));
@@ -174,18 +153,16 @@ TEST numlookup() {
 
 	mv_command lookup;
 	FAILFAST(mv_command_parse(&lookup, REQ17));
-	FAILFAST(mv_session_lookup(result, &session, &lookup));
+	FAILFAST(session.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
 
 	mv_command_release(&lookup);
-	mv_session_release(&session);
 }
 
 TEST subquery() {
 	mv_session session;
-	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ19));
@@ -200,12 +177,10 @@ TEST subquery() {
 	ASSERT_STRING(qr.classname, "book");
 	
 	mv_strarr_release(&script);
-	mv_session_release(&session);
 }
 
 TEST update() {
 	mv_session session;
-	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ14));
@@ -217,12 +192,10 @@ TEST update() {
 	ASSERT_INT(data.size, 2);
 
 	mv_strarr_release(&script);
-	mv_session_release(&session);
 }
 
 TEST badupdate() {
 	mv_session session;
-	mv_session_init(&session);
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ23));
@@ -232,5 +205,4 @@ TEST badupdate() {
 
 	mv_error_release(err);
 	mv_strarr_release(&script);
-	mv_session_release(&session);
 }

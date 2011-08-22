@@ -161,21 +161,9 @@ void mv_clscache_release(mv_clscache* ptr);
 
 mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls);
 
-typedef struct {
-	mv_varbind vars;
-	mv_entcache entities;
-	mv_varbind clsnames;
-	mv_clscache classes;
-	int autovalidate;
-} mv_session;
+#include "mvSession.h"
 
-void      mv_session_init(mv_session* state);
-mv_error* mv_session_execute(mv_session* state, mv_command* action);
-int       mv_session_findclass(mv_session* session, char* name);
-int       mv_session_findvar(mv_session* session, char* name);
-mv_error* mv_session_lookup(mvIntset&, mv_session*, mv_command*);
 mv_error* mv_session_perform(mv_session* state, mv_strarr* script);
-void      mv_session_release(mv_session* state);
 mv_error* mv_session_show(char** target, mv_session* source, char* name);
 
 mv_error* mv_query_compile(mv_query* pat, mv_command* cmd);
