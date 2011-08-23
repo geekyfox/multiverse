@@ -5,13 +5,7 @@
 #include <string.h>
 #include "multiverse.h"
 
-#define CACHE 64
-
-static int* iptrs[CACHE];
-static int iptrs_num = 0;
-
-static char* stptrs[CACHE];
-static int stptrs_num = 0;
+#include "mvMemPool.h"
 
 mv_strref mv_strref_alloc(int len) {
 	char* ptr;
@@ -20,12 +14,8 @@ mv_strref mv_strref_alloc(int len) {
 	if (len >= 16) {
 		ptr = (char*)malloc(sizeof(char) * (len + 1));
 		alc = -1;
-	} else if (stptrs_num == 0) {
-		ptr = (char*)malloc(sizeof(char) * 16);
-		alc = 16;
 	} else {
-		stptrs_num--;
-		ptr = stptrs[stptrs_num];
+		ptr = localStrPool.get();
 		alc = 16;
 	}
 	mv_strref ref = mv_strref_wrap(ptr);
@@ -36,13 +26,7 @@ mv_strref mv_strref_alloc(int len) {
 mv_strref mv_strref_wrap(char* value) {
 	mv_strref result;
 	result.ptr = value;
-	if (iptrs_num == 0) {
-		result.ctr = (int*)malloc(sizeof(int));
-	} else {
-		iptrs_num--;
-		result.ctr = iptrs[iptrs_num];
-	}
-	*(result.ctr) = 1;
+	result.ctr = localIntPool.acquire(1);
 	result.alc = -1;
 	return result;
 }
@@ -51,19 +35,13 @@ void mv_strref_free(mv_strref* ref) {
 	int x = *(ref->ctr);
 	x--;
 	if (x == 0) {
-		if ( (stptrs_num == CACHE) || (ref->alc != 16) ) {
+		if (ref->alc != 16) {
 			free(ref->ptr);
 		} else {
-			stptrs[stptrs_num] = ref->ptr;
-			stptrs_num++;
+			localStrPool.release(ref->ptr);
 		}
 
-		if (iptrs_num == CACHE) {
-			free(ref->ctr);
-		} else {
-			iptrs[iptrs_num] = ref->ctr;
-			iptrs_num++;
-		}
+		localIntPool.release(ref->ctr);
 	} else {
 		*(ref->ctr) = x;
 	}

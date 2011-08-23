@@ -1,5 +1,5 @@
 
-CXX_MODULES  = Codebook Intset Session
+CXX_MODULES  = Codebook Intset Session MemPool
 CXX_HEADERS  = $(foreach i,$(CXX_MODULES),src/mv$(i).h)
 
 CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h \
