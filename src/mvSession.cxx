@@ -4,17 +4,16 @@
 #include "multiverse.h"
 #include "mvSession.h"
 
-mvSession::mvSession() {
-	mv_varbind_alloc(&vars, 8);
-	mv_varbind_alloc(&clsnames, 8);
+mvSession::mvSession() :
+	vars(8),
+	clsnames(8)
+{
 	mv_entcache_alloc(&entities, 8);
 	mv_clscache_alloc(&classes, 8);
 	autovalidate = 1;
 }
 
 mvSession::~mvSession() {
-	mv_varbind_release(&vars);
-	mv_varbind_release(&clsnames);
 	mv_entcache_release(&entities);
 	mv_clscache_release(&classes);
 }
@@ -62,7 +61,7 @@ mv_error* mvSession::createImpl(mv_command* cmd) {
 		return createNew(NULL, cmd->attrs);
 	} else if (cmd->vars.used == 1) {
 		char* varname = cmd->vars.items[0].ptr;
-		int ref = mv_varbind_lookup(&vars, varname);
+		int ref = vars.lookup(varname);
 		if (ref != -1) {
 			THROW(BADVAR, "Variable already bound");
 		}
@@ -70,7 +69,7 @@ mv_error* mvSession::createImpl(mv_command* cmd) {
 		if ((error = createNew(&ref, cmd->attrs))) {
 			return error;
 		}
-		mv_varbind_insert(&vars, varname, ref);
+		vars.insert(varname, ref);
 		return NULL;
 	} else {
 		THROW(INTERNAL, "Malformed action");
@@ -106,9 +105,7 @@ mv_error* mvSession::destroyImpl(mv_command* cmd) {
 	}
 	mv_entity_release(&entities.items[objref]);
 	entities.items[objref].exist = 0;
-	if (name[0] != '#') {
-		mv_varbind_remove(&vars, name);
-	}
+	if (name[0] != '#') vars.remove(name);
 	return NULL;
 } 
 
@@ -120,11 +117,11 @@ int mvSession::findvar(char* name) {
 		    (entities.items[ref].exist == 0)) return -1;
 		return ref;
 	}
-	return mv_varbind_lookup(&vars, name);
+	return vars.lookup(name);
 }
 
 int mvSession::findclass(char* name) {
-	return mv_varbind_lookup(&clsnames, name);
+	return clsnames.lookup(name);
 }
 
 mv_error* mvSession::lookup(mvIntset& ret, mv_command* cmd) {

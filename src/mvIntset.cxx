@@ -12,7 +12,6 @@ mvIntset::mvIntset() {
 mvIntset::mvIntset(int size) {
 	items = (int*)malloc(sizeof(int) * size);
 	this->size = size;
-	printf("SIZE = %d\n", this->size);
 	used = 0;
 }
 

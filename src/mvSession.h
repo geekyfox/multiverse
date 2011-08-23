@@ -4,8 +4,8 @@
 
 class mvSession {
 private:
-	mv_varbind vars;
-	mv_varbind clsnames;
+	mvCodebook vars;
+	mvCodebook clsnames;
 	int autovalidate;
 	mv_error* createImpl(mv_command*);
 	mv_error* createNew(int* ref, mv_attrlist attrs);
@@ -20,8 +20,8 @@ public:
 	int findclass(char* name);
 	mv_error* execute(mv_command* cmd);
     mv_error* lookup(mvIntset&, mv_command*);
-	int varcount() { return vars.used; }
-	int clscount() { return clsnames.used; }
+	int varcount() { return vars.cardinality(); }
+	int clscount() { return clsnames.cardinality(); }
 };
 
 typedef mvSession mv_session;

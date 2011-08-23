@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "mvIntset.h"
+#include "mvCodebook.h"
 #include "error.h"
 #include "model.h"
 
@@ -98,25 +99,6 @@ void mv_strarr_release(mv_strarr* ptr);
 /**********************/
 
 void mv_command_release(mv_command* action);
-
-/**********************************/
-/* String to integer code mapping */
-/**********************************/
-
-typedef struct {
-	char** keys;
-	int* values;
-	int* hashes;
-	int size;
-	int used;
-} mv_varbind;
-
-void mv_varbind_alloc(mv_varbind* ptr, int size);
-void mv_varbind_insert(mv_varbind* ptr, char* key, int value);
-int  mv_varbind_lookup(mv_varbind* ptr, char* key);
-void mv_varbind_release(mv_varbind* ptr);
-void mv_varbind_remove(mv_varbind* ptr, char* key);
-void mv_varbind_show(mv_varbind* ptr);
 
 /*****************/
 /* Single entity */

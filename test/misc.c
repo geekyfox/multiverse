@@ -53,12 +53,12 @@ TEST mv_execute_test() {
 	mv_command_release(&action);
 
 	ASSERT_INT(state.classes.used, 0);
-	ASSERT_INT(state.clsnames.used, 0);
+	ASSERT_INT(state.clscount(), 0);
 	error = mv_command_parse(&action, REQ6);
 	FAIL(error);
 	FAILFAST(state.execute(&action));
 	ASSERT_INT(state.classes.used, 1);
-	ASSERT_INT(state.clsnames.used, 1);
+	ASSERT_INT(state.clscount(), 1);
 	ASSERT_INT(state.classes.items[0].data.size, 1);
 	ASSERT_INT(state.classes.items[0].data.specs[0].type, MVSPEC_TYPE);
 	mv_command_release(&action);

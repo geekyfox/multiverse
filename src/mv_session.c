@@ -100,14 +100,14 @@ mv_error* mvSession::execute(mv_command* action) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
 		clsname = action->vars.items[0].ptr;
-		ref = mv_varbind_lookup(&clsnames, clsname);
+		ref = clsnames.lookup(clsname);
 		if (ref != -1) {
 			THROW(BADVAR, "Class '%s' already defined", clsname);
 		}
 		if ((error = __mv_create_class(&ref, this, &(action->spec)))) {
 			return error;
 		}
-		mv_varbind_insert(&clsnames, clsname, ref);
+		clsnames.insert(clsname, ref);
 		return NULL;
 	case MVCMD_DESTROY_ENTITY:
 		return destroyImpl(action);
