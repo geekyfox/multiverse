@@ -9,10 +9,20 @@
  *  This structure represents an abstract syntax
  *  tree as a bounded pointer.
  */
-typedef struct {
-	int size;
+class mv_ast {
+private:
+	int _size;
+public:
 	struct mv_ast_entry* items;
-} mv_ast;
+	mv_ast();
+	mv_ast(struct mv_ast_entry& item);
+	mv_ast(struct mv_ast_entry& first, struct mv_ast_entry& second);
+	~mv_ast();
+	void push(struct mv_ast_entry& item);
+	mv_ast* copy();
+	int size() { return _size; }
+	void init(mv_ast_entry* items, int size);
+};
 
 /*
  *  This structure represents an abstract syntax
@@ -33,7 +43,7 @@ typedef struct mv_ast_entry {
 	 */
 	union {
 		mv_strref leaf;
-		mv_ast subtree;
+		mv_ast* subtree;
 	} value;
 } mv_ast_entry;
 
@@ -66,7 +76,7 @@ typedef struct mv_ast_entry {
  * In case of parsing error, releases all allocated
  * memory and returns an mv_error.
  */
-mv_error* mv_ast_parse(mv_ast* target, char* request);
+mv_error* mv_ast_parse(mv_ast& target, char* request);
 
 /* Releases memory occupied by an AST structure. */
 void mv_ast_release(mv_ast* ast);
@@ -81,7 +91,7 @@ void mv_attrlist_parse(mv_attrlist* target, mv_ast* source);
 void mv_speclist_parse(mv_speclist* target, mv_ast* source);
 
 /* Builds a subquery from corresponding AST. */
-void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast value);
+void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);
 
 /* Builds attribute's specification. */
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);

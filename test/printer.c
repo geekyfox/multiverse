@@ -3,7 +3,7 @@
 
 TEST error_unmatched() {
 	mv_ast ast;
-	mv_error* error = mv_ast_parse(&ast, BADREQ1);
+	mv_error* error = mv_ast_parse(ast, BADREQ1);
 	ASSERT_STRING(error->message, ERRRESP1);
 	mv_error_release(error);
 }

@@ -42,7 +42,7 @@ static void __astparse_fail(char* request) {
 	mv_ast ast;
 	mv_error* error;
 	
-	error = mv_ast_parse(&ast, request);
+	error = mv_ast_parse(ast, request);
 	ASSERT_NOTNULL(error);
 	ASSERT_INT(error->code, MVERROR_SYNTAX);
 	mv_error_release(error);
