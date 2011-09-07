@@ -4,24 +4,19 @@
 
 #include "error.h"
 #include "model.h"
+#include "mvArray.h"
 
 /*
  *  This structure represents an abstract syntax
  *  tree as a bounded pointer.
  */
-class mv_ast {
-private:
-	int _size;
+class mv_ast : public mvStaticArray<struct mv_ast_entry> {
 public:
-	struct mv_ast_entry* items;
 	mv_ast();
 	mv_ast(struct mv_ast_entry& item);
 	mv_ast(struct mv_ast_entry& first, struct mv_ast_entry& second);
 	~mv_ast();
-	void push(struct mv_ast_entry& item);
 	mv_ast* copy();
-	int size() { return _size; }
-	void init(mv_ast_entry* items, int size);
 };
 
 /*
@@ -42,7 +37,7 @@ typedef struct mv_ast_entry {
 	 * mv_ast_release() for a full list), there's no value.
 	 */
 	union {
-		mv_strref leaf;
+		mv_strref* leaf;
 		mv_ast* subtree;
 	} value;
 } mv_ast_entry;
