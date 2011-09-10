@@ -3,6 +3,7 @@
 #include <string.h>
 #include "multiverse.h"
 #include "mvSession.h"
+#include "parser.h"
 
 mvSession::mvSession() :
 	vars(8),
@@ -142,3 +143,20 @@ mv_error* mvSession::lookup(mvIntset& ret, mv_command* cmd) {
 	return NULL;
 }
 
+void mvSession::perform(mv_strarr* script)
+throw (mv_error*)
+{
+	int i;
+	mv_command cmd;
+	for (i=0; i<script->used; i++) {
+		try
+	 	{
+			cmd = mv_command_parse(script->items[i].ptr);
+		} catch (mv_error* err) {
+			throw err;
+		}
+		mv_error* error = execute(&cmd);
+		mv_command_release(&cmd);
+		if (error != NULL) throw error;
+	}
+}

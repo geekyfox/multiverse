@@ -50,7 +50,7 @@ while (<IN>) {
 
 if ($#tests >= 0) {
 	my ($casename) = ($ARGV[1] =~ /[a-z]+\/([a-z]+)\.c/);
-	print OUT "TESTCASE perform_$casename\_testsuite() { ENTER(); \n"; 
+	print OUT "TESTCASE perform_$casename\_testsuite() throw () { ENTER(); \n"; 
 	print OUT "\t$_();\n" foreach (@tests);
 	print OUT "SUCCESS() ;}\n\n\n";
 }

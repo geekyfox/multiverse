@@ -5,7 +5,14 @@ TEST compile_REQ11() {
 	mv_command cmd;
 	mv_query patt;
 
-	FAILFAST(mv_command_parse(&cmd, REQ11));
+	try
+	{
+		cmd = mv_command_parse(REQ11);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(mv_query_compile(&patt, &cmd));
 
 	ASSERT_STRING(patt.classname, "person");

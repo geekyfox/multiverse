@@ -13,8 +13,14 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 	char* target;
 	mv_error* error;
 
-	error = mv_session_perform(&state, script);
-	FAIL(error);
+	try
+	{
+		state.perform(script);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(error);
+	}
 
 	error = mv_session_show(&target, &state, ref);
 	FAIL(error);

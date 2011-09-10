@@ -208,7 +208,7 @@ inline static void __compress__(mv_ast_entry* stack, int* size) {
 	} while (oldsize != *size);
 }
 
-mv_error* mv_ast_parse(mv_ast& target, char* data) {
+mv_error* mv_ast_parse(mv_ast& target, const char* data) {
 	mv_strarr tokens;
 	FAILRET(mv_tokenize(&tokens, data));
 	mv_ast_entry* stack = (mv_ast_entry*)malloc(sizeof(mv_ast_entry) * tokens.used);
@@ -539,24 +539,31 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 	return err;
 }
 
-mv_error* mv_command_parse(mv_command* cmd, char* data) {
+mv_command mv_command_parse(const char* data)
+throw (mv_error*)
+{
 	mv_ast ast;
+	mv_command command;
+	mv_command* cmd = &command;
 	mv_error* error = mv_ast_parse(ast, data);
-	if (error != NULL) return error;
+	if (error != NULL) throw error;
 	if (!LEAF(&(ast.items[0]))) {
-		THROW(SYNTAX, "Syntax error");
+		NEWTHROW(SYNTAX, "Syntax error");
 	}
 	char* cmdname = ast.items[0].value.leaf->ptr;
 
-	if (STREQ(cmdname, "assign"))  return __assign__(cmd, &ast);
-	if (STREQ(cmdname, "create"))  return __create__(cmd, &ast);
-	if (STREQ(cmdname, "destroy")) return __destroy__(cmd, &ast);
-	if (STREQ(cmdname, "lookup"))  return __lookup__(cmd, &ast);
-	if (STREQ(cmdname, "show"))    return __show__(cmd, &ast);
-	if (STREQ(cmdname, "quit"))    return __quit__(cmd, &ast);
-	if (STREQ(cmdname, "update"))  return __update__(cmd, &ast);
+	if (STREQ(cmdname, "assign"))  error = __assign__(cmd, &ast);
+	else if (STREQ(cmdname, "create"))  error = __create__(cmd, &ast);
+	else if (STREQ(cmdname, "destroy")) error = __destroy__(cmd, &ast);
+	else if (STREQ(cmdname, "lookup"))  error = __lookup__(cmd, &ast);
+	else if (STREQ(cmdname, "show"))    error = __show__(cmd, &ast);
+	else if (STREQ(cmdname, "quit"))    error = __quit__(cmd, &ast);
+	else if (STREQ(cmdname, "update"))  error = __update__(cmd, &ast);
+	else NEWTHROW(BADCMD, cmdname);
 
-	THROW(BADCMD, cmdname);
+	if (error != NULL) throw error;
+
+	return command;
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
@@ -591,7 +598,7 @@ void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value) {
 	ptr->name = strdup(key);
 }
 
-mv_error* mv_tokenize(mv_strarr* target, char* data) {
+mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 	assert(data != NULL);
 	assert(target != NULL);
 	enum { WHITESPACE, LITERAL, TOKEN } state = WHITESPACE;

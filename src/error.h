@@ -19,7 +19,7 @@ typedef struct {
 void      mv_error_display(mv_error* error, FILE* file);
 char*     mv_error_show(mv_error* error);
 void      mv_error_release(mv_error* error);
-mv_error* mv_error_unmatched(int objcode, char* command);
+mv_error* mv_error_unmatched(int objcode, const char* command);
 
 #define PREPARE_ERROR(__errvar, __errcd, ...) do { \
 __errvar = (mv_error*)malloc(sizeof(mv_error));    \
@@ -30,6 +30,11 @@ __errvar->code = MVERROR_##__errcd; } while (0)    \
 mv_error* __errtmp__;                            \
 PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
 return __errtmp__; } while (0)
+
+#define NEWTHROW(__errcd, ...) do { \
+mv_error* __errtmp__;                            \
+PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
+throw __errtmp__; } while (0)
 
 #define DIE(...) do {                              \
 fprintf(stderr, "[ !!! Fatal error | %s %s:%d ] ", \

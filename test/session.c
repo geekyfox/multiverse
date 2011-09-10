@@ -3,7 +3,14 @@
 
 inline static void __perform__(mv_session* state, char* cmd) {
 	mv_command action;
-	FAILFAST(mv_command_parse(&action, cmd));
+	try
+	{
+		action = mv_command_parse(cmd);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state->execute(&action));
 	mv_command_release(&action);
 }
@@ -27,7 +34,14 @@ static void __prepare_for_REQ10_11(mv_session* session, int bind) {
 	mv_strarr_append(&script, strdup(REQ1));
 	mv_strarr_append(&script, strdup(REQ6));
 	if (bind) mv_strarr_append(&script, strdup(REQ10));
-	FAILFAST(mv_session_perform(session, &script));
+	try
+	{
+		session->perform(&script);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}	
 	mv_strarr_release(&script);
 }
 
@@ -36,7 +50,14 @@ TEST execute_REQ10() {
 	mv_session state;
 	__prepare_for_REQ10_11(&state, 0);
 
-	FAILFAST(mv_command_parse(&action, REQ10));
+	try
+	{
+		action = mv_command_parse(REQ10);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.execute(&action));
 
 	ASSERT_INT(state.entities.items[0].classes.used, 1);
@@ -49,7 +70,14 @@ TEST fail_REQ10() {
 	mv_command action;
 	mv_session state;
 
-	FAILFAST(mv_command_parse(&action, REQ10));
+	try
+	{
+		action = mv_command_parse(REQ10);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	mv_error* err = state.execute(&action);
 	ASSERT_INT(err->code, MVERROR_BADVAR);
 
@@ -64,7 +92,14 @@ TEST execute_REQ11() {
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	FAILFAST(mv_command_parse(&action, REQ11));
+	try
+	{
+		action = mv_command_parse(REQ11);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.lookup(result, &action));
 
 	ASSERT_INT(result.cardinality(), 1);
@@ -79,7 +114,14 @@ TEST execute_REQ12() {
 
 	__prepare_for_REQ10_11(&state, 0);
 
-	FAILFAST(mv_command_parse(&action, REQ12));
+	try
+	{
+		action = mv_command_parse(REQ12);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.execute(&action));
 
 	mv_command_release(&action);
@@ -106,8 +148,15 @@ TEST lookup_after_destroy() {
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	FAILFAST(mv_command_parse(&lookup, REQ11));
-	FAILFAST(mv_command_parse(&destroy, REQ12));
+	try
+	{
+		lookup = mv_command_parse(REQ11);
+		destroy = mv_command_parse(REQ12);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
@@ -130,7 +179,14 @@ TEST lookup_all_items() {
 
 	__prepare_for_REQ10_11(&state, 1);
 
-	FAILFAST(mv_command_parse(&lookup, REQ13));
+	try
+	{
+		lookup = mv_command_parse(REQ13);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
@@ -146,13 +202,27 @@ TEST numlookup() {
 	mv_strarr_append(&script, strdup(REQ14));
 	mv_strarr_append(&script, strdup(REQ15));
 	mv_strarr_append(&script, strdup(REQ16));
-	FAILFAST(mv_session_perform(&session, &script));
+	try
+	{
+		session.perform(&script);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	mv_strarr_release(&script);
 
 	mvIntset result(8);
 
 	mv_command lookup;
-	FAILFAST(mv_command_parse(&lookup, REQ17));
+	try
+	{
+		lookup = mv_command_parse(REQ17);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(session.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
@@ -167,7 +237,14 @@ TEST subquery() {
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ19));
 	mv_strarr_append(&script, strdup(REQ18));
-	FAILFAST(mv_session_perform(&session, &script));
+	try
+	{
+		session.perform(&script);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	ASSERT_INT(session.classes.used, 2);
 	ASSERT_INT(session.classes.items[1].data.size, 1);
 
@@ -185,7 +262,14 @@ TEST update() {
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ14));
 	mv_strarr_append(&script, strdup(REQ20));
-	FAILFAST(mv_session_perform(&session, &script));
+	try
+	{
+		session.perform(&script);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 
 	ASSERT_INT(session.entities.used, 1);
 	mv_attrlist data = session.entities.items[0].data;
@@ -200,9 +284,16 @@ TEST badupdate() {
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ23));
 	mv_strarr_append(&script, strdup(BADREQ4));
-	mv_error* err = mv_session_perform(&session, &script);
-	ASSERT_ERROR(err, MVERROR_SYNTAX);
+	try
+	{
+		session.perform(&script);
+		ASSERT_ERROR(((mv_error*)NULL), MVERROR_SYNTAX);
+	}
+	catch (mv_error* err)
+	{
+		ASSERT_ERROR(err, MVERROR_SYNTAX);
+		mv_error_release(err);
+	}
 
-	mv_error_release(err);
 	mv_strarr_release(&script);
 }

@@ -116,8 +116,13 @@ mv_error* mv_local_read(mv_command* cmd) {
 	}
 	buffer[point] = '\0';
 
-	mv_error* error = mv_command_parse(cmd, buffer);
-	free(buffer);
-	return error;
+	try {
+		*cmd = mv_command_parse(buffer);
+		free(buffer);
+		return NULL;
+	} catch (mv_error* err) {
+		free(buffer);
+		return err;
+	}
 }
 

@@ -336,7 +336,7 @@ void mv_strarr_appref(mv_strarr* ptr, mv_strref* ref) {
 	ptr->used++;
 }
 
-void mv_strarr_appslice(mv_strarr* ptr, char* source, int first, int last) {
+void mv_strarr_appslice(mv_strarr* ptr, const char* source, int first, int last) {
 	__mv_strarr_expand(ptr);
 	ptr->items[ptr->used] = mv_strslice(source, first, last);
 	ptr->used++;

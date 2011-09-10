@@ -30,7 +30,7 @@ void mv_error_release(mv_error* error) {
 	free(error);
 }
 
-mv_error* mv_error_unmatched(int objcode, char* command) {
+mv_error* mv_error_unmatched(int objcode, const char* command) {
 	char* meaning = NULL;
 
 	switch (objcode) {

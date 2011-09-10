@@ -54,15 +54,20 @@ TEST astparse_failures() {
 
 static void __cmdparse_fail(char* request) {
 	mv_command action;
-	mv_error* error = mv_command_parse(&action, request);
-	if (error == NULL) {
+	try
+	{
+		action = mv_command_parse(request);
 		DIE("Parsing not failed '%s'", request);
 	}
-	if (error->code != MVERROR_SYNTAX) {
-		mv_error_display(error, stderr);
-		DIE("Error is not syntactic");
+	catch (mv_error* error)
+	{
+		if (error->code != MVERROR_SYNTAX)
+		{
+			mv_error_display(error, stderr);
+			DIE("Error is not syntactic");
+		}
+		mv_error_release(error);
 	}
-	mv_error_release(error);
 }
 
 TEST cmdparse_failures() {

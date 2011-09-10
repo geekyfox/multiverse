@@ -71,7 +71,7 @@ typedef struct mv_ast_entry {
  * In case of parsing error, releases all allocated
  * memory and returns an mv_error.
  */
-mv_error* mv_ast_parse(mv_ast& target, char* request);
+mv_error* mv_ast_parse(mv_ast& target, const char* request);
 
 /* Releases memory occupied by an AST structure. */
 void mv_ast_release(mv_ast* ast);
@@ -92,10 +92,10 @@ void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
 
 /* Parses a string into a command. */
-mv_error* mv_command_parse(mv_command* target, char* request);
+mv_command mv_command_parse(const char* request) throw (mv_error*);
 
 /* Tokenizes a string. */
-mv_error* mv_tokenize(mv_strarr* target, char* request);
+mv_error* mv_tokenize(mv_strarr* target, const char* request);
 
 #endif
 

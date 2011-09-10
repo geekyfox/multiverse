@@ -118,18 +118,6 @@ mv_error* mvSession::execute(mv_command* action) {
 	}
 }
 
-mv_error* mv_session_perform(mv_session* session, mv_strarr* script) {
-	int i;
-	mv_command cmd;
-	for (i=0; i<script->used; i++) {
-		mv_error* error = mv_command_parse(&cmd, script->items[i].ptr);
-		if (error != NULL) return error;
-		error = session->execute(&cmd);
-		mv_command_release(&cmd);
-		if (error != NULL) return error;
-	}
-	return NULL;
-}
 
 mv_error* mv_session_show(char** target, mv_session* session, char* name) {
 	int ref = session->findvar(name);

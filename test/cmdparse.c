@@ -2,7 +2,8 @@
 #include "test.h"
 
 #define BEFORE(RQ) \
-mv_command action; FAILFAST(mv_command_parse(&action, RQ));
+mv_command action; try { action = mv_command_parse(RQ); } \
+catch (mv_error* err) { FAIL(err); }
 
 #define AFTER mv_command_release(&action);
 

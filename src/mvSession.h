@@ -22,6 +22,7 @@ public:
     mv_error* lookup(mvIntset&, mv_command*);
 	int varcount() { return vars.cardinality(); }
 	int clscount() { return clsnames.cardinality(); }
+	void perform(mv_strarr* script) throw (mv_error*);
 };
 
 typedef mvSession mv_session;
