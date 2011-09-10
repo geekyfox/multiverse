@@ -1,18 +1,17 @@
 
 #include <test.h>
 
-inline static void __perform__(mv_session* state, char* cmd) {
+inline static void __perform__(mv_session* state, const char* cmd) {
 	mv_command action;
 	try
 	{
-		action = mv_command_parse(cmd);
+		mv_command_parse(action, cmd);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
 	FAILFAST(state->execute(&action));
-	mv_command_release(&action);
 }
 
 TEST execute_REQ1() {
@@ -52,7 +51,7 @@ TEST execute_REQ10() {
 
 	try
 	{
-		action = mv_command_parse(REQ10);
+		mv_command_parse(action, REQ10);
 	}
 	catch (mv_error* err)
 	{
@@ -63,7 +62,6 @@ TEST execute_REQ10() {
 	ASSERT_INT(state.entities.items[0].classes.used, 1);
 	ASSERT_STRREF(state.entities.items[0].classes.items[0], "person");
 
-	mv_command_release(&action);
 }
 
 TEST fail_REQ10() {
@@ -72,7 +70,7 @@ TEST fail_REQ10() {
 
 	try
 	{
-		action = mv_command_parse(REQ10);
+		mv_command_parse(action, REQ10);
 	}
 	catch (mv_error* err)
 	{
@@ -82,7 +80,6 @@ TEST fail_REQ10() {
 	ASSERT_INT(err->code, MVERROR_BADVAR);
 
 	mv_error_release(err);
-	mv_command_release(&action);
 }
 
 TEST execute_REQ11() {
@@ -94,7 +91,7 @@ TEST execute_REQ11() {
 
 	try
 	{
-		action = mv_command_parse(REQ11);
+		mv_command_parse(action, REQ11);
 	}
 	catch (mv_error* err)
 	{
@@ -104,8 +101,6 @@ TEST execute_REQ11() {
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.get(0), 0);
-
-	mv_command_release(&action);
 }
 
 TEST execute_REQ12() {
@@ -116,15 +111,13 @@ TEST execute_REQ12() {
 
 	try
 	{
-		action = mv_command_parse(REQ12);
+		mv_command_parse(action, REQ12);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
 	FAILFAST(state.execute(&action));
-
-	mv_command_release(&action);
 }
 
 TEST execute_REQ14() {
@@ -150,8 +143,8 @@ TEST lookup_after_destroy() {
 
 	try
 	{
-		lookup = mv_command_parse(REQ11);
-		destroy = mv_command_parse(REQ12);
+		mv_command_parse(lookup, REQ11);
+		mv_command_parse(destroy, REQ12);
 	}
 	catch (mv_error* err)
 	{
@@ -167,9 +160,6 @@ TEST lookup_after_destroy() {
 	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 0);
-
-	mv_command_release(&lookup);
-	mv_command_release(&destroy);
 }
 
 TEST lookup_all_items() {
@@ -181,7 +171,7 @@ TEST lookup_all_items() {
 
 	try
 	{
-		lookup = mv_command_parse(REQ13);
+		mv_command_parse(lookup, REQ13);
 	}
 	catch (mv_error* err)
 	{
@@ -191,8 +181,6 @@ TEST lookup_all_items() {
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
-	
-	mv_command_release(&lookup);
 }
 
 TEST numlookup() {
@@ -217,7 +205,7 @@ TEST numlookup() {
 	mv_command lookup;
 	try
 	{
-		lookup = mv_command_parse(REQ17);
+		mv_command_parse(lookup, REQ17);
 	}
 	catch (mv_error* err)
 	{
@@ -227,8 +215,6 @@ TEST numlookup() {
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
-
-	mv_command_release(&lookup);
 }
 
 TEST subquery() {

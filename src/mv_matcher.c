@@ -4,7 +4,7 @@
 #include "multiverse.h"
 
 mv_error* mv_query_compile(mv_query* pat, mv_command* cmd) {
-	assert(cmd->code == MVCMD_LOOKUP);
+	assert(cmd->code == LOOKUP);
 	assert(cmd->vars.used == 1);
 	pat->classname = strdup(cmd->vars.items[0].ptr);
 	pat->attrs = mv_attrlist_copy(&(cmd->attrs));

@@ -9,6 +9,7 @@
 #include "mvCodebook.h"
 #include "error.h"
 #include "model.h"
+#include "mvCommand.h"
 
 /*******************************/
 /* Common utility functions    */
@@ -93,12 +94,6 @@ void mv_strarr_append(mv_strarr* ptr, char* value);
 void mv_strarr_appslice(mv_strarr* ptr, const char* source, int start, int end);
 void mv_strarr_appref(mv_strarr* ptr, mv_strref* ref);
 void mv_strarr_release(mv_strarr* ptr);
-
-/**********************/
-/* Executable command */
-/**********************/
-
-void mv_command_release(mv_command* action);
 
 /*****************/
 /* Single entity */

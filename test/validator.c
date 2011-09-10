@@ -12,7 +12,7 @@ TEST validity_assign() {
 	try
 	{
 		session.perform(&script);
-		cmd = mv_command_parse(REQ24);
+		mv_command_parse(cmd, REQ24);
 	}
 	catch (mv_error* err)
 	{
@@ -23,7 +23,6 @@ TEST validity_assign() {
 	ASSERT_ERROR(err, MVERROR_INVALID);
 
 	mv_error_release(err);
-	mv_command_release(&cmd);
 	mv_strarr_release(&script);
 }
 

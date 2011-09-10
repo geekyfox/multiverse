@@ -91,11 +91,11 @@ mv_error* mvSession::execute(mv_command* action) {
 	char* clsname;
 
 	switch (action->code) {
-	case MVCMD_ASSIGN:
+	case ASSIGN:
 		return __assign__(this, action);
-	case MVCMD_CREATE_ENTITY:
+	case CREATE_ENTITY:
 		return createImpl(action);
-	case MVCMD_CREATE_CLASS:
+	case CREATE_CLASS:
 		if (action->vars.used != 1) {
 			THROW(INTERNAL, "Strange number of variables");
 		}
@@ -109,9 +109,9 @@ mv_error* mvSession::execute(mv_command* action) {
 		}
 		clsnames.insert(clsname, ref);
 		return NULL;
-	case MVCMD_DESTROY_ENTITY:
+	case DESTROY_ENTITY:
 		return destroyImpl(action);
-	case MVCMD_UPDATE_ENTITY:
+	case UPDATE_ENTITY:
 		return __update_entity__(this, action);
 	default:
 		THROW(INTERNAL, "Unknown action (%d)", action->code);

@@ -285,12 +285,6 @@ mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 	return NULL;
 }
 
-void mv_command_release(mv_command* sess) {
-	mv_attrlist_release(&sess->attrs);
-	mv_strarr_release(&sess->vars);
-	mv_speclist_release(&sess->spec);
-}
-
 void mv_query_release(mv_query* query) {
 	free(query->classname);
 	mv_attrlist_release(&(query->attrs));

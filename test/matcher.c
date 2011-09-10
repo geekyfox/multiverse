@@ -7,7 +7,7 @@ TEST compile_REQ11() {
 
 	try
 	{
-		cmd = mv_command_parse(REQ11);
+		mv_command_parse(cmd, REQ11);
 	}
 	catch (mv_error* err)
 	{
@@ -21,7 +21,6 @@ TEST compile_REQ11() {
 	ASSERT_INT(patt.attrs.attrs[0].type, MVTYPE_STRING);
 	ASSERT_STRING(patt.attrs.attrs[0].value.string, "Umberto Eco");
 
-	mv_command_release(&cmd);
 	mv_query_release(&patt);
 }
 

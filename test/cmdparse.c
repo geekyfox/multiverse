@@ -2,13 +2,13 @@
 #include "test.h"
 
 #define BEFORE(RQ) \
-mv_command action; try { action = mv_command_parse(RQ); } \
+mv_command action; try { mv_command_parse(action, RQ); } \
 catch (mv_error* err) { FAIL(err); }
 
-#define AFTER mv_command_release(&action);
+#define AFTER
 
 TESTREQ 1 {
-	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
+	ASSERT_INT(action.code, CREATE_ENTITY);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
@@ -21,7 +21,7 @@ TESTREQ 1 {
 }
 
 TESTREQ 7 {
-	ASSERT_INT(action.code, MVCMD_CREATE_CLASS);
+	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 	ASSERT_INT(action.spec.size, 1);
@@ -29,7 +29,7 @@ TESTREQ 7 {
 }
 
 TESTREQ 10 {
-	ASSERT_INT(action.code, MVCMD_ASSIGN);
+	ASSERT_INT(action.code, ASSIGN);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 2);
@@ -41,7 +41,7 @@ TESTREQ 10 {
 }
 
 TESTREQ 11 {
-	ASSERT_INT(action.code, MVCMD_LOOKUP);
+	ASSERT_INT(action.code, LOOKUP);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
@@ -55,7 +55,7 @@ TESTREQ 11 {
 }
 
 TESTREQ 12 {
-	ASSERT_INT(action.code, MVCMD_DESTROY_ENTITY);
+	ASSERT_INT(action.code, DESTROY_ENTITY);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
@@ -66,7 +66,7 @@ TESTREQ 12 {
 }
 
 TESTREQ 13 {
-	ASSERT_INT(action.code, MVCMD_LOOKUP);
+	ASSERT_INT(action.code, LOOKUP);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
@@ -77,7 +77,7 @@ TESTREQ 13 {
 }
 
 TESTREQ 14 {
-	ASSERT_INT(action.code, MVCMD_CREATE_ENTITY);
+	ASSERT_INT(action.code, CREATE_ENTITY);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.vars.used, 1);
@@ -90,7 +90,7 @@ TESTREQ 14 {
 }
 
 TESTREQ 15 {
-	ASSERT_INT(action.code, MVCMD_CREATE_CLASS);
+	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 	ASSERT_INT(action.spec.size, 1);
@@ -103,7 +103,7 @@ TESTREQ 15 {
 }
 
 TESTREQ 18 {
-	ASSERT_INT(action.code, MVCMD_CREATE_CLASS);
+	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.spec.size, 1);
 	ASSERT_NOTNULL(action.spec.specs);
 	mv_attrspec asp = action.spec.specs[0];
@@ -113,7 +113,7 @@ TESTREQ 18 {
 }
 
 TESTREQ 20 {
-	ASSERT_INT(action.code, MVCMD_UPDATE_ENTITY);
+	ASSERT_INT(action.code, UPDATE_ENTITY);
 	ASSERT_INT(action.spec.size, 0);
 	ASSERT_NULL(action.spec.specs);
 	ASSERT_INT(action.attrs.size, 1);

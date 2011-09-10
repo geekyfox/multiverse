@@ -350,7 +350,7 @@ void mv_attr_parse(mv_attr* target, char* name, char* value) {
 	target->value.rawref = strdup(value);
 }
 
-inline static void __clear__(mv_command* cmd, int code, int vars) {
+inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
 	cmd->code = code;
 	cmd->attrs.size = 0;
 	cmd->attrs.attrs = NULL;
@@ -386,10 +386,10 @@ mv_error* __create_entity__(mv_command* target, mv_ast* ast) {
 			      "Expected Leaf for 'create entity' command, got %d",
 			      ast->items[3].type);
 		}
-		__clear__(target, MVCMD_CREATE_ENTITY, 1);
+		__clear__(target, CREATE_ENTITY, 1);
 		mv_strarr_appref(&target->vars, ast->items[3].value.leaf);
 	} else {
-		__clear__(target, MVCMD_CREATE_ENTITY, 0);
+		__clear__(target, CREATE_ENTITY, 0);
 	}
 
 	mv_attrlist_parse(&target->attrs, ast->items[2].value.subtree);
@@ -409,7 +409,7 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 	}
 
 	if (LEAFFIX(&items[1], "class")) {
-		target->code = MVCMD_CREATE_CLASS;
+		target->code = CREATE_CLASS;
 		if (!LEAF(&items[2])) {
 			THROW(INTERNAL,
 			      "Expected class name, got %d",
@@ -442,7 +442,7 @@ mv_error* __destroy__(mv_command* target, mv_ast* ast) {
 	{
 		THROW(SYNTAX, "Malformed 'destroy' command");
 	}
-	__clear__(target, MVCMD_DESTROY_ENTITY, 1);
+	__clear__(target, DESTROY_ENTITY, 1);
 	mv_strarr_appref(&target->vars, ast->items[2].value.leaf);
 	mv_ast_release(ast);
 	return NULL;	
@@ -453,7 +453,7 @@ inline static mv_error* __show__(mv_command* cmd, mv_ast* ast) {
 	mv_ast_entry* items = ast->items;
 	assert(size == 2);
 	assert(items[1].type == MVAST_LEAF);
-	__clear__(cmd, MVCMD_SHOW, 1);
+	__clear__(cmd, SHOW, 1);
 	mv_strarr_appref(&cmd->vars, items[1].value.leaf);
 	mv_ast_release(ast);
 	return NULL;
@@ -463,7 +463,7 @@ inline static mv_error* __quit__(mv_command* cmd, mv_ast* ast) {
 	if (ast->size() != 1) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
-	__clear__(cmd, MVCMD_QUIT, 0);
+	__clear__(cmd, QUIT, 0);
 	mv_ast_release(ast);
 	return NULL;
 }
@@ -475,7 +475,7 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 	assert(LEAF(&(items[1])));
 	assert(LEAFFIX(&(items[2]), "to"));
 	assert(LEAF(&(items[3])));
-	__clear__(cmd, MVCMD_ASSIGN, 2);
+	__clear__(cmd, ASSIGN, 2);
 	mv_strarr_appref(&cmd->vars, items[1].value.leaf);
 	mv_strarr_appref(&cmd->vars, items[3].value.leaf);
 	mv_ast_release(ast);
@@ -485,7 +485,7 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	assert(LEAF(&(ast->items[1])));
 	if (ast->size() == 2) {
-		__clear__(cmd, MVCMD_LOOKUP, 1);
+		__clear__(cmd, LOOKUP, 1);
 		mv_strarr_appref(&cmd->vars, ast->items[1].value.leaf);
 		mv_ast_release(ast);
 		return NULL;
@@ -493,7 +493,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	assert(ast->size() == 4);
 	assert(LEAFFIX(&(ast->items[2]), "with"));
 	assert(ast->items[3].type == MVAST_ATTRLIST);
-	__clear__(cmd, MVCMD_LOOKUP, 1);
+	__clear__(cmd, LOOKUP, 1);
 	mv_strarr_appref(&cmd->vars, ast->items[1].value.leaf);
 	mv_attrlist_parse(&cmd->attrs, ast->items[3].value.subtree);
 	mv_ast_release(ast);
@@ -507,7 +507,7 @@ mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
 	if (!LEAF(&items[2])) goto wrong;
 	if (LEAFFIX(&items[3], "with")) {
 		if (!LIST(&items[4])) goto wrong;
-		__clear__(target, MVCMD_UPDATE_ENTITY, 1);
+		__clear__(target, UPDATE_ENTITY, 1);
 		mv_strarr_appref(&target->vars, items[2].value.leaf);
 		mv_attrlist_parse(&target->attrs, items[4].value.subtree);
 		mv_ast_release(ast);
@@ -539,11 +539,11 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 	return err;
 }
 
-mv_command mv_command_parse(const char* data)
+void mv_command_parse(mvCommand& command, const char* data)
 throw (mv_error*)
 {
 	mv_ast ast;
-	mv_command command;
+	command.destroy();
 	mv_command* cmd = &command;
 	mv_error* error = mv_ast_parse(ast, data);
 	if (error != NULL) throw error;
@@ -562,8 +562,7 @@ throw (mv_error*)
 	else NEWTHROW(BADCMD, cmdname);
 
 	if (error != NULL) throw error;
-
-	return command;
+	command.init_done();
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {

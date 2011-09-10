@@ -151,12 +151,11 @@ throw (mv_error*)
 	for (i=0; i<script->used; i++) {
 		try
 	 	{
-			cmd = mv_command_parse(script->items[i].ptr);
+			mv_command_parse(cmd, script->items[i].ptr);
 		} catch (mv_error* err) {
 			throw err;
 		}
 		mv_error* error = execute(&cmd);
-		mv_command_release(&cmd);
 		if (error != NULL) throw error;
 	}
 }

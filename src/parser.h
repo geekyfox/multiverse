@@ -5,6 +5,7 @@
 #include "error.h"
 #include "model.h"
 #include "mvArray.h"
+#include "mvCommand.h"
 
 /*
  *  This structure represents an abstract syntax
@@ -92,7 +93,7 @@ void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
 
 /* Parses a string into a command. */
-mv_command mv_command_parse(const char* request) throw (mv_error*);
+void mv_command_parse(mvCommand& target, const char* request) throw (mv_error*);
 
 /* Tokenizes a string. */
 mv_error* mv_tokenize(mv_strarr* target, const char* request);

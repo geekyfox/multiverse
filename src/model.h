@@ -90,28 +90,6 @@ typedef struct {
 #define MVSPEC_TYPE     4001
 #define MVSPEC_SUBQUERY 4002
 
-// Multiverse can execute commands. So, there's
-// a special datatype for commands as well.
-typedef struct {
-	// Command's code, should be one of MVCMD_ codes.
-	int code;
-	// Attributes of the command.
-	mv_attrlist attrs;
-	// Attribute specifications of the command.
-	mv_speclist spec;
-	// Variables of the command.
-	mv_strarr vars;
-} mv_command;
-
-#define MVCMD_DO_NOTHING     -3002
-#define MVCMD_QUIT           -3001
-#define MVCMD_ASSIGN          3001
-#define MVCMD_CREATE_CLASS    3002
-#define MVCMD_CREATE_ENTITY   3003
-#define MVCMD_DESTROY_ENTITY  3004
-#define MVCMD_LOOKUP          3005
-#define MVCMD_SHOW            3006
-#define MVCMD_UPDATE_ENTITY   3007
 
 
 #endif

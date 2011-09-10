@@ -12,44 +12,42 @@ TEST mv_command_test() {
 
 	try
 	{
-		action = mv_command_parse("quit");
+		mv_command_parse(action, "quit");
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	assert(action.code == MVCMD_QUIT);
+	assert(action.code == QUIT);
 	assert(action.attrs.size == 0);
 	assert(action.vars.size == 0);
 
 	try
 	{
-		action = mv_command_parse(REQ3);
+		mv_command_parse(action, REQ3);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	assert(action.code == MVCMD_SHOW);
+	assert(action.code == SHOW);
 	assert(action.attrs.size == 0);
 	assert(action.vars.used == 1);
 	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
-	mv_command_release(&action);
 
 	try
 	{
-		action = mv_command_parse(REQ5);
+		mv_command_parse(action, REQ5);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	assert(action.code == MVCMD_CREATE_ENTITY);
+	assert(action.code == CREATE_ENTITY);
 	assert(action.attrs.size == 2);
 	assert(strcmp(action.attrs.attrs[1].name, "author") == 0);
 	assert(action.attrs.attrs[1].type == MVTYPE_RAWREF);
 	assert(strcmp(action.attrs.attrs[1].value.rawref, "umberto_eco") == 0);
-	mv_command_release(&action);
 }
 
 TEST mv_execute_test() {
@@ -58,7 +56,8 @@ TEST mv_execute_test() {
 
 	try
 	{
-		action = mv_command_parse(REQ1);
+		mv_command_parse(action, REQ1);
+		assert(action.inited);
 	}
 	catch (mv_error* err)
 	{
@@ -66,11 +65,11 @@ TEST mv_execute_test() {
 	}
 
 	FAILFAST(state.execute(&action));
-	mv_command_release(&action);
 
 	try
 	{
-		action = mv_command_parse(REQ5);
+		mv_command_parse(action, REQ5);
+		assert(action.inited);
 	}
 	catch (mv_error* err)
 	{
@@ -82,13 +81,13 @@ TEST mv_execute_test() {
 	assert(state.entities.items[1].data.size == 2);
 	assert(state.entities.items[1].data.attrs[1].type == MVTYPE_REF);
 	assert(state.entities.items[1].data.attrs[1].value.ref == 0);
-	mv_command_release(&action);
 
 	ASSERT_INT(state.classes.used, 0);
 	ASSERT_INT(state.clscount(), 0);
 	try
 	{
-		action = mv_command_parse(REQ6);
+		mv_command_parse(action, REQ6);
+		assert(action.inited);
 	}
 	catch (mv_error* err)
 	{
@@ -99,19 +98,17 @@ TEST mv_execute_test() {
 	ASSERT_INT(state.clscount(), 1);
 	ASSERT_INT(state.classes.items[0].data.size, 1);
 	ASSERT_INT(state.classes.items[0].data.specs[0].type, MVSPEC_TYPE);
-	mv_command_release(&action);
 
 	try
 	{
-		action = mv_command_parse(REQ8);
+		mv_command_parse(action, REQ8);
+		assert(action.inited);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
 	FAILFAST(state.execute(&action));
-
-	mv_command_release(&action);
 }
 
 TEST mv_attrlist_show_test() {
@@ -134,7 +131,7 @@ TEST mv_session_findvar_test() {
 	mv_command action;
 	try
 	{
-		action = mv_command_parse(REQ1);
+		mv_command_parse(action, REQ1);
 	}
 	catch (mv_error* err)
 	{
@@ -151,7 +148,6 @@ TEST mv_session_findvar_test() {
 	assert(strcmp(text1, response_1) == 0);
 
 	free(text1);
-	mv_command_release(&action);
 
 	error = mv_session_show(&text1, &state, "##1");
 	assert(error != NULL);
@@ -164,15 +160,12 @@ TEST mv_attrspec_release_test() {
 
 	try
 	{
-		cmd = mv_command_parse(REQ7);
-		mv_command_release(&cmd);
-
-		cmd = mv_command_parse("show person");
+		mv_command_parse(cmd, REQ7);
+		mv_command_parse(cmd, "show person");
 		ASSERT_NULL(cmd.attrs.attrs);
 		ASSERT_INT(cmd.attrs.size, 0);
 		ASSERT_NULL(cmd.spec.specs);
 		ASSERT_INT(cmd.spec.size, 0);
-		mv_command_release(&cmd);
 	}
 	catch (mv_error* err)
 	{

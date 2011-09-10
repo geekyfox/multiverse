@@ -56,7 +56,7 @@ static void __cmdparse_fail(char* request) {
 	mv_command action;
 	try
 	{
-		action = mv_command_parse(request);
+		mv_command_parse(action, request);
 		DIE("Parsing not failed '%s'", request);
 	}
 	catch (mv_error* error)

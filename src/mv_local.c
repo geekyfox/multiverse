@@ -30,18 +30,18 @@ mv_error* __local_lookup(mv_command* c) {
 
 inline static void __display_success(mv_command* cmd) {
 	switch(cmd->code) {
-	case MVCMD_CREATE_ENTITY:
+	case CREATE_ENTITY:
 		printf ("OK, entity created\n");
 		break;
-	case MVCMD_CREATE_CLASS:
+	case CREATE_CLASS:
 		printf ("OK, class created\n");
 		break;
-	case MVCMD_ASSIGN:
+	case ASSIGN:
 		printf ("OK, class '%s' assigned to '%s'\n",
 		        cmd->vars.items[0].ptr,
 		        cmd->vars.items[1].ptr);
 		break;
-	case MVCMD_UPDATE_ENTITY:
+	case UPDATE_ENTITY:
 		printf ("OK, entity updated\n");
 		break;
 	}
@@ -52,17 +52,17 @@ void mv_local_execute(mv_command* cmd) {
 	char *tmpstr = NULL;
 
 	switch(cmd->code) {
-	case MVCMD_DO_NOTHING:
+	case DO_NOTHING:
 		break;
-	case MVCMD_ASSIGN:
-	case MVCMD_CREATE_CLASS:
-	case MVCMD_CREATE_ENTITY:
-	case MVCMD_DESTROY_ENTITY:
-	case MVCMD_UPDATE_ENTITY:
+	case ASSIGN:
+	case CREATE_CLASS:
+	case CREATE_ENTITY:
+	case DESTROY_ENTITY:
+	case UPDATE_ENTITY:
 		error = __LOCAL_SESSION__->execute(cmd);
 		if (error == NULL) __display_success(cmd);
 		break;
-	case MVCMD_SHOW:
+	case SHOW:
 		error = mv_session_show(&tmpstr,
                                 __LOCAL_SESSION__,
                                 cmd->vars.items[0].ptr);
@@ -71,7 +71,7 @@ void mv_local_execute(mv_command* cmd) {
 		fflush(stdout);
 		free(tmpstr);
 		break;
-	case MVCMD_LOOKUP:
+	case LOOKUP:
 		error = __local_lookup(cmd);
 		break;
 	default:
@@ -81,15 +81,13 @@ void mv_local_execute(mv_command* cmd) {
 	if (error != NULL) {
 		mv_error_display(error, stderr);
 	}
-
-	mv_command_release(cmd);
 }
 
 void mv_local_end() {
 	delete __LOCAL_SESSION__;
 }
 
-mv_error* mv_local_read(mv_command* cmd) {
+mv_error* mv_local_read(mvCommand& cmd) {
 	char *buffer = (char*)malloc(sizeof(char) * 1000);
 	int point = 0, size = 1000;
 	char c[10];
@@ -117,7 +115,7 @@ mv_error* mv_local_read(mv_command* cmd) {
 	buffer[point] = '\0';
 
 	try {
-		*cmd = mv_command_parse(buffer);
+		mv_command_parse(cmd, buffer);
 		free(buffer);
 		return NULL;
 	} catch (mv_error* err) {
