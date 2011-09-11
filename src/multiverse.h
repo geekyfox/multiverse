@@ -40,11 +40,6 @@ mv_strref mv_strref_copy(mv_strref* ref);
 /*****************************/
 
 
-char* mv_strbuf_align(mv_strbuf* ptr);
-void  mv_strbuf_alloc(mv_strbuf* ptr, int size);
-void  mv_strbuf_append(mv_strbuf* ptr, char* text);
-void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
-
 #include "mvEntity.h"
 
 /*******************/
@@ -64,7 +59,7 @@ void        mv_attrlist_alloc(mv_attrlist* ptr, int size);
 mv_attrlist mv_attrlist_copy(mv_attrlist* src);
 void        mv_attrlist_realloc(mv_attrlist* ptr, int newsize);
 void        mv_attrlist_release(mv_attrlist* ptr);
-void        mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr);
+void        mv_attrlist_show(mv_strbuf* buf, const mv_attrlist& ptr);
 
 
 void mv_typespec_release(mv_typespec* spec);

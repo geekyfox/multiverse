@@ -15,7 +15,7 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 	try
 	{
 		state.perform(script);
-		state.show(&target, ref);
+		target = state.show(ref);
 	}
 	catch (mv_error* err)
 	{

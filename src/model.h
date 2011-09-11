@@ -2,12 +2,7 @@
 #ifndef __MULTIVERSE_MODEL_HEADER__
 #define __MULTIVERSE_MODEL_HEADER__
 
-typedef struct {
-	char* data;
-	int size;
-	int used;
-	int pad;
-} mv_strbuf;
+#include "mvStrBuffer.h"
 
 typedef struct {
 	char* ptr;

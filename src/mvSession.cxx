@@ -188,28 +188,22 @@ mv_error* mvSession::assign(mv_command* cmd)
 	return NULL;
 }
 
-void mvSession::show(char** target, char* name)
+char* mvSession::show(char* name)
 throw (mv_error*)
 {
 	int ref = findvar(name);
 	if (ref != -1) {
-		mv_strbuf buf;
-		mv_strbuf_alloc(&buf, 1000);
-		mv_strbuf_append(&buf, name);
-		mv_strbuf_append(&buf, " = ");
-		mv_entity_show(&buf, &(entities[ref]));
-		*target = mv_strbuf_align(&buf);
-		return;
+		mv_strbuf buf(1000);
+		buf << name << " = " << entities[ref];
+		return buf.release();
 	}
 	ref = findclass(name);
 	if (ref != -1) {
-		mv_strbuf buf;
-		mv_strbuf_alloc(&buf, 1000);
-		mv_strbuf_append(&buf, name);
-		mv_strbuf_append(&buf, " = ");
+		mv_strbuf buf(1000);
+		buf.append(name);
+		buf.append(" = ");
 		mv_class_show(&buf, &(classes.items[ref]));
-		*target = mv_strbuf_align(&buf);
-		return;
+		return buf.release();
 	}
 	NEWTHROW(BADVAR, "Unknown name '%s'", name);
 }

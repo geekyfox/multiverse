@@ -2,47 +2,12 @@
 #include <string.h>
 #include "multiverse.h"
 
-inline static void __appendimpl(mv_strbuf* buf, char* text) {
-	int available = buf->size - buf->used;
-	int pad = buf->pad, i;
-	char* fill = buf->data + buf->used;
-	while (*text != '\0') {
-		int spc = *text == '\n' ? pad : 0;
-		int req = spc + 1;
-		if (available <= req) {
-			int sizenow = buf->size;
-			buf->size += MAX(buf->size, req);
-			buf->data = (char*)realloc(buf->data, sizeof(char) * buf->size);
-			fill = buf->data + sizenow;
-			available = buf->size - sizenow;
-		}
-		*(fill++) = *(text++);
-		available--;
-		for (; spc > 0; spc--) {
-			*(fill++) = ' ';
-			available--;
-		} 
-	}
-	buf->used = fill - buf->data;
-}
-
-inline static void __appendimpli(mv_strbuf* buf, int index) {
-	char text[100];
-	sprintf(text, "%d", index);
-	__appendimpl(buf, text);
-}
-
-void mv_strbuf_append(mv_strbuf* buf, char* text) {
-	__appendimpl(buf, text);
-}
-
-void mv_strbuf_appendi(mv_strbuf* buf, int index) {
-	__appendimpli(buf, index);
-}
+#define __appendimpl(x, y) x->append(y)
+#define __appendimpli(x, y) x->append(y)
 
 void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
-	__appendimpl(buf, attr->name);
-	__appendimpl(buf, " = ");
+	buf->append(attr->name);
+	buf->append(" = ");
 	switch (attr->type) {
 	case MVTYPE_STRING:
 		__appendimpl(buf, "'");
@@ -65,13 +30,13 @@ void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
 	}
 }
 
-void mv_attrlist_show(mv_strbuf* buf, mv_attrlist* ptr) {
+void mv_attrlist_show(mv_strbuf* buf, const mv_attrlist& ptr) {
 	int i;
 	__appendimpl(buf, "{\n");
-	for (i=0; i<ptr->size; i++) {
+	for (i=0; i<ptr.size; i++) {
 		__appendimpl(buf, "  ");
-		mv_attr_show(buf, &(ptr->attrs[i]));
-		if (i != ptr->size - 1) __appendimpl(buf, ",");
+		mv_attr_show(buf, &(ptr.attrs[i]));
+		if (i != ptr.size - 1) __appendimpl(buf, ",");
 		__appendimpl(buf, "\n");
 	}
 	__appendimpl(buf, "}");
@@ -99,18 +64,12 @@ void mv_class_show(mv_strbuf* buf, mv_class* cls) {
 	mv_speclist_show(buf, &(cls->data));
 }
 
-void mv_entity_show(mv_strbuf* buf, mv_entity* obj) {
-	__appendimpl(buf, "entity ");
-	mv_attrlist_show(buf, &(obj->data));
-	__appendimpl(buf, "\n");
-}
-
 void mv_query_show(mv_strbuf* buf, mv_query* query) {
 	__appendimpl(buf, query->classname);
 	__appendimpl(buf, " with ");
-	buf->pad += 2;
-	mv_attrlist_show(buf, &(query->attrs));
-	buf->pad -= 2;
+	buf->indent(2);
+	mv_attrlist_show(buf, query->attrs);
+	buf->unindent(2);
 }
 
 void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr) {

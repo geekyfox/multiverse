@@ -296,20 +296,6 @@ void mv_strarr_release(mv_strarr* ptr) {
 	free(ptr->items);
 }
 
-char* mv_strbuf_align(mv_strbuf* buf) {
-	buf->size = buf->used + 1;
-	buf->data = (char*)realloc(buf->data, sizeof(char) * buf->size);
-	buf->data[buf->used] = '\0';
-	return buf->data;
-}
-
-void mv_strbuf_alloc(mv_strbuf* buf, int size) {
-	buf->data = (char*)malloc(sizeof(char) * size);
-	buf->used = 0;
-	buf->size = size;
-	buf->pad  = 0;
-}
-
 void mv_typespec_release(mv_typespec* spec) {
 	switch (spec->type) {
 	case MVTYPE_STRING:

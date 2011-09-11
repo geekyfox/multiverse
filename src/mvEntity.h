@@ -11,11 +11,13 @@ public:
 	~mvEntity();
 	mv_attrlist data;
 	mv_strarr classes;
+	void show(mvStrBuffer& buff) const;
 };
+
+mvStrBuffer& operator << (mvStrBuffer& buf, const mvEntity& enty);
 
 typedef mvEntity mv_entity;
 
-void mv_entity_show(mv_strbuf* buf, mv_entity* entity);
 mv_error* mv_entity_update(mv_entity* entity, mv_attrlist attrs);
 
 typedef mvObjectCache<mv_entity> mvEntityCache;

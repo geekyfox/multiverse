@@ -65,7 +65,7 @@ void mv_local_execute(mv_command* cmd) {
 	case SHOW:
 		try
 		{
-			__LOCAL_SESSION__->show(&tmpstr, cmd->vars.items[0].ptr);
+			tmpstr = __LOCAL_SESSION__->show(cmd->vars.items[0].ptr);
 		}
 		catch (mv_error* err)
 		{

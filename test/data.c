@@ -3,12 +3,11 @@
 #include "test.h"
 
 TEST mv_strbuf_test() {
-	mv_strbuf buf;
-	mv_strbuf_alloc(&buf, 1000);
-	mv_strbuf_append(&buf, "foo");
-	mv_strbuf_append(&buf, " + bar");
-	mv_strbuf_append(&buf, " = baz");
-	char* text = mv_strbuf_align(&buf);
+	mv_strbuf buf(1000);
+	buf.append("foo");
+	buf.append(" + bar");
+	buf.append(" = baz");
+	char* text = buf.release();
 	ASSERT_STRING(text, "foo + bar = baz");
 	free(text);
 }

@@ -145,7 +145,7 @@ TEST mv_session_findvar_test() {
 	char* text1;
 	try
 	{
-		state.show(&text1, "umberto_eco");
+		text1 = state.show("umberto_eco");
 	}
 	catch (mv_error* err)
 	{
@@ -156,7 +156,7 @@ TEST mv_session_findvar_test() {
 
 	try
 	{
-		state.show(&text1, "##1");
+		text1 = state.show("##1");
 		DIE("Error expected");
 	}
 	catch (mv_error* err)
