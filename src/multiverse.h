@@ -98,22 +98,7 @@ void mv_strarr_release(mv_strarr* ptr);
 /*********************/
 
 
-typedef struct {
-	int exist;
-	mv_speclist data;
-} mv_class;
-
-void mv_class_show(mv_strbuf* buf, mv_class* cls);
-
-typedef struct {
-	int size;
-	int used;
-	mv_class* items;
-} mv_clscache;
-
-void mv_clscache_alloc(mv_clscache* ptr, int size);
-void mv_clscache_put(mv_clscache* ptr, int* ref, mv_speclist* obj);
-void mv_clscache_release(mv_clscache* ptr);
+#include "mvClass.h"
 
 mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls);
 

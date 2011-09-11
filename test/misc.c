@@ -82,7 +82,7 @@ TEST mv_execute_test() {
 	assert(state.entities[1].data.attrs[1].type == MVTYPE_REF);
 	assert(state.entities[1].data.attrs[1].value.ref == 0);
 
-	ASSERT_INT(state.classes.used, 0);
+	ASSERT_INT(state.classes.size(), 0);
 	ASSERT_INT(state.clscount(), 0);
 	try
 	{
@@ -94,10 +94,10 @@ TEST mv_execute_test() {
 		FAIL(err);
 	}
 	FAILFAST(state.execute(&action));
-	ASSERT_INT(state.classes.used, 1);
+	ASSERT_INT(state.classes.size(), 1);
 	ASSERT_INT(state.clscount(), 1);
-	ASSERT_INT(state.classes.items[0].data.size, 1);
-	ASSERT_INT(state.classes.items[0].data.specs[0].type, MVSPEC_TYPE);
+	ASSERT_INT(state.classes[0].data.size, 1);
+	ASSERT_INT(state.classes[0].data.specs[0].type, MVSPEC_TYPE);
 
 	try
 	{

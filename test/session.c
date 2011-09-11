@@ -231,10 +231,10 @@ TEST subquery() {
 	{
 		FAIL(err);
 	}
-	ASSERT_INT(session.classes.used, 2);
-	ASSERT_INT(session.classes.items[1].data.size, 1);
+	ASSERT_INT(session.classes.size(), 2);
+	ASSERT_INT(session.classes[1].data.size, 1);
 
-	mv_attrspec spc = session.classes.items[1].data.specs[0];
+	mv_attrspec spc = session.classes[1].data.specs[0];
 	ASSERT_INT(spc.type, MVSPEC_SUBQUERY);
 	mv_query qr = spc.value.subquery;
 	ASSERT_STRING(qr.classname, "book");

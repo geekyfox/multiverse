@@ -16,7 +16,7 @@ private:
 	mv_error* assign(mv_command* cmd);
 public:
 	mvEntityCache entities;
-	mv_clscache classes;
+	mvClassCache classes;
 	mvSession();
 	~mvSession();
 	int findvar(char* name);

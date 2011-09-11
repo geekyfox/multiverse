@@ -1,6 +1,6 @@
 
 CXX_MODULES  = Codebook Intset Session MemPool \
-               Command Entity StrBuffer
+               Command Entity StrBuffer Class
 CXX_HEADERS  = $(foreach i,$(CXX_MODULES),src/mv$(i).h)
 
 CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h \

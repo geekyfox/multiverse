@@ -9,14 +9,14 @@
 mvSession::mvSession() :
 	vars(8),
 	clsnames(8),
-	entities(8)
+	entities(8),
+	classes(8)
 {
-	mv_clscache_alloc(&classes, 8);
 	autovalidate = 1;
 }
 
-mvSession::~mvSession() {
-	mv_clscache_release(&classes);
+mvSession::~mvSession()
+{
 }
 
 mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
@@ -182,7 +182,7 @@ mv_error* mvSession::assign(mv_command* cmd)
 		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
 	mv_entity* entity = &(entities[objref]);
-	mv_class* cls = &(classes.items[clsref]);
+	mv_class* cls = &(classes[clsref]);
 	FAILRET(mv_validate_assign(entity, cls));
 	mv_strarr_appref(&(entity->classes), &clsname); 
 	return NULL;
@@ -200,9 +200,8 @@ throw (mv_error*)
 	ref = findclass(name);
 	if (ref != -1) {
 		mv_strbuf buf(1000);
-		buf.append(name);
-		buf.append(" = ");
-		mv_class_show(&buf, &(classes.items[ref]));
+		buf << name << " = ";
+		mv_class_show(&buf, &(classes[ref]));
 		return buf.release();
 	}
 	NEWTHROW(BADVAR, "Unknown name '%s'", name);

@@ -163,46 +163,6 @@ void mv_attrspec_release(mv_attrspec* ptr) {
 	free(ptr->name);
 }
 
-void mv_clscache_alloc(mv_clscache* ptr, int size) {
-	ptr->items = (mv_class*)malloc(sizeof(mv_class) * size);
-	ptr->size = size;
-	ptr->used = 0;
-}
-
-void mv_clscache_put(mv_clscache* ptr, int* ref, mv_speclist* obj) {
-	int i, index = -1;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i].exist == 0) {
-			index = i;
-			break;
-		}
-	}
-	if (index == -1) {
-		if (ptr->used == ptr->size) {
-			ptr->size *= 2;
-			ptr->items = (mv_class*)realloc(ptr->items, sizeof(mv_class) * ptr->size);
-		}
-		index = ptr->used;
-		ptr->used++;
-	}
-	ptr->items[index].exist = 1;
-	ptr->items[index].data = *obj;
-
-	if (ref != NULL) *ref = index;
-}
-
-void mv_clscache_release(mv_clscache* ptr) {
-	int i;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i].exist) {
-			mv_speclist_release(&ptr->items[i].data);
-		}
-	}
-	free(ptr->items);
-}
-	
-
-
 mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 	int sz = attrs.size, add = 0, i, j;
 	int tmp[sz];

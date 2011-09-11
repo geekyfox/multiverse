@@ -51,7 +51,9 @@ mv_error* __mv_create_class(int* ref,
 			return error;
 		}
 	}
-	mv_clscache_put(&sess->classes, ref, &cls);
+	mv_class* c = new mv_class;
+	c->data = cls;
+	*ref = sess->classes.push(c);
 	return NULL;
 }
 
