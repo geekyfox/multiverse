@@ -7,7 +7,7 @@ TEST validity_assign() {
 	mv_strarr_append(&script, strdup(REQ23));
 	mv_strarr_append(&script, strdup(REQ6));
 
-	mv_session session;
+	mvSession session;
 	mv_command cmd;
 	try
 	{
@@ -19,10 +19,16 @@ TEST validity_assign() {
 		FAIL(err);
 	}
 
-	mv_error* err = session.execute(&cmd);
-	ASSERT_ERROR(err, MVERROR_INVALID);
+	try
+	{
+		session.execute(cmd);
+	}
+	catch (mv_error* err)
+	{
+		ASSERT_ERROR(err, MVERROR_INVALID);
+		mv_error_release(err);
+	}
 
-	mv_error_release(err);
 	mv_strarr_release(&script);
 }
 

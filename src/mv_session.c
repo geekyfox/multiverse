@@ -34,7 +34,7 @@ mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 }
 
 mv_error* __mv_create_class(int* ref,
-                            mv_session* sess,
+                            mvSession* sess,
                             mv_speclist* specs)
 {
 	int i, j;
@@ -57,38 +57,44 @@ mv_error* __mv_create_class(int* ref,
 	return NULL;
 }
 
-
-mv_error* mvSession::execute(mv_command* action) {
+void mvSession::execute(mvCommand& action)
+throw (mv_error*) {
 	int ref;
-	mv_error* error;
+	mv_error* error = NULL;
 	char* clsname;
 
-	switch (action->code) {
+	switch (action.code) {
 	case ASSIGN:
-		return assign(action);
+		error = assign(&action);
+		break;
 	case CREATE_ENTITY:
-		return createImpl(action);
+		error = createImpl(&action);
+		break;
 	case CREATE_CLASS:
-		if (action->vars.used != 1) {
-			THROW(INTERNAL, "Strange number of variables");
+		if (action.vars.used != 1) {
+			NEWTHROW(INTERNAL, "Strange number of variables");
 		}
-		clsname = action->vars.items[0].ptr;
+		clsname = action.vars.items[0].ptr;
 		ref = clsnames.lookup(clsname);
 		if (ref != -1) {
-			THROW(BADVAR, "Class '%s' already defined", clsname);
+			NEWTHROW(BADVAR, "Class '%s' already defined", clsname);
 		}
-		if ((error = __mv_create_class(&ref, this, &(action->spec)))) {
-			return error;
+		if ((error = __mv_create_class(&ref, this, &(action.spec)))) {
+			throw error;
 		}
 		clsnames.insert(clsname, ref);
-		return NULL;
+		return;
 	case DESTROY_ENTITY:
-		return destroyImpl(action);
+		error = destroyImpl(&action);
+		break;
 	case UPDATE_ENTITY:
-		return updateEntity(action);
+		error = updateEntity(&action);
+		break;
 	default:
-		THROW(INTERNAL, "Unknown action (%d)", action->code);
+		NEWTHROW(INTERNAL, "Unknown action (%d)", action.code);
 	}
+
+	if (error != NULL) throw error;
 }
 
 

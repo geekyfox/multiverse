@@ -21,16 +21,13 @@ public:
 	~mvSession();
 	int findvar(char* name);
 	int findclass(char* name);
-	mv_error* execute(mv_command* cmd);
+	void execute(mvCommand& cmd) throw (mv_error*);
     mv_error* lookup(mvIntset&, mv_command*);
 	int varcount() { return vars.cardinality(); }
 	int clscount() { return clsnames.cardinality(); }
 	void perform(mv_strarr* script) throw (mv_error*);
 	char* show(char* name) throw (mv_error*);
 };
-
-typedef mvSession mv_session;
-
 
 #endif
 

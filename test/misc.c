@@ -52,30 +52,22 @@ TEST mv_command_test() {
 
 TEST mv_execute_test() {
 	mv_command action;
-	mv_session state;
+	mvSession state;
 
 	try
 	{
 		mv_command_parse(action, REQ1);
 		assert(action.inited);
-	}
-	catch (mv_error* err)
-	{
-		FAIL(err);
-	}
+		state.execute(action);
 
-	FAILFAST(state.execute(&action));
-
-	try
-	{
 		mv_command_parse(action, REQ5);
 		assert(action.inited);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 	ASSERT_INT(state.varcount(), 2);
 	assert(state.entities.size() == 2);
 	assert(state.entities[1].data.size == 2);
@@ -88,12 +80,12 @@ TEST mv_execute_test() {
 	{
 		mv_command_parse(action, REQ6);
 		assert(action.inited);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 	ASSERT_INT(state.classes.size(), 1);
 	ASSERT_INT(state.clscount(), 1);
 	ASSERT_INT(state.classes[0].data.size, 1);
@@ -103,12 +95,12 @@ TEST mv_execute_test() {
 	{
 		mv_command_parse(action, REQ8);
 		assert(action.inited);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 }
 
 TEST mv_attrlist_show_test() {
@@ -123,7 +115,7 @@ TEST mv_attrlist_show_test() {
 }
 
 TEST mv_session_findvar_test() {
-	mv_session state;
+	mvSession state;
 	int ref = state.findvar("foobar");
 	assert(ref == -1);
 	ref = state.findvar("##0");
@@ -132,12 +124,12 @@ TEST mv_session_findvar_test() {
 	try
 	{
 		mv_command_parse(action, REQ1);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 	ref = state.findvar("##0");
 	assert(ref == 0);
 	ref = state.findvar("umberto_eco");

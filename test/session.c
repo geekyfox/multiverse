@@ -1,21 +1,21 @@
 
 #include <test.h>
 
-inline static void __perform__(mv_session* state, const char* cmd) {
+inline static void __perform__(mvSession* state, const char* cmd) {
 	mv_command action;
 	try
 	{
 		mv_command_parse(action, cmd);
+		state->execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state->execute(&action));
 }
 
 TEST execute_REQ1() {
-	mv_session state;
+	mvSession state;
 	__perform__(&state, REQ1);
 	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.size(), 1);
@@ -27,7 +27,7 @@ TEST execute_REQ1() {
 	ASSERT_STRING(attrs.attrs[0].value.string, "Umberto Eco");
 }
 
-static void __prepare_for_REQ10_11(mv_session* session, int bind) {
+static void __prepare_for_REQ10_11(mvSession* session, int bind) {
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ1));
@@ -46,18 +46,18 @@ static void __prepare_for_REQ10_11(mv_session* session, int bind) {
 
 TEST execute_REQ10() {
 	mv_command action;
-	mv_session state;
+	mvSession state;
 	__prepare_for_REQ10_11(&state, 0);
 
 	try
 	{
 		mv_command_parse(action, REQ10);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 
 	ASSERT_INT(state.entities[0].classes.used, 1);
 	ASSERT_STRREF(state.entities[0].classes.items[0], "person");
@@ -66,7 +66,7 @@ TEST execute_REQ10() {
 
 TEST fail_REQ10() {
 	mv_command action;
-	mv_session state;
+	mvSession state;
 
 	try
 	{
@@ -76,15 +76,22 @@ TEST fail_REQ10() {
 	{
 		FAIL(err);
 	}
-	mv_error* err = state.execute(&action);
-	ASSERT_INT(err->code, MVERROR_BADVAR);
 
-	mv_error_release(err);
+	try
+	{
+		state.execute(action);
+		DIE("Error expected");
+	}
+	catch (mv_error* err)
+	{
+		ASSERT_INT(err->code, MVERROR_BADVAR);
+		mv_error_release(err);
+	}
 }
 
 TEST execute_REQ11() {
 	mv_command action;
-	mv_session state;
+	mvSession state;
 	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
@@ -105,23 +112,23 @@ TEST execute_REQ11() {
 
 TEST execute_REQ12() {
 	mv_command action;
-	mv_session state;
+	mvSession state;
 
 	__prepare_for_REQ10_11(&state, 0);
 
 	try
 	{
 		mv_command_parse(action, REQ12);
+		state.execute(action);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.execute(&action));
 }
 
 TEST execute_REQ14() {
-	mv_session state;
+	mvSession state;
 	__perform__(&state, REQ14);
 	
 	ASSERT_INT(state.varcount(), 1);
@@ -136,7 +143,7 @@ TEST execute_REQ14() {
 
 TEST lookup_after_destroy() {
 	mv_command lookup, destroy; 
-	mv_session state;
+	mvSession state;
 	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
@@ -156,7 +163,14 @@ TEST lookup_after_destroy() {
 	ASSERT_INT(result.get(0), 0);
 	result.clear();
 
-	FAILFAST(state.execute(&destroy));
+	try
+	{
+		state.execute(destroy);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 	FAILFAST(state.lookup(result, &lookup));
 
 	ASSERT_INT(result.cardinality(), 0);
@@ -164,7 +178,7 @@ TEST lookup_after_destroy() {
 
 TEST lookup_all_items() {
 	mv_command lookup;
-	mv_session state;
+	mvSession state;
 	mvIntset result(8);
 
 	__prepare_for_REQ10_11(&state, 1);
@@ -184,7 +198,7 @@ TEST lookup_all_items() {
 }
 
 TEST numlookup() {
-	mv_session session;
+	mvSession session;
 	mv_strarr script;
 	mv_strarr_alloc(&script, 3);
 	mv_strarr_append(&script, strdup(REQ14));
@@ -218,7 +232,7 @@ TEST numlookup() {
 }
 
 TEST subquery() {
-	mv_session session;
+	mvSession session;
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ19));
@@ -243,7 +257,7 @@ TEST subquery() {
 }
 
 TEST update() {
-	mv_session session;
+	mvSession session;
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ14));
@@ -265,7 +279,7 @@ TEST update() {
 }
 
 TEST badupdate() {
-	mv_session session;
+	mvSession session;
 	mv_strarr script;
 	mv_strarr_alloc(&script, 2);
 	mv_strarr_append(&script, strdup(REQ23));

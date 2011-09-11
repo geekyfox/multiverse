@@ -144,16 +144,10 @@ void mvSession::perform(mv_strarr* script)
 throw (mv_error*)
 {
 	int i;
-	mv_command cmd;
+	mvCommand cmd;
 	for (i=0; i<script->used; i++) {
-		try
-	 	{
-			mv_command_parse(cmd, script->items[i].ptr);
-		} catch (mv_error* err) {
-			throw err;
-		}
-		mv_error* error = execute(&cmd);
-		if (error != NULL) throw error;
+		mv_command_parse(cmd, script->items[i].ptr);
+		execute(cmd);
 	}
 }
 

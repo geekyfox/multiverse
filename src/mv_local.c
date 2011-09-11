@@ -4,7 +4,7 @@
 #include "multiverse.h"
 #include "parser.h"
 
-mv_session* __LOCAL_SESSION__ = NULL;
+mvSession* __LOCAL_SESSION__ = NULL;
 
 void mv_local_start() {
 	__LOCAL_SESSION__ = new mvSession();
@@ -59,8 +59,15 @@ void mv_local_execute(mv_command* cmd) {
 	case CREATE_ENTITY:
 	case DESTROY_ENTITY:
 	case UPDATE_ENTITY:
-		error = __LOCAL_SESSION__->execute(cmd);
-		if (error == NULL) __display_success(cmd);
+		try
+		{
+			__LOCAL_SESSION__->execute(*cmd);
+			__display_success(cmd);
+		}
+		catch (mv_error* err)
+		{
+			error = err;
+		}
 		break;
 	case SHOW:
 		try

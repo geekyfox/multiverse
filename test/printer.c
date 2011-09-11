@@ -9,7 +9,7 @@ TEST error_unmatched() {
 }
 
 static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
-	mv_session state;
+	mvSession state;
 	char* target;
 
 	try
