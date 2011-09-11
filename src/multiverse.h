@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "mvArray.h"
 #include "mvIntset.h"
 #include "mvCodebook.h"
 #include "error.h"
@@ -38,17 +39,13 @@ mv_strref mv_strref_copy(mv_strref* ref);
 /* Implementation: mv_data.c */
 /*****************************/
 
-typedef struct {
-	char* data;
-	int size;
-	int used;
-	int pad;
-} mv_strbuf;
 
 char* mv_strbuf_align(mv_strbuf* ptr);
 void  mv_strbuf_alloc(mv_strbuf* ptr, int size);
 void  mv_strbuf_append(mv_strbuf* ptr, char* text);
 void  mv_strbuf_appendi(mv_strbuf* ptr, int num);
+
+#include "mvEntity.h"
 
 /*******************/
 /* Name-value pair */
@@ -100,24 +97,11 @@ void mv_strarr_release(mv_strarr* ptr);
 /*****************/
 
 
-void mv_entity_alloc(mv_entity* entity, int attrs, int classes);
-void mv_entity_show(mv_strbuf* buf, mv_entity* entity);
-void mv_entity_release(mv_entity* entity);
-mv_error* mv_entity_update(mv_entity* entity, mv_attrlist attrs);
 
 /*********************/
 /* Cache of entities */
 /*********************/
 
-typedef struct {
-	int size;
-	int used;
-	mv_entity* items;
-} mv_entcache;
-
-void mv_entcache_alloc(mv_entcache* ptr, int size);
-void mv_entcache_put(mv_entcache* ptr, int* ref, mv_entity* obj);
-void mv_entcache_release(mv_entcache* ptr);
 
 typedef struct {
 	int exist;
@@ -139,8 +123,6 @@ void mv_clscache_release(mv_clscache* ptr);
 mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls);
 
 #include "mvSession.h"
-
-mv_error* mv_session_show(char** target, mv_session* source, char* name);
 
 mv_error* mv_query_compile(mv_query* pat, mv_command* cmd);
 int       mv_query_match(mv_query* pat, mv_entity* e);

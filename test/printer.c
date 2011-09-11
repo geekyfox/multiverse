@@ -11,19 +11,17 @@ TEST error_unmatched() {
 static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 	mv_session state;
 	char* target;
-	mv_error* error;
 
 	try
 	{
 		state.perform(script);
+		state.show(&target, ref);
 	}
 	catch (mv_error* err)
 	{
-		FAIL(error);
+		FAIL(err);
 	}
 
-	error = mv_session_show(&target, &state, ref);
-	FAIL(error);
 	ASSERT_STRING(target, expect);
 
 	mv_strarr_release(script);

@@ -55,35 +55,6 @@ mv_error* __mv_create_class(int* ref,
 	return NULL;
 }
 
-static mv_error* __assign__(mv_session* state, mv_command* cmd) {
-	assert(cmd->vars.used == 2);
-	mv_strref clsname = cmd->vars.items[0];
-	char* objname = cmd->vars.items[1].ptr;
-	int objref = state->findvar(objname);
-	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", objname);
-	}
-	int clsref = state->findclass(clsname.ptr);
-	if (clsref == -1) {
-		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
-	}
-	mv_entity* entity = &(state->entities.items[objref]);
-	mv_class* cls = &(state->classes.items[clsref]);
-	FAILRET(mv_validate_assign(entity, cls));
-	mv_strarr_appref(&(entity->classes), &clsname); 
-	return NULL;
-}
-
-
-inline static mv_error* __update_entity__(mv_session* state, mv_command* cmd) {
-	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0].ptr;
-	int objref = state->findvar(name);
-	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", name);
-	}
-	return mv_entity_update(&state->entities.items[objref], cmd->attrs);
-}
 
 mv_error* mvSession::execute(mv_command* action) {
 	int ref;
@@ -92,7 +63,7 @@ mv_error* mvSession::execute(mv_command* action) {
 
 	switch (action->code) {
 	case ASSIGN:
-		return __assign__(this, action);
+		return assign(action);
 	case CREATE_ENTITY:
 		return createImpl(action);
 	case CREATE_CLASS:
@@ -112,34 +83,10 @@ mv_error* mvSession::execute(mv_command* action) {
 	case DESTROY_ENTITY:
 		return destroyImpl(action);
 	case UPDATE_ENTITY:
-		return __update_entity__(this, action);
+		return updateEntity(action);
 	default:
 		THROW(INTERNAL, "Unknown action (%d)", action->code);
 	}
 }
 
-
-mv_error* mv_session_show(char** target, mv_session* session, char* name) {
-	int ref = session->findvar(name);
-	if (ref != -1) {
-		mv_strbuf buf;
-		mv_strbuf_alloc(&buf, 1000);
-		mv_strbuf_append(&buf, name);
-		mv_strbuf_append(&buf, " = ");
-		mv_entity_show(&buf, &(session->entities.items[ref]));
-		*target = mv_strbuf_align(&buf);
-		return NULL;
-	}
-	ref = session->findclass(name);
-	if (ref != -1) {
-		mv_strbuf buf;
-		mv_strbuf_alloc(&buf, 1000);
-		mv_strbuf_append(&buf, name);
-		mv_strbuf_append(&buf, " = ");
-		mv_class_show(&buf, &(session->classes.items[ref]));
-		*target = mv_strbuf_align(&buf);
-		return NULL;
-	}
-	THROW(BADVAR, "Unknown name '%s'", name);
-}
 

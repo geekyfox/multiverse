@@ -77,10 +77,10 @@ TEST mv_execute_test() {
 	}
 	FAILFAST(state.execute(&action));
 	ASSERT_INT(state.varcount(), 2);
-	assert(state.entities.used == 2);
-	assert(state.entities.items[1].data.size == 2);
-	assert(state.entities.items[1].data.attrs[1].type == MVTYPE_REF);
-	assert(state.entities.items[1].data.attrs[1].value.ref == 0);
+	assert(state.entities.size() == 2);
+	assert(state.entities[1].data.size == 2);
+	assert(state.entities[1].data.attrs[1].type == MVTYPE_REF);
+	assert(state.entities[1].data.attrs[1].value.ref == 0);
 
 	ASSERT_INT(state.classes.used, 0);
 	ASSERT_INT(state.clscount(), 0);
@@ -143,15 +143,26 @@ TEST mv_session_findvar_test() {
 	ref = state.findvar("umberto_eco");
 	assert(ref == 0);
 	char* text1;
-	mv_error* error = mv_session_show(&text1, &state, "umberto_eco");
-	assert(error == NULL);
-	assert(strcmp(text1, response_1) == 0);
-
+	try
+	{
+		state.show(&text1, "umberto_eco");
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
+	ASSERT_STRING(text1, response_1);
 	free(text1);
 
-	error = mv_session_show(&text1, &state, "##1");
-	assert(error != NULL);
-	mv_error_release(error);
+	try
+	{
+		state.show(&text1, "##1");
+		DIE("Error expected");
+	}
+	catch (mv_error* err)
+	{
+		mv_error_release(err);
+	}
 }
 
 TEST mv_attrspec_release_test() {

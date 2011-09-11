@@ -18,9 +18,9 @@ TEST execute_REQ1() {
 	mv_session state;
 	__perform__(&state, REQ1);
 	ASSERT_INT(state.varcount(), 1);
-	ASSERT_INT(state.entities.used, 1);
+	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist attrs = state.entities.items[0].data;
+	mv_attrlist attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size, 1);
 	ASSERT_INT(attrs.attrs[0].type, MVTYPE_STRING);
 	ASSERT_STRING(attrs.attrs[0].name, "name");
@@ -59,8 +59,8 @@ TEST execute_REQ10() {
 	}
 	FAILFAST(state.execute(&action));
 
-	ASSERT_INT(state.entities.items[0].classes.used, 1);
-	ASSERT_STRREF(state.entities.items[0].classes.items[0], "person");
+	ASSERT_INT(state.entities[0].classes.used, 1);
+	ASSERT_STRREF(state.entities[0].classes.items[0], "person");
 
 }
 
@@ -125,9 +125,9 @@ TEST execute_REQ14() {
 	__perform__(&state, REQ14);
 	
 	ASSERT_INT(state.varcount(), 1);
-	ASSERT_INT(state.entities.used, 1);
+	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist attrs = state.entities.items[0].data;
+	mv_attrlist attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size, 1);
 	ASSERT_INT(attrs.attrs[0].type, MVTYPE_INTEGER);
 	ASSERT_STRING(attrs.attrs[0].name, "height");
@@ -257,8 +257,8 @@ TEST update() {
 		FAIL(err);
 	}
 
-	ASSERT_INT(session.entities.used, 1);
-	mv_attrlist data = session.entities.items[0].data;
+	ASSERT_INT(session.entities.size(), 1);
+	mv_attrlist data = session.entities[0].data;
 	ASSERT_INT(data.size, 2);
 
 	mv_strarr_release(&script);

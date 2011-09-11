@@ -201,55 +201,7 @@ void mv_clscache_release(mv_clscache* ptr) {
 	free(ptr->items);
 }
 	
-void mv_entcache_alloc(mv_entcache* ptr, int size) {
-	ptr->items = (mv_entity*)malloc(sizeof(mv_entity) * size);
-	ptr->size = size;
-	ptr->used = 0;
-}
 
-void mv_entcache_put(mv_entcache* ptr, int* ref, mv_entity* obj) {
-	int i, index = -1;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i].exist == 0) {
-			index = i;
-			break;
-		}
-	}
-	if (index == -1) {
-		if (ptr->used == ptr->size) {
-			ptr->size *= 2;
-			size_t newsz = sizeof(mv_entity) * ptr->size;
-			ptr->items = (mv_entity*)realloc(ptr->items, newsz);
-		}
-		index = ptr->used;
-		ptr->used++;
-	}
-	ptr->items[index].exist = 1;
-	ptr->items[index].data = obj->data;
-	ptr->items[index].classes = obj->classes;
-
-	if (ref != NULL) *ref = index;
-}
-
-void mv_entcache_release(mv_entcache* ptr) {
-	int i;
-	for (i=0; i<ptr->used; i++) {
-		if (ptr->items[i].exist) {
-			mv_entity_release(&ptr->items[i]);
-		}
-	}
-	free(ptr->items);
-}
-
-void mv_entity_alloc(mv_entity* entity, int attrs, int classes) {
-	mv_attrlist_alloc(&(entity->data), attrs);
-	mv_strarr_alloc(&(entity->classes), classes);
-}
-
-void mv_entity_release(mv_entity* entity) {
-	mv_attrlist_release(&(entity->data));
-	mv_strarr_release(&(entity->classes));
-}
 
 mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 	int sz = attrs.size, add = 0, i, j;

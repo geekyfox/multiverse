@@ -25,11 +25,9 @@ TEST compile_REQ11() {
 }
 
 TEST match_REQ11() {
-	mv_entity entity;
+	mv_entity entity(1, 1);
 	mv_query patt;
 
-	mv_entity_alloc(&entity, 1, 1);
-	entity.exist = 1;
 	mv_attr_parse(&(entity.data.attrs[0]), "name", "'Umberto Eco");
 	mv_strarr_append(&(entity.classes), strdup("person"));
 
@@ -40,7 +38,6 @@ TEST match_REQ11() {
 	int match = mv_query_match(&patt, &entity);
 	ASSERT_INT(match, 1);
 
-	mv_entity_release(&entity);
 	mv_query_release(&patt);
 }	
 

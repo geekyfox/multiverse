@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include "multiverse.h"
@@ -7,15 +8,14 @@
 
 mvSession::mvSession() :
 	vars(8),
-	clsnames(8)
+	clsnames(8),
+	entities(8)
 {
-	mv_entcache_alloc(&entities, 8);
 	mv_clscache_alloc(&classes, 8);
 	autovalidate = 1;
 }
 
 mvSession::~mvSession() {
-	mv_entcache_release(&entities);
 	mv_clscache_release(&classes);
 }
 
@@ -79,21 +79,19 @@ mv_error* mvSession::createImpl(mv_command* cmd) {
 
 mv_error* mvSession::createNew(int* ref, mv_attrlist attrs) {
 	int i, j;
-	mv_entity entity;
+	mv_entity* entity = new mv_entity(attrs.size, 0);
 	mv_error *error;
 	mv_attr *src, *dst;
 	//
-	mv_entity_alloc(&entity, attrs.size, 0);
-	entity.exist = 1;
 	for (i=0; i<attrs.size; i++) {
 		src = &attrs.attrs[i];
-		dst = &entity.data.attrs[i];
+		dst = &entity->data.attrs[i];
 		if ((error = copyAttr(dst, src))) {
-			for (j=0; j<i; j++) mv_attr_release(&entity.data.attrs[j]);
+			for (j=0; j<i; j++) mv_attr_release(&entity->data.attrs[j]);
 			return error;
 		}
 	}
-	mv_entcache_put(&entities, ref, &entity);
+	*ref = entities.push(entity);
 	return NULL;
 }
 
@@ -104,8 +102,7 @@ mv_error* mvSession::destroyImpl(mv_command* cmd) {
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
 	}
-	mv_entity_release(&entities.items[objref]);
-	entities.items[objref].exist = 0;
+	entities.drop(objref);
 	if (name[0] != '#') vars.remove(name);
 	return NULL;
 } 
@@ -114,8 +111,8 @@ int mvSession::findvar(char* name) {
 	if (name[0] == '#' && name[1] == '#') {
 		int ref = atoi(name + 2);
 		if ((ref < 0) ||
-		    (entities.used <= ref) ||
-		    (entities.items[ref].exist == 0)) return -1;
+		    (entities.size() <= ref) ||
+		    (!entities.exists(ref))) return -1;
 		return ref;
 	}
 	return vars.lookup(name);
@@ -132,9 +129,9 @@ mv_error* mvSession::lookup(mvIntset& ret, mv_command* cmd) {
 	if (error != NULL) return error;
 	
 	int i;
-	for (i=0; i<entities.used; i++) {
-		if (!entities.items[i].exist) continue;
-		if (mv_query_match(&query, &(entities.items[i]))) {
+	for (i=0; i<entities.size(); i++) {
+		if (!entities.exists(i)) continue;
+		if (mv_query_match(&query, &(entities[i]))) {
 			ret.put(i);
 		}
 	}
@@ -159,3 +156,61 @@ throw (mv_error*)
 		if (error != NULL) throw error;
 	}
 }
+
+mv_error* mvSession::updateEntity(mv_command* cmd)
+{
+	EXPECT(cmd->vars.used == 1, "Command is damaged");
+	char* name = cmd->vars.items[0].ptr;
+	int objref = findvar(name);
+	if (objref == -1) {
+		THROW(BADVAR, "Unknown variable '%s'", name);
+	}
+	return mv_entity_update(&entities[objref], cmd->attrs);
+}
+
+mv_error* mvSession::assign(mv_command* cmd)
+{
+	assert(cmd->vars.used == 2);
+	mv_strref clsname = cmd->vars.items[0];
+	char* objname = cmd->vars.items[1].ptr;
+	int objref = findvar(objname);
+	if (objref == -1) {
+		THROW(BADVAR, "Unknown variable '%s'", objname);
+	}
+	int clsref = findclass(clsname.ptr);
+	if (clsref == -1) {
+		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
+	}
+	mv_entity* entity = &(entities[objref]);
+	mv_class* cls = &(classes.items[clsref]);
+	FAILRET(mv_validate_assign(entity, cls));
+	mv_strarr_appref(&(entity->classes), &clsname); 
+	return NULL;
+}
+
+void mvSession::show(char** target, char* name)
+throw (mv_error*)
+{
+	int ref = findvar(name);
+	if (ref != -1) {
+		mv_strbuf buf;
+		mv_strbuf_alloc(&buf, 1000);
+		mv_strbuf_append(&buf, name);
+		mv_strbuf_append(&buf, " = ");
+		mv_entity_show(&buf, &(entities[ref]));
+		*target = mv_strbuf_align(&buf);
+		return;
+	}
+	ref = findclass(name);
+	if (ref != -1) {
+		mv_strbuf buf;
+		mv_strbuf_alloc(&buf, 1000);
+		mv_strbuf_append(&buf, name);
+		mv_strbuf_append(&buf, " = ");
+		mv_class_show(&buf, &(classes.items[ref]));
+		*target = mv_strbuf_align(&buf);
+		return;
+	}
+	NEWTHROW(BADVAR, "Unknown name '%s'", name);
+}
+

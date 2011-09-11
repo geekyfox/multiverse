@@ -3,6 +3,13 @@
 #define __MULTIVERSE_MODEL_HEADER__
 
 typedef struct {
+	char* data;
+	int size;
+	int used;
+	int pad;
+} mv_strbuf;
+
+typedef struct {
 	char* ptr;
 	int* ctr;
 	int alc;
@@ -53,12 +60,6 @@ typedef struct {
 	mv_attr* attrs;
 	int size;
 } mv_attrlist;
-
-typedef struct {
-	int exist;
-	mv_attrlist data;
-	mv_strarr classes;
-} mv_entity;
 
 typedef struct {
 	char* classname;

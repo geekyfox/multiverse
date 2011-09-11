@@ -63,10 +63,15 @@ void mv_local_execute(mv_command* cmd) {
 		if (error == NULL) __display_success(cmd);
 		break;
 	case SHOW:
-		error = mv_session_show(&tmpstr,
-                                __LOCAL_SESSION__,
-                                cmd->vars.items[0].ptr);
-		if (error != NULL) break;
+		try
+		{
+			__LOCAL_SESSION__->show(&tmpstr, cmd->vars.items[0].ptr);
+		}
+		catch (mv_error* err)
+		{
+			error = err;
+			break;
+		}
 		printf("%s", tmpstr);
 		fflush(stdout);
 		free(tmpstr);
