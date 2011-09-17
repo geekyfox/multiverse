@@ -16,15 +16,14 @@ public:
 	mv_ast();
 	mv_ast(struct mv_ast_entry& item);
 	mv_ast(struct mv_ast_entry& first, struct mv_ast_entry& second);
-	~mv_ast();
-	mv_ast* copy();
 };
 
 /*
  *  This structure represents an abstract syntax
  *  tree's entry.
  */
-typedef struct mv_ast_entry {
+class mv_ast_entry {
+public:
 	/* Entry's type (MVAST_) code. */
 	int type;
 	/* Entry's value.
@@ -41,7 +40,8 @@ typedef struct mv_ast_entry {
 		mv_strref* leaf;
 		mv_ast* subtree;
 	} value;
-} mv_ast_entry;
+	void clear();
+};
 
 /*
  * Constants for syntax tree entry's type
@@ -73,9 +73,6 @@ typedef struct mv_ast_entry {
  * memory and returns an mv_error.
  */
 mv_error* mv_ast_parse(mv_ast& target, const char* request);
-
-/* Releases memory occupied by an AST structure. */
-void mv_ast_release(mv_ast* ast);
 
 /* Builds attribute's value from it's name and value. */
 void mv_attr_parse(mv_attr* target, char* name, char* value);

@@ -221,49 +221,42 @@ mv_error* mv_ast_parse(mv_ast& target, const char* data) {
 	
 	free(tokens.items);
 
-	stack = (mv_ast_entry*)realloc(stack, sizeof(mv_ast_entry) * size);
 	target.set(stack, size);
+	free(stack);
 
 	for (i=0; i < size; i++) {
-		if (stack[i].type < 0) {
-			return mv_error_unmatched(stack[i].type, data);
+		if (target[i].type < 0) {
+			return mv_error_unmatched(target[i].type, data);
 		}
 	}
 
 	return NULL;
 }
 
-void mv_ast_release(mv_ast* ast) {
-}
-
-mv_ast::~mv_ast()
+void mv_ast_entry::clear()
 {
-	int i;
-	for (i=size() - 1; i >= 0; i--) {
-		switch(items[i].type) {
-		case MVAST_LEAF:
-			mv_strref_free(items[i].value.leaf);
-			free(items[i].value.leaf);
-			break;
-		case MVAST_TEMPOPENBRACE:
-		case MVAST_TEMPCLOSEBRACE:
-		case MVAST_TEMPCOMMA:
-		case MVAST_TEMPCOLON:
-		case MVAST_TEMPEQUALS:
-			break;
-		case MVAST_ATTRLIST:
-		case MVAST_ATTRPAIR:
-		case MVAST_TYPESPEC:
-		case MVAST_ATTRSPECLIST:
-		case MVAST_SUBQUERY:
-		case MVAST_ATTRQUERY:
-			delete items[i].value.subtree;
-			break;
-		default:
-			printf("code = %d\n", items[i].type);
-		}
+	switch(type) {
+	case MVAST_LEAF:
+		mv_strref_free(value.leaf);
+		free(value.leaf);
+		break;
+	case MVAST_TEMPOPENBRACE:
+	case MVAST_TEMPCLOSEBRACE:
+	case MVAST_TEMPCOMMA:
+	case MVAST_TEMPCOLON:
+	case MVAST_TEMPEQUALS:
+		break;
+	case MVAST_ATTRLIST:
+	case MVAST_ATTRPAIR:
+	case MVAST_TYPESPEC:
+	case MVAST_ATTRSPECLIST:
+	case MVAST_SUBQUERY:
+	case MVAST_ATTRQUERY:
+		delete value.subtree;
+		break;
+	default:
+		printf("code = %d\n", type);
 	}
-	free(items);
 }
 
 void mv_attrlist_parse(mv_attrlist* target, mv_ast* source) {
@@ -393,7 +386,6 @@ mv_error* __create_entity__(mv_command* target, mv_ast* ast) {
 	}
 
 	mv_attrlist_parse(&target->attrs, ast->items[2].value.subtree);
-	mv_ast_release(ast);
 	return NULL;
 }
 
@@ -425,7 +417,6 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 		mv_strarr_appref(&target->vars, items[2].value.leaf);
 		target->attrs.size = 0;
 		target->attrs.attrs = NULL;
-		mv_ast_release(ast);
 		return NULL;
 	}
 	
@@ -444,7 +435,6 @@ mv_error* __destroy__(mv_command* target, mv_ast* ast) {
 	}
 	__clear__(target, DESTROY_ENTITY, 1);
 	mv_strarr_appref(&target->vars, ast->items[2].value.leaf);
-	mv_ast_release(ast);
 	return NULL;	
 } 
 
@@ -455,7 +445,6 @@ inline static mv_error* __show__(mv_command* cmd, mv_ast* ast) {
 	assert(items[1].type == MVAST_LEAF);
 	__clear__(cmd, SHOW, 1);
 	mv_strarr_appref(&cmd->vars, items[1].value.leaf);
-	mv_ast_release(ast);
 	return NULL;
 }
 
@@ -464,7 +453,6 @@ inline static mv_error* __quit__(mv_command* cmd, mv_ast* ast) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
 	__clear__(cmd, QUIT, 0);
-	mv_ast_release(ast);
 	return NULL;
 }
 
@@ -478,7 +466,6 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast* ast) {
 	__clear__(cmd, ASSIGN, 2);
 	mv_strarr_appref(&cmd->vars, items[1].value.leaf);
 	mv_strarr_appref(&cmd->vars, items[3].value.leaf);
-	mv_ast_release(ast);
 	return NULL;
 }
 
@@ -487,7 +474,6 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	if (ast->size() == 2) {
 		__clear__(cmd, LOOKUP, 1);
 		mv_strarr_appref(&cmd->vars, ast->items[1].value.leaf);
-		mv_ast_release(ast);
 		return NULL;
 	}
 	assert(ast->size() == 4);
@@ -496,7 +482,6 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast* ast) {
 	__clear__(cmd, LOOKUP, 1);
 	mv_strarr_appref(&cmd->vars, ast->items[1].value.leaf);
 	mv_attrlist_parse(&cmd->attrs, ast->items[3].value.subtree);
-	mv_ast_release(ast);
 	return NULL;
 }
 
@@ -510,7 +495,6 @@ mv_error* __update_entity__(mv_command* target, mv_ast* ast) {
 		__clear__(target, UPDATE_ENTITY, 1);
 		mv_strarr_appref(&target->vars, items[2].value.leaf);
 		mv_attrlist_parse(&target->attrs, items[4].value.subtree);
-		mv_ast_release(ast);
 		return NULL;
 	} 
 
@@ -523,7 +507,6 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 	int size = ast->size();
 	mv_ast_entry* items = ast->items;
 	if ((size == 1) || !(LEAF(&items[1]))) {
-		mv_ast_release(ast);
 		THROW(INTERNAL, "Malformed 'update' command");
 	}
 
@@ -535,7 +518,6 @@ mv_error* __update__(mv_command* target, mv_ast* ast) {
 	PREPARE_ERROR(err, SYNTAX,
 	      "Invalid task for update - '%s'",
 		  items[1].value.leaf);
-	mv_ast_release(ast);
 	return err;
 }
 
@@ -547,10 +529,10 @@ throw (mv_error*)
 	mv_command* cmd = &command;
 	mv_error* error = mv_ast_parse(ast, data);
 	if (error != NULL) throw error;
-	if (!LEAF(&(ast.items[0]))) {
+	if (!LEAF(&(ast[0]))) {
 		NEWTHROW(SYNTAX, "Syntax error");
 	}
-	char* cmdname = ast.items[0].value.leaf->ptr;
+	char* cmdname = ast[0].value.leaf->ptr;
 
 	if (STREQ(cmdname, "assign"))  error = __assign__(cmd, &ast);
 	else if (STREQ(cmdname, "create"))  error = __create__(cmd, &ast);
@@ -591,9 +573,8 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 
 void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value) {
 	ptr->type = MVSPEC_SUBQUERY;
-	mv_ast_entry* items = value.items;
-	ptr->value.subquery.classname = strdup(items[0].value.leaf->ptr);
-	mv_attrlist_parse(&ptr->value.subquery.attrs, items[1].value.subtree);
+	ptr->value.subquery.classname = strdup(value[0].value.leaf->ptr);
+	mv_attrlist_parse(&ptr->value.subquery.attrs, value[1].value.subtree);
 	ptr->name = strdup(key);
 }
 

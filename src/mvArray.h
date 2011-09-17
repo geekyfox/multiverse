@@ -11,24 +11,39 @@ private:
 public:
 	T* items;
 	mvStaticArray(int size) :
-		items(size == 0 ? NULL : (T*)malloc(sizeof(T) * size)),
-		_size(size)
+		_size(size),
+		items(size == 0 ? NULL : new T[size])
 	{
+	}
+	~mvStaticArray()
+	{
+		for (int i=size() - 1; i >= 0; i--) {
+			items[i].clear();
+		}
+		delete[] items;
 	}
 	void push(const T& value)
 	{
+		T* update = new T[_size + 1];
+		for (int i=0; i<_size; i++) update[i] = items[i];
+		update[_size] = value;
 		_size++;
-		items = (T*)realloc(items, sizeof(T)*_size);
-		items[_size - 1] = value;
+		delete[] items;
+		items = update;
 	}
 	void set(T* values, int count)
 	{
+		items = new T[count];
+		for (int i=0; i<count; i++) items[i] = values[i];
 		_size = count;
-		items = values;
 	}
 	int size()
 	{
 		return _size;
+	}
+	T& operator[](const int index)
+	{
+		return items[index];
 	}
 };
 

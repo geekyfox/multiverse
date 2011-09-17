@@ -4,7 +4,7 @@
 
 #define BEFORE(RQ) mv_ast ast; FAILFAST(mv_ast_parse(ast, RQ));
 
-#define AFTER mv_ast_release(&ast);
+#define AFTER 
 
 #define BEFOREBAD(RQ) \
 mv_ast ast; \
