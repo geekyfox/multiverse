@@ -25,27 +25,27 @@ mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
 	dst->type = src->type;
 
 	switch(src->type) {
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		ref = findvar(src->value.rawref);
 		if (ref == -1) {
 			if (autovalidate) {
 				THROW(BADVAR, "Unknown variable '%s'", src->name);
 			} else {
-				dst->type = MVTYPE_RAWREF;
+				dst->type = RAWREF;
 				dst->value.rawref = strdup(src->value.rawref);	
 			}
 		} else {
-			dst->type = MVTYPE_REF;
+			dst->type = REF;
 			dst->value.ref = ref;
 		}
 		break;
-	case MVTYPE_REF:
+	case REF:
 		dst->value.ref = src->value.ref;
 		break;
-	case MVTYPE_INTEGER:
+	case INTEGER:
 		dst->value.integer = src->value.integer;
 		break;
-	case MVTYPE_STRING:
+	case STRING:
 		dst->value.string = strdup(src->value.string);
 		break;
 	default:

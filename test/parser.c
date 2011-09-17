@@ -16,7 +16,7 @@ static void __tokenizeimpl(char* request, char** expect, int count) {
 TEST attr_test1() {
 	mv_attr pair;
 	mv_attr_parse(&pair, "name", "'Umberto Eco");
-	ASSERT_INT(pair.type, MVTYPE_STRING);
+	ASSERT_INT(pair.type, STRING);
 	ASSERT_STRING(pair.name, "name");
 	ASSERT_STRING(pair.value.string, "Umberto Eco");
 	mv_attr_release(&pair);

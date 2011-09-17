@@ -320,7 +320,7 @@ inline static int __parse_number__(mv_attr* target, char* value) {
 			value++;
 			continue;
 		} else if (*value == '\0') {
-			target->type = MVTYPE_INTEGER;
+			target->type = INTEGER;
 			target->value.integer = ival;
 			return 1;
 		} else {
@@ -332,14 +332,14 @@ inline static int __parse_number__(mv_attr* target, char* value) {
 void mv_attr_parse(mv_attr* target, char* name, char* value) {
 	target->name = strdup(name);
 	if (value[0] == '\'') {
-		target->type = MVTYPE_STRING;
+		target->type = STRING;
 		target->value.string = strdup(value + 1);
 		return;
 	}
 	if (__parse_number__(target, value)) {
 		return;
 	}
-	target->type = MVTYPE_RAWREF;
+	target->type = RAWREF;
 	target->value.rawref = strdup(value);
 }
 
@@ -547,19 +547,18 @@ throw (mv_error*)
 }
 
 void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
-	int code;
+	mvTypeCode code;
 
 	switch(rel) {
 		case MVAST_TYPESPEC:
 			ptr->type = TYPE;
-			code = -1;
 			ptr->value.typespec.classname = NULL;
 			if (STREQ(value, "string")) {
-				code = MVTYPE_STRING;
+				code = STRING;
 			} else if (STREQ(value, "integer")) {
-				code = MVTYPE_INTEGER;
+				code = INTEGER;
 			} else {
-				code = MVTYPE_RAWREF;
+				code = RAWREF;
 				ptr->value.typespec.classname = strdup(value);
 			}
 			ptr->value.typespec.type = code;

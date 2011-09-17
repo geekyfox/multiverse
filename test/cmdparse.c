@@ -14,7 +14,7 @@ TESTREQ 1 {
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 1);
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
+	ASSERT_INT(action.attrs.attrs[0].type, STRING);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
 	ASSERT_STRING(action.attrs.attrs[0].value.string, "Umberto Eco");
 }
@@ -46,7 +46,7 @@ TESTREQ 11 {
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_NOTNULL(action.attrs.attrs);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_STRING);
+	ASSERT_INT(action.attrs.attrs[0].type, STRING);
 	ASSERT_STRING(action.attrs.attrs[0].value.string, "Umberto Eco");
 }
 
@@ -77,7 +77,7 @@ TESTREQ 14 {
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
 	ASSERT_INT(action.attrs.size, 1);
-	ASSERT_INT(action.attrs.attrs[0].type, MVTYPE_INTEGER);
+	ASSERT_INT(action.attrs.attrs[0].type, INTEGER);
 	ASSERT_STRING(action.attrs.attrs[0].name, "height");
 	ASSERT_INT(action.attrs.attrs[0].value.integer, 324);
 }
@@ -90,7 +90,7 @@ TESTREQ 15 {
 	mv_attrspec asp = action.spec[0];
 	ASSERT_INT(asp.type, TYPE);
 	ASSERT_STRING(asp.name, "height");
-	ASSERT_INT(asp.value.typespec.type, MVTYPE_INTEGER);
+	ASSERT_INT(asp.value.typespec.type, INTEGER);
 	ASSERT_NULL(asp.value.typespec.classname);
 }
 

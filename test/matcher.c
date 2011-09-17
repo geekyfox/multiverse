@@ -18,7 +18,7 @@ TEST compile_REQ11() {
 	ASSERT_STRING(patt.classname, "person");
 	ASSERT_INT(patt.attrs.size, 1);
 	ASSERT_STRING(patt.attrs.attrs[0].name, "name");
-	ASSERT_INT(patt.attrs.attrs[0].type, MVTYPE_STRING);
+	ASSERT_INT(patt.attrs.attrs[0].type, STRING);
 	ASSERT_STRING(patt.attrs.attrs[0].value.string, "Umberto Eco");
 
 	mv_query_release(&patt);

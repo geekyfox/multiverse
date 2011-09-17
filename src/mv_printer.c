@@ -9,20 +9,20 @@ void mv_attr_show(mv_strbuf* buf, mv_attr* attr) {
 	buf->append(attr->name);
 	buf->append(" = ");
 	switch (attr->type) {
-	case MVTYPE_STRING:
+	case STRING:
 		__appendimpl(buf, "'");
 		__appendimpl(buf, attr->value.string);
 		__appendimpl(buf, "'");
 		break;
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		__appendimpl(buf, attr->value.rawref);
 		__appendimpl(buf, " (UNRESOLVED)");
 		break;
-	case MVTYPE_REF:
+	case REF:
 		__appendimpl(buf, "##");
 		__appendimpli(buf, attr->value.ref);
 		break;
-	case MVTYPE_INTEGER:
+	case INTEGER:
 		__appendimpli(buf, attr->value.integer);
 		break;
 	default:
@@ -86,10 +86,10 @@ void mv_speclist_show(mv_strbuf* buf, mv_speclist& ptr) {
 
 void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec) {
 	switch (spec->type) {
-	case MVTYPE_STRING:
+	case STRING:
 		__appendimpl(buf, "string");
 		break;
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		__appendimpl(buf, spec->classname);
 		__appendimpl(buf, " (UNRESOLVED)");
 		break;

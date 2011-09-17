@@ -46,7 +46,7 @@ TEST mv_command_test() {
 	assert(action.code == CREATE_ENTITY);
 	assert(action.attrs.size == 2);
 	assert(strcmp(action.attrs.attrs[1].name, "author") == 0);
-	assert(action.attrs.attrs[1].type == MVTYPE_RAWREF);
+	assert(action.attrs.attrs[1].type == RAWREF);
 	assert(strcmp(action.attrs.attrs[1].value.rawref, "umberto_eco") == 0);
 }
 
@@ -71,7 +71,7 @@ TEST mv_execute_test() {
 	ASSERT_INT(state.varcount(), 2);
 	assert(state.entities.size() == 2);
 	assert(state.entities[1].data.size == 2);
-	assert(state.entities[1].data.attrs[1].type == MVTYPE_REF);
+	assert(state.entities[1].data.attrs[1].type == REF);
 	assert(state.entities[1].data.attrs[1].value.ref == 0);
 
 	ASSERT_INT(state.classes.size(), 0);
@@ -107,7 +107,7 @@ TEST mv_attrlist_show_test() {
 	mv_attrlist attrs;
 	mv_attrlist_alloc(&attrs, 1);
 	mv_attr_parse(attrs.attrs, "name", "'Umberto Eco");
-	assert(attrs.attrs[0].type == MVTYPE_STRING);
+	assert(attrs.attrs[0].type == STRING);
 	assert(strcmp(attrs.attrs[0].name, "name") == 0);
 	assert(strcmp(attrs.attrs[0].value.string, "Umberto Eco") == 0);
 

@@ -7,13 +7,13 @@ mv_error* __check_type__(char* name, mv_typespec spec, mv_attrlist attrs) {
 	for (i=attrs.size - 1; i >= 0; i--) {
 		if (!STREQ(attrs.attrs[i].name, name)) continue;
 		switch (spec.type) {
-		case MVTYPE_STRING:
-			if (attrs.attrs[i].type != MVTYPE_STRING) {
+		case STRING:
+			if (attrs.attrs[i].type != STRING) {
 				THROW(INVALID, "Attribute %s is not string\n", name);	
 			}
 			break;
-		case MVTYPE_INTEGER:
-			if (attrs.attrs[i].type != MVTYPE_INTEGER) {
+		case INTEGER:
+			if (attrs.attrs[i].type != INTEGER) {
 				THROW(INVALID, "Attribute %s is not integer\n", name);	
 			}
 			break;

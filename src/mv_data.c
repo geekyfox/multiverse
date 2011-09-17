@@ -56,16 +56,16 @@ mv_strref mv_strref_copy(mv_strref* ref) {
 inline static void __mv_attr_set__(mv_attr* dst, mv_attr* src) {
 	dst->type = src->type;
 	switch (src->type) {
-	case MVTYPE_STRING:
+	case STRING:
 		dst->value.string = strdup(src->value.string);
 		break;
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		dst->value.rawref = strdup(src->value.rawref);
 		break;
-	case MVTYPE_REF:
+	case REF:
 		dst->value.ref = src->value.ref;
 		break;
-	case MVTYPE_INTEGER:
+	case INTEGER:
 		dst->value.integer = src->value.integer;
 		break;
 	default:
@@ -82,14 +82,14 @@ mv_attr mv_attr_copy(mv_attr* attr) {
 
 inline static void __mv_attr_release_value__(mv_attr* attr) {
 	switch (attr->type) {
-	case MVTYPE_STRING:
+	case STRING:
 		free(attr->value.string);
 		break;
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		free(attr->value.rawref);
 		break;
-	case MVTYPE_REF:
-	case MVTYPE_INTEGER:
+	case REF:
+	case INTEGER:
 		break;
 	default:
 		DIE("Invalid code (%d)", attr->type);
@@ -246,10 +246,10 @@ void mv_strarr_release(mv_strarr* ptr) {
 
 void mv_typespec_release(mv_typespec* spec) {
 	switch (spec->type) {
-	case MVTYPE_STRING:
-	case MVTYPE_INTEGER:
+	case STRING:
+	case INTEGER:
 		break;
-	case MVTYPE_RAWREF:
+	case RAWREF:
 		free(spec->classname);
 		break;
 	default:
