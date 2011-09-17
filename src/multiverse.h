@@ -68,14 +68,10 @@ void mv_typespec_show(mv_strbuf* buf, mv_typespec* spec);
 void mv_query_release(mv_query* query);
 void mv_query_show(mv_strbuf* buf, mv_query* query);
 
-
-void mv_attrspec_release(mv_attrspec* ptr);
 void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* ptr);
 
 
-void mv_speclist_alloc(mv_speclist* ptr, int size);
-void mv_speclist_release(mv_speclist* ptr);
-void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr);
+void mv_speclist_show(mv_strbuf* buf, mv_speclist& ptr);
 
 /******************************/
 /* Expandable array of string */

@@ -9,8 +9,7 @@ catch (mv_error* err) { FAIL(err); }
 
 TESTREQ 1 {
 	ASSERT_INT(action.code, CREATE_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
@@ -24,14 +23,12 @@ TESTREQ 7 {
 	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
-	ASSERT_INT(action.spec.size, 1);
-	ASSERT_NOTNULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 1);
 }
 
 TESTREQ 10 {
 	ASSERT_INT(action.code, ASSIGN);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 2);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "person");
@@ -42,8 +39,7 @@ TESTREQ 10 {
 
 TESTREQ 11 {
 	ASSERT_INT(action.code, LOOKUP);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "person");
@@ -56,8 +52,7 @@ TESTREQ 11 {
 
 TESTREQ 12 {
 	ASSERT_INT(action.code, DESTROY_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
@@ -67,8 +62,7 @@ TESTREQ 12 {
 
 TESTREQ 13 {
 	ASSERT_INT(action.code, LOOKUP);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "person");
@@ -78,8 +72,7 @@ TESTREQ 13 {
 
 TESTREQ 14 {
 	ASSERT_INT(action.code, CREATE_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.used, 1);
 	ASSERT_NOTNULL(action.vars.items);
 	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
@@ -93,10 +86,9 @@ TESTREQ 15 {
 	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
-	ASSERT_INT(action.spec.size, 1);
-	ASSERT_NOTNULL(action.spec.specs);
-	mv_attrspec asp = action.spec.specs[0];
-	ASSERT_INT(asp.type, MVSPEC_TYPE);
+	ASSERT_INT(action.spec.size(), 1);
+	mv_attrspec asp = action.spec[0];
+	ASSERT_INT(asp.type, TYPE);
 	ASSERT_STRING(asp.name, "height");
 	ASSERT_INT(asp.value.typespec.type, MVTYPE_INTEGER);
 	ASSERT_NULL(asp.value.typespec.classname);
@@ -104,18 +96,16 @@ TESTREQ 15 {
 
 TESTREQ 18 {
 	ASSERT_INT(action.code, CREATE_CLASS);
-	ASSERT_INT(action.spec.size, 1);
-	ASSERT_NOTNULL(action.spec.specs);
-	mv_attrspec asp = action.spec.specs[0];
-	ASSERT_INT(asp.type, MVSPEC_SUBQUERY);
+	ASSERT_INT(action.spec.size(), 1);
+	mv_attrspec asp = action.spec[0];
+	ASSERT_INT(asp.type, SUBQUERY);
 	ASSERT_STRING(asp.name, "books");
 	ASSERT_STRING(asp.value.subquery.classname, "book");
 }
 
 TESTREQ 20 {
 	ASSERT_INT(action.code, UPDATE_ENTITY);
-	ASSERT_INT(action.spec.size, 0);
-	ASSERT_NULL(action.spec.specs);
+	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_NOTNULL(action.attrs.attrs);
 	ASSERT_INT(action.vars.used, 1);

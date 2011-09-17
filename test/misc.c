@@ -88,8 +88,8 @@ TEST mv_execute_test() {
 	}
 	ASSERT_INT(state.classes.size(), 1);
 	ASSERT_INT(state.clscount(), 1);
-	ASSERT_INT(state.classes[0].data.size, 1);
-	ASSERT_INT(state.classes[0].data.specs[0].type, MVSPEC_TYPE);
+	ASSERT_INT(state.classes[0].data.size(), 1);
+	ASSERT_INT(state.classes[0].data[0].type, TYPE);
 
 	try
 	{
@@ -167,8 +167,7 @@ TEST mv_attrspec_release_test() {
 		mv_command_parse(cmd, "show person");
 		ASSERT_NULL(cmd.attrs.attrs);
 		ASSERT_INT(cmd.attrs.size, 0);
-		ASSERT_NULL(cmd.spec.specs);
-		ASSERT_INT(cmd.spec.size, 0);
+		ASSERT_INT(cmd.spec.size(), 0);
 	}
 	catch (mv_error* err)
 	{

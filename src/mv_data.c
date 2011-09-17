@@ -149,18 +149,21 @@ void mv_attrlist_release(mv_attrlist* ptr) {
 	}
 }
 
-void mv_attrspec_release(mv_attrspec* ptr) {
-	switch (ptr->type) {
-	case MVSPEC_TYPE:
-		mv_typespec_release(&(ptr->value.typespec));
+void mv_attrspec::clear()
+{
+	switch (type) {
+	case UNSET:
+		return;
+	case TYPE:
+		mv_typespec_release(&(value.typespec));
 		break;
-	case MVSPEC_SUBQUERY:
-		mv_query_release(&(ptr->value.subquery));
+	case SUBQUERY:
+		mv_query_release(&(value.subquery));
 		break;
 	default:
-		DIE("Unknown type (%d)", ptr->type);
+		DIE("Unknown type (%d)", type);
 	}
-	free(ptr->name);
+	free(name);
 }
 
 mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
@@ -200,21 +203,6 @@ mv_error* mv_entity_update(mv_entity* enty, mv_attrlist attrs) {
 void mv_query_release(mv_query* query) {
 	free(query->classname);
 	mv_attrlist_release(&(query->attrs));
-}
-
-void mv_speclist_alloc(mv_speclist* ptr, int size) {
-	ptr->specs = (mv_attrspec*)malloc(sizeof(mv_attrspec) * size);
-	ptr->size = size;
-}
-
-void mv_speclist_release(mv_speclist* ptr) {
-	if (ptr->specs != NULL) {
-		int i;
-		for (i=0; i<ptr->size; i++) {
-			mv_attrspec_release(&ptr->specs[i]);
-		}
-		free(ptr->specs);
-	}
 }
 
 void mv_strarr_alloc(mv_strarr* ptr, int size) {

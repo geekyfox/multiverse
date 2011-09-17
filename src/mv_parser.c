@@ -276,8 +276,8 @@ void mv_attrlist_parse(mv_attrlist* target, mv_ast* source) {
 	}
 }
 
-void mv_speclist_parse(mv_speclist* target, mv_ast* source) {
-	mv_speclist_alloc(target, source->size());
+void mv_speclist_parse(mv_speclist& target, mv_ast* source) {
+	target.alloc(source->size());
 	int i;
 	for (i=0; i<source->size(); i++) {
 		mv_ast_entry src = source->items[i];
@@ -295,14 +295,14 @@ void mv_speclist_parse(mv_speclist* target, mv_ast* source) {
 			    "First item of AttrQuery should be a Subquery"
 			);
 			mv_attrquery_parse(
-			    &(target->specs[i]), key, *items[1].value.subtree
+			    &(target[i]), key, *items[1].value.subtree
 			);
 			break;
 		case MVAST_ATTRPAIR:
 		case MVAST_TYPESPEC:
 			EXPECT(LEAF(&items[1]), "Leaf expected as a second item");
 			mv_spec_parse(
-				&(target->specs[i]), key, items[1].value.leaf->ptr, src.type
+				&(target[i]), key, items[1].value.leaf->ptr, src.type
 			);
 			break;
 		default:
@@ -347,8 +347,7 @@ inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
 	cmd->code = code;
 	cmd->attrs.size = 0;
 	cmd->attrs.attrs = NULL;
-	cmd->spec.size = 0;
-	cmd->spec.specs = NULL;
+	cmd->spec.clear();
 	if (vars != 0) {
 		mv_strarr_alloc(&cmd->vars, vars);
 	} else {
@@ -412,7 +411,7 @@ mv_error* __create__(mv_command* target, mv_ast* ast) {
 			      "Expected AttrSpecList, got %d",
 			      items[3].type);
 		}
-		mv_speclist_parse(&(target->spec), items[3].value.subtree);
+		mv_speclist_parse(target->spec, items[3].value.subtree);
 		mv_strarr_alloc(&target->vars, 1);
 		mv_strarr_appref(&target->vars, items[2].value.leaf);
 		target->attrs.size = 0;
@@ -552,7 +551,7 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 
 	switch(rel) {
 		case MVAST_TYPESPEC:
-			ptr->type = MVSPEC_TYPE;
+			ptr->type = TYPE;
 			code = -1;
 			ptr->value.typespec.classname = NULL;
 			if (STREQ(value, "string")) {
@@ -572,7 +571,7 @@ void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
 }
 
 void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value) {
-	ptr->type = MVSPEC_SUBQUERY;
+	ptr->type = SUBQUERY;
 	ptr->value.subquery.classname = strdup(value[0].value.leaf->ptr);
 	mv_attrlist_parse(&ptr->value.subquery.attrs, value[1].value.subtree);
 	ptr->name = strdup(key);

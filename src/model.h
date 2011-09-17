@@ -2,6 +2,7 @@
 #ifndef __MULTIVERSE_MODEL_HEADER__
 #define __MULTIVERSE_MODEL_HEADER__
 
+#include "mvArray.h"
 #include "mvStrBuffer.h"
 
 typedef struct {
@@ -66,27 +67,25 @@ typedef struct {
 	char* classname;
 } mv_typespec;
 
-typedef struct {
+enum mvAttrSpecType {
+	UNSET, TYPE, SUBQUERY
+};
+
+class mv_attrspec {
+public:
+	mv_attrspec() : type(UNSET)
+	{
+	}
 	char* name;
-	int type;
+	mvAttrSpecType type;
 	union {
 		mv_typespec typespec;
 		mv_query subquery;
 	} value;	
-} mv_attrspec;
+	void clear();
+};
 
-typedef struct {
-	mv_attrspec* specs;
-	int size;
-} mv_speclist;
-
-//
-// mv_attrspec value selector
-//
-#define MVSPEC_TYPE     4001
-#define MVSPEC_SUBQUERY 4002
-
-
+typedef mvStaticArray<mv_attrspec> mv_speclist;
 
 #endif
  

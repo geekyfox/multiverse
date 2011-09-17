@@ -81,7 +81,7 @@ void mv_attr_parse(mv_attr* target, char* name, char* value);
 void mv_attrlist_parse(mv_attrlist* target, mv_ast* source);
 
 /* Populates an mv_speclist from it's representation. */
-void mv_speclist_parse(mv_speclist* target, mv_ast* source);
+void mv_speclist_parse(mv_speclist& target, mv_ast* source);
 
 /* Builds a subquery from corresponding AST. */
 void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);

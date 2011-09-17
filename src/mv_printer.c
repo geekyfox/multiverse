@@ -44,12 +44,12 @@ void mv_attrlist_show(mv_strbuf* buf, const mv_attrlist& ptr) {
 
 void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* spec) {
 	switch(spec->type) {
-	case MVSPEC_TYPE:
+	case TYPE:
 		__appendimpl(buf, spec->name);
 		__appendimpl(buf, " : ");
 		mv_typespec_show(buf, &(spec->value.typespec));
 		break;
-	case MVSPEC_SUBQUERY:
+	case SUBQUERY:
 		__appendimpl(buf, spec->name);
 		__appendimpl(buf, " = ");
 		mv_query_show(buf, &(spec->value.subquery));
@@ -61,7 +61,7 @@ void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* spec) {
 
 void mv_class_show(mv_strbuf* buf, mv_class* cls) {
 	__appendimpl(buf, "class ");
-	mv_speclist_show(buf, &(cls->data));
+	mv_speclist_show(buf, cls->data);
 }
 
 void mv_query_show(mv_strbuf* buf, mv_query* query) {
@@ -72,13 +72,13 @@ void mv_query_show(mv_strbuf* buf, mv_query* query) {
 	buf->unindent(2);
 }
 
-void mv_speclist_show(mv_strbuf* buf, mv_speclist* ptr) {
+void mv_speclist_show(mv_strbuf* buf, mv_speclist& ptr) {
 	int i;
 	__appendimpl(buf, "{\n");
-	for (i=0; i<ptr->size; i++) {
+	for (i=0; i<ptr.size(); i++) {
 		__appendimpl(buf, "  ");
-		mv_attrspec_show(buf, &(ptr->specs[i]));
-		if (i != ptr->size - 1) __appendimpl(buf, ",");
+		mv_attrspec_show(buf, &(ptr[i]));
+		if (i != ptr.size() - 1) __appendimpl(buf, ",");
 		__appendimpl(buf, "\n");
 	}
 	__appendimpl(buf, "}\n");

@@ -17,10 +17,7 @@ public:
 	}
 	~mvStaticArray()
 	{
-		for (int i=size() - 1; i >= 0; i--) {
-			items[i].clear();
-		}
-		delete[] items;
+		clear();
 	}
 	void push(const T& value)
 	{
@@ -44,6 +41,22 @@ public:
 	T& operator[](const int index)
 	{
 		return items[index];
+	}
+	void clear()
+	{
+		if (items != NULL)
+		{
+			for (int i=size() - 1; i >= 0; i--) {
+				items[i].clear();
+			}
+			delete[] items;
+		}
+		alloc(0);
+	}
+	void alloc(int size)
+	{
+		items = (size == 0) ? NULL : new T[size];
+		_size = size;
 	}
 };
 

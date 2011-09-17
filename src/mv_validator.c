@@ -36,17 +36,16 @@ mv_error* __check_absent__(char* name, mv_attrlist attrs) {
 }
 
 mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls) {
-	int i;
-	for (i=cls->data.size - 1; i >= 0; i--) {
-		mv_attrspec* spec = &(cls->data.specs[i]);
+	for (int i=cls->data.size() - 1; i >= 0; i--) {
+		mv_attrspec* spec = &(cls->data[i]);
 		char* name = spec->name;
 		switch (spec->type) {
-		case MVSPEC_TYPE:
+		case TYPE:
 			FAILRET(
 				__check_type__(name, spec->value.typespec, entity->data)
 			);
 			break;
-		case MVSPEC_SUBQUERY:
+		case SUBQUERY:
 			FAILRET(__check_absent__(name, entity->data));
 			break;
 		default:

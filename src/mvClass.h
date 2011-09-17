@@ -8,9 +8,12 @@
 
 class mvClass {
 public:
+	mvClass(int size) :
+		data(size)
+	{
+	}
 	~mvClass()
 	{
-		mv_speclist_release(&data);
 	}
 	mv_speclist data;
 };
