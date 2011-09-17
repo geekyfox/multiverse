@@ -2,10 +2,13 @@
 #include "test.h"
 
 TEST error_unmatched() {
-	mv_ast ast;
-	mv_error* error = mv_ast_parse(ast, BADREQ1);
-	ASSERT_STRING(error->message, ERRRESP1);
-	mv_error_release(error);
+	try {
+		mv_ast ast(BADREQ1);
+		DIE("Error expected");
+	} catch (mv_error* error) {
+		ASSERT_STRING(error->message, ERRRESP1);
+		mv_error_release(error);
+	}
 }
 
 static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {

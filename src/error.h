@@ -49,5 +49,8 @@ DIE(__VA_ARGS__); } while (0)
 #define FAILRET(expr) do { mv_error* __err = (expr); \
 if (__err != NULL) return __err; } while (0)
 
+#define FAILTHROW(expr) do { mv_error* __err = (expr); \
+if (__err != NULL) throw __err; } while (0)
+
 #endif
 

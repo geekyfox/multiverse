@@ -8,8 +8,12 @@ template <class T>
 class mvStaticArray {
 private:
 	int _size;
-public:
 	T* items;
+public:
+	mvStaticArray() :
+		_size(0), items(NULL)
+	{
+	}
 	mvStaticArray(int size) :
 		_size(size),
 		items(size == 0 ? NULL : new T[size])
