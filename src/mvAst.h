@@ -5,6 +5,7 @@
 #include "model.h"
 #include "mvArray.h"
 #include "error.h"
+#include "multiverse.h"
 
 class mv_ast_entry;
 
@@ -23,7 +24,6 @@ public:
 	void populate(mv_speclist& specs);
 };
 
-#define MVAST_LEAF              2001
 #define MVAST_SUBQUERY          2006
 
 typedef mvAst mv_ast;
@@ -35,9 +35,22 @@ typedef mvAst mv_ast;
 class mv_ast_entry {
 private:
 	mv_ast* _subtree;
+	mv_strref* _leaf;
+	int _type;
 public:
+	mv_ast_entry() : _subtree(NULL), _leaf(NULL), _type(0)
+	{
+	}
+	bool type_is(int code)
+	{
+		if (_leaf != NULL) return false;
+		return _type == code;
+	}
+	int type()
+	{
+		return _type;
+	}
 	/* Entry's type (MVAST_) code. */
-	int type;
 	/* Entry's value.
 	 *
 	 * When type=MVAST_LEAF, leaf contains the value.
@@ -48,15 +61,12 @@ public:
 	 * When type is atomic (such as MVAST_TEMPCOMMA, see
 	 * mv_ast_release() for a full list), there's no value.
 	 */
-	union {
-		mv_strref* leaf;
-	} value;
 	void clear();
 	void set(int type, mv_ast* subtree)
 	{
 		_subtree = subtree;
-		this->type = type;
-		this->value.leaf = NULL;
+		this->_type = type;
+		this->_leaf = NULL;
 	}
 	void set_subtree(int type);
 	void set_subtree(int type, mv_ast_entry& first);
@@ -66,13 +76,32 @@ public:
 		assert(_subtree != NULL);
 		return *_subtree;
 	}
+	void set_leaf(mv_strref* leaf)
+	{
+		_leaf = (mv_strref*)malloc(sizeof(mv_strref));
+		*_leaf = *leaf;
+	}
+	void set_type(int code)
+	{
+		_type = code;
+	}
+	void clear_leaf()
+	{
+		mv_strref_free(_leaf);
+		free(_leaf);
+	}
+	mv_strref& leaf()
+	{
+		assert(_leaf != NULL);
+		return *_leaf;
+	}	
 	bool is_leaf()
 	{
-		return type == MVAST_LEAF;
+		return _leaf != NULL;
 	}
 	bool is_subquery()
 	{
-		return type == MVAST_SUBQUERY;
+		return _type == MVAST_SUBQUERY;
 	}
 };
 

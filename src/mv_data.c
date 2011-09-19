@@ -47,7 +47,7 @@ void mv_strref_free(mv_strref* ref) {
 	}
 }
 
-mv_strref mv_strref_copy(mv_strref* ref) {
+mv_strref mv_strref_copy(const mv_strref* ref) {
 	mv_strref result = *ref;
 	*(result.ctr) += 1;
 	return result;
@@ -224,9 +224,9 @@ void mv_strarr_append(mv_strarr* ptr, char* value) {
 	ptr->used++;
 }
 
-void mv_strarr_appref(mv_strarr* ptr, mv_strref* ref) {
+void mv_strarr_appref(mv_strarr* ptr, const mv_strref& ref) {
 	__mv_strarr_expand(ptr);
-	ptr->items[ptr->used] = mv_strref_copy(ref);
+	ptr->items[ptr->used] = mv_strref_copy(&ref);
 	ptr->used++;
 }
 

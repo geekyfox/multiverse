@@ -178,7 +178,7 @@ mv_error* mvSession::assign(mv_command* cmd)
 	mv_entity* entity = &(entities[objref]);
 	mv_class* cls = &(classes[clsref]);
 	FAILRET(mv_validate_assign(entity, cls));
-	mv_strarr_appref(&(entity->classes), &clsname); 
+	mv_strarr_appref(&(entity->classes), clsname); 
 	return NULL;
 }
 

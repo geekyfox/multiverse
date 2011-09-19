@@ -30,11 +30,13 @@ void mv_ast_entry::set_subtree(int code, mv_ast_entry& first,
 
 void mv_ast_entry::clear()
 {
-	switch(type) {
-	case MVAST_LEAF:
-		mv_strref_free(value.leaf);
-		free(value.leaf);
-		break;
+	if (_leaf != NULL)
+	{
+		mv_strref_free(_leaf);
+		free(_leaf);
+	}
+	if (_type == 0) return;
+	switch(_type) {
 	case MVAST_TEMPOPENBRACE:
 	case MVAST_TEMPCLOSEBRACE:
 	case MVAST_TEMPCOMMA:
@@ -50,7 +52,7 @@ void mv_ast_entry::clear()
 		delete _subtree;
 		break;
 	default:
-		printf("code = %d\n", type);
+		printf("code = %d\n", _type);
 	}
 }
 
@@ -65,8 +67,8 @@ void mvAst::populate(mv_speclist& target) {
 		);
 		mv_ast& sub = src.subtree();
 		EXPECT(sub[0].is_leaf(), "Leaf expected as a first item");
-		char* key = sub[0].value.leaf->ptr;
-		switch (src.type) {
+		char* key = sub[0].leaf().ptr;
+		switch (src.type()) {
 		case MVAST_ATTRQUERY:
 			EXPECT(
 			    sub[1].is_subquery(),
@@ -80,11 +82,11 @@ void mvAst::populate(mv_speclist& target) {
 		case MVAST_TYPESPEC:
 			EXPECT(sub[1].is_leaf(), "Leaf expected as a second item");
 			mv_spec_parse(
-				&(target[i]), key, sub[1].value.leaf->ptr, src.type
+				&(target[i]), key, sub[1].leaf().ptr, src.type()
 			);
 			break;
 		default:
-			DIE("Invalid AST element code: %d", src.type);
+			DIE("Invalid AST element code: %d", src.type());
 		}
 	}
 }
