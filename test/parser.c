@@ -2,15 +2,12 @@
 #include "test.h"
 
 static void __tokenizeimpl(char* request, char** expect, int count) {
-	mv_strarr tokens;
+	mv_strarr tokens(10);
 	mv_error* error = mv_tokenize(&tokens, request);
 	FAIL(error);
-	ASSERT_INT(tokens.size, count);
-	ASSERT_INT(tokens.used, count);
-	ASSERT_NOTNULL(tokens.items);
+	ASSERT_INT(tokens.size(), count);
 	int i;
-	for (i=0; i<count; i++) ASSERT_STRREF(tokens.items[i], expect[i]);
-	mv_strarr_release(&tokens);
+	for (i=0; i<count; i++) ASSERT_STRREF(tokens[i], expect[i]);
 }
 
 TEST attr_test1() {
@@ -23,7 +20,7 @@ TEST attr_test1() {
 }
 
 TEST tokenize_fails() {
-	mv_strarr tokens;
+	mv_strarr tokens(10);
 	mv_error* error = mv_tokenize(&tokens, BADREQ1);
 	ASSERT_NOTNULL(error);
 	ASSERT_INT(error->code, MVERROR_SYNTAX);
@@ -31,11 +28,10 @@ TEST tokenize_fails() {
 }
 
 TEST tokenize_test() {
-	mv_strarr tokens;
+	mv_strarr tokens(5);
 	mv_error* error = mv_tokenize(&tokens, "\nquit");
 	FAIL(error);
-	ASSERT_INT(tokens.used, 1);
-	mv_strarr_release(&tokens);
+	ASSERT_INT(tokens.size(), 1);
 }
 
 static void __astparse_fail(char* request) {

@@ -20,7 +20,7 @@ TEST mv_command_test() {
 	}
 	assert(action.code == QUIT);
 	assert(action.attrs.size == 0);
-	assert(action.vars.size == 0);
+	assert(action.vars.size() == 0);
 
 	try
 	{
@@ -32,8 +32,8 @@ TEST mv_command_test() {
 	}
 	assert(action.code == SHOW);
 	assert(action.attrs.size == 0);
-	assert(action.vars.used == 1);
-	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
+	assert(action.vars.size() == 1);
+	ASSERT_STRREF(action.vars[0], "umberto_eco");
 
 	try
 	{

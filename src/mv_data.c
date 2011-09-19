@@ -7,52 +7,6 @@
 
 #include "mvMemPool.h"
 
-mv_strref mv_strref_alloc(int len) {
-	char* ptr;
-	int alc;
-	
-	if (len >= 16) {
-		ptr = (char*)malloc(sizeof(char) * (len + 1));
-		alc = -1;
-	} else {
-		ptr = localStrPool.get();
-		alc = 16;
-	}
-	mv_strref ref = mv_strref_wrap(ptr);
-	ref.alc = alc;
-	return ref;
-}
-
-mv_strref mv_strref_wrap(char* value) {
-	mv_strref result;
-	result.ptr = value;
-	result.ctr = localIntPool.acquire(1);
-	result.alc = -1;
-	return result;
-}
-
-void mv_strref_free(mv_strref* ref) {
-	int x = *(ref->ctr);
-	x--;
-	if (x == 0) {
-		if (ref->alc != 16) {
-			free(ref->ptr);
-		} else {
-			localStrPool.release(ref->ptr);
-		}
-
-		localIntPool.release(ref->ctr);
-	} else {
-		*(ref->ctr) = x;
-	}
-}
-
-mv_strref mv_strref_copy(const mv_strref* ref) {
-	mv_strref result = *ref;
-	*(result.ctr) += 1;
-	return result;
-}
-
 inline static void __mv_attr_set__(mv_attr* dst, mv_attr* src) {
 	dst->type = src->type;
 	switch (src->type) {
@@ -205,43 +159,10 @@ void mv_query_release(mv_query* query) {
 	mv_attrlist_release(&(query->attrs));
 }
 
-void mv_strarr_alloc(mv_strarr* ptr, int size) {
-	if (size < 8) size = 8;
-	ptr->items = (mv_strref*)malloc(sizeof(mv_strref) * size);
-	ptr->used = 0;
-	ptr->size = size;
-}
-
-static void __mv_strarr_expand(mv_strarr* ptr) {
-	if (ptr->used < ptr->size) return;
-	ptr->size *= 2;
-	ptr->items = (mv_strref*)realloc(ptr->items, sizeof(mv_strref) * ptr->size);
-}
-
-void mv_strarr_append(mv_strarr* ptr, char* value) {
-	__mv_strarr_expand(ptr);
-	ptr->items[ptr->used] = mv_strref_wrap(value);
-	ptr->used++;
-}
-
-void mv_strarr_appref(mv_strarr* ptr, const mv_strref& ref) {
-	__mv_strarr_expand(ptr);
-	ptr->items[ptr->used] = mv_strref_copy(&ref);
-	ptr->used++;
-}
-
 void mv_strarr_appslice(mv_strarr* ptr, const char* source, int first, int last) {
-	__mv_strarr_expand(ptr);
-	ptr->items[ptr->used] = mv_strslice(source, first, last);
-	ptr->used++;
-}
-
-void mv_strarr_release(mv_strarr* ptr) {
-	int i;
-	for (i=0; i<ptr->used; i++) {
-		mv_strref_free(&ptr->items[i]);
-	}
-	free(ptr->items);
+	mv_strref ref;
+	ref.set(source, first, last);
+	ptr->push(ref);
 }
 
 void mv_typespec_release(mv_typespec* spec) {

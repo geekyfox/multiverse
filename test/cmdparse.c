@@ -10,9 +10,8 @@ catch (mv_error* err) { FAIL(err); }
 TESTREQ 1 {
 	ASSERT_INT(action.code, CREATE_ENTITY);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_INT(action.attrs.attrs[0].type, STRING);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
@@ -29,10 +28,9 @@ TESTREQ 7 {
 TESTREQ 10 {
 	ASSERT_INT(action.code, ASSIGN);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 2);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "person");
-	ASSERT_STRREF(action.vars.items[1], "umberto_eco");
+	ASSERT_INT(action.vars.size(), 2);
+	ASSERT_STRREF(action.vars[0], "person");
+	ASSERT_STRREF(action.vars[1], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -40,9 +38,8 @@ TESTREQ 10 {
 TESTREQ 11 {
 	ASSERT_INT(action.code, LOOKUP);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "person");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "person");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_NOTNULL(action.attrs.attrs);
 	ASSERT_STRING(action.attrs.attrs[0].name, "name");
@@ -53,9 +50,8 @@ TESTREQ 11 {
 TESTREQ 12 {
 	ASSERT_INT(action.code, DESTROY_ENTITY);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "umberto_eco");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -63,9 +59,8 @@ TESTREQ 12 {
 TESTREQ 13 {
 	ASSERT_INT(action.code, LOOKUP);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "person");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "person");
 	ASSERT_INT(action.attrs.size, 0);
 	ASSERT_NULL(action.attrs.attrs);
 }
@@ -73,9 +68,8 @@ TESTREQ 13 {
 TESTREQ 14 {
 	ASSERT_INT(action.code, CREATE_ENTITY);
 	ASSERT_INT(action.spec.size(), 0);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "eiffel_tower");
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_INT(action.attrs.attrs[0].type, INTEGER);
 	ASSERT_STRING(action.attrs.attrs[0].name, "height");
@@ -108,9 +102,8 @@ TESTREQ 20 {
 	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.attrs.size, 1);
 	ASSERT_NOTNULL(action.attrs.attrs);
-	ASSERT_INT(action.vars.used, 1);
-	ASSERT_NOTNULL(action.vars.items);
-	ASSERT_STRREF(action.vars.items[0], "eiffel_tower");
+	ASSERT_INT(action.vars.size(), 1);
+	ASSERT_STRREF(action.vars[0], "eiffel_tower");
 }
 
 

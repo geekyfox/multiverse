@@ -13,7 +13,7 @@ private:
 	mv_error* destroyImpl(mv_command*);
 	mv_error* copyAttr(mv_attr* dst, mv_attr* src);
 	mv_error* updateEntity(mv_command* cmd);
-	mv_error* assign(mv_command* cmd);
+	void assign(mvCommand& cmd) throw (mv_error*);
 public:
 	mvEntityCache entities;
 	mvClassCache classes;
@@ -25,7 +25,7 @@ public:
     mv_error* lookup(mvIntset&, mv_command*);
 	int varcount() { return vars.cardinality(); }
 	int clscount() { return clsnames.cardinality(); }
-	void perform(mv_strarr* script) throw (mv_error*);
+	void perform(mv_strarr& script) throw (mv_error*);
 	char* show(char* name) throw (mv_error*);
 };
 

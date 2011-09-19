@@ -3,52 +3,49 @@
 #include "test.h"
 
 #define BEFORE(RQ) \
-mv_strarr tokens; \
-FAILFAST(mv_tokenize(&tokens, RQ)); \
-ASSERT_NOTNULL(tokens.items)
+mv_strarr tokens(10); \
+FAILFAST(mv_tokenize(&tokens, RQ)); 
 
-#define AFTER mv_strarr_release(&tokens)
+#define AFTER
 
 #define BEFOREBAD(RQ) \
-mv_strarr tokens; \
+mv_strarr tokens(10); \
 mv_error* error = mv_tokenize(&tokens, RQ); \
 ASSERT_NOTNULL(error)
 
 #define AFTERBAD mv_error_release(error);
 
-inline static void __validate__(mv_strarr* tokens, int ct, ...) {
-	ASSERT_INT(tokens->size, ct);
-	ASSERT_INT(tokens->used, ct);
+inline static void __validate__(mv_strarr& tokens, int ct, ...) {
+	ASSERT_INT(tokens.size(), ct);
 	va_list args;
 	va_start(args, ct);
 	int i;
 	for (i=0; i<ct; i++) {
-		printf("ptr #%d = %lx | '%s'\n", i, tokens->items[i].ptr, tokens->items[i].ptr);
 		fflush(stdout);
 		char* expect = va_arg(args, char*);
-		ASSERT_STRREF(tokens->items[i], expect);
+		ASSERT_STRREF(tokens[i], expect);
 	}
 }
 
 TESTREQ 1 {
-	__validate__(&tokens, 8,
+	__validate__(tokens, 8,
 		"create", "entity", "{", "name", "=", "'Umberto Eco", "}",
         "umberto_eco");
 }
 
 TESTREQ 2 {
-	__validate__(&tokens, 12,
+	__validate__(tokens, 12,
 		"create", "entity", "{", "country", "=", "italy", ",", "name",
         "=", "'Umberto Eco", "}", "umberto_eco");
 }
 
 TESTREQ 7 {
-	__validate__(&tokens, 8,
+	__validate__(tokens, 8,
 		"create", "class", "person", "{", "name", ":", "string", "}");
 }
 
 TESTREQ 18 {
-	__validate__(&tokens, 16,
+	__validate__(tokens, 16,
 		"create", "class", "writer", "{", "books", "=", "[", "book",
 	    "with", "{", "author", "=", "$$", "}", "]", "}");
 }

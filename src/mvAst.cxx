@@ -32,8 +32,7 @@ void mv_ast_entry::clear()
 {
 	if (_leaf != NULL)
 	{
-		mv_strref_free(_leaf);
-		free(_leaf);
+		delete _leaf;
 	}
 	if (_type == 0) return;
 	switch(_type) {

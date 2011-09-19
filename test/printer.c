@@ -11,7 +11,7 @@ TEST error_unmatched() {
 	}
 }
 
-static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
+static void __showcmdimpl(mv_strarr& script, char* ref, char* expect) {
 	mvSession state;
 	char* target;
 
@@ -27,33 +27,30 @@ static void __showcmdimpl(mv_strarr* script, char* ref, char* expect) {
 
 	ASSERT_STRING(target, expect);
 
-	mv_strarr_release(script);
 	free(target);
 }
 
 TEST showcmd1() {
-	mv_strarr script;
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, strdup(REQ1));
-	mv_strarr_append(&script, strdup(REQ5));
+	mv_strarr script(2);
+	script.append(REQ1);
+	script.append(REQ5);
+	printf("FOO\n"); fflush(stdout);
 
-	__showcmdimpl(&script, "name_of_the_rose", RESP2);
+	__showcmdimpl(script, "name_of_the_rose", RESP2);
+	printf("BAR\n"); fflush(stdout);
 }
 
 TEST showcmd2() {
-	mv_strarr script;
+	mv_strarr script(1);
+	script.append(REQ7);
 
-	mv_strarr_alloc(&script, 1);
-	mv_strarr_append(&script, strdup(REQ7));
-
-	__showcmdimpl(&script, "person", RESP3);
+	__showcmdimpl(script, "person", RESP3);
 }
 
 TEST showcmd3() {
-	mv_strarr script;
-	mv_strarr_alloc(&script, 1);
-	mv_strarr_append(&script, strdup(REQ18));
+	mv_strarr script(1);
+	script.append(REQ18);
 
-	__showcmdimpl(&script, "writer", RESP4);
+	__showcmdimpl(script, "writer", RESP4);
 }
 

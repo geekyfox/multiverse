@@ -29,7 +29,7 @@ TEST match_REQ11() {
 	mv_query patt;
 
 	mv_attr_parse(&(entity.data.attrs[0]), "name", "'Umberto Eco");
-	mv_strarr_append(&(entity.classes), strdup("person"));
+	entity.classes.append("person");
 
 	patt.classname = strdup("person");
 	mv_attrlist_alloc(&(patt.attrs), 1);

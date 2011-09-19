@@ -38,8 +38,8 @@ inline static void __display_success(mv_command* cmd) {
 		break;
 	case ASSIGN:
 		printf ("OK, class '%s' assigned to '%s'\n",
-		        cmd->vars.items[0].ptr,
-		        cmd->vars.items[1].ptr);
+		        cmd->vars[0].ptr,
+		        cmd->vars[1].ptr);
 		break;
 	case UPDATE_ENTITY:
 		printf ("OK, entity updated\n");
@@ -72,7 +72,7 @@ void mv_local_execute(mv_command* cmd) {
 	case SHOW:
 		try
 		{
-			tmpstr = __LOCAL_SESSION__->show(cmd->vars.items[0].ptr);
+			tmpstr = __LOCAL_SESSION__->show(cmd->vars[0].ptr);
 		}
 		catch (mv_error* err)
 		{

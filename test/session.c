@@ -28,20 +28,18 @@ TEST execute_REQ1() {
 }
 
 static void __prepare_for_REQ10_11(mvSession* session, int bind) {
-	mv_strarr script;
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, strdup(REQ1));
-	mv_strarr_append(&script, strdup(REQ6));
-	if (bind) mv_strarr_append(&script, strdup(REQ10));
+	mv_strarr script(2);
+	script.append(REQ1);
+	script.append(REQ6);
+	if (bind) script.append(REQ10);
 	try
 	{
-		session->perform(&script);
+		session->perform(script);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}	
-	mv_strarr_release(&script);
 }
 
 TEST execute_REQ10() {
@@ -59,8 +57,8 @@ TEST execute_REQ10() {
 		FAIL(err);
 	}
 
-	ASSERT_INT(state.entities[0].classes.used, 1);
-	ASSERT_STRREF(state.entities[0].classes.items[0], "person");
+	ASSERT_INT(state.entities[0].classes.size(), 1);
+	ASSERT_STRREF(state.entities[0].classes[0], "person");
 
 }
 
@@ -199,20 +197,18 @@ TEST lookup_all_items() {
 
 TEST numlookup() {
 	mvSession session;
-	mv_strarr script;
-	mv_strarr_alloc(&script, 3);
-	mv_strarr_append(&script, strdup(REQ14));
-	mv_strarr_append(&script, strdup(REQ15));
-	mv_strarr_append(&script, strdup(REQ16));
+	mv_strarr script(3);
+	script.append(REQ14);
+	script.append(REQ15);
+	script.append(REQ16);
 	try
 	{
-		session.perform(&script);
+		session.perform(script);
 	}
 	catch (mv_error* err)
 	{
 		FAIL(err);
 	}
-	mv_strarr_release(&script);
 
 	mvIntset result(8);
 
@@ -233,13 +229,12 @@ TEST numlookup() {
 
 TEST subquery() {
 	mvSession session;
-	mv_strarr script;
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, strdup(REQ19));
-	mv_strarr_append(&script, strdup(REQ18));
+	mv_strarr script(2);
+	script.append(REQ19);
+	script.append(REQ18);
 	try
 	{
-		session.perform(&script);
+		session.perform(script);
 	}
 	catch (mv_error* err)
 	{
@@ -252,19 +247,16 @@ TEST subquery() {
 	ASSERT_INT(spc.type, SUBQUERY);
 	mv_query qr = spc.value.subquery;
 	ASSERT_STRING(qr.classname, "book");
-	
-	mv_strarr_release(&script);
 }
 
 TEST update() {
 	mvSession session;
-	mv_strarr script;
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, strdup(REQ14));
-	mv_strarr_append(&script, strdup(REQ20));
+	mv_strarr script(2);
+	script.append(REQ14);
+	script.append(REQ20);
 	try
 	{
-		session.perform(&script);
+		session.perform(script);
 	}
 	catch (mv_error* err)
 	{
@@ -274,19 +266,16 @@ TEST update() {
 	ASSERT_INT(session.entities.size(), 1);
 	mv_attrlist data = session.entities[0].data;
 	ASSERT_INT(data.size, 2);
-
-	mv_strarr_release(&script);
 }
 
 TEST badupdate() {
 	mvSession session;
-	mv_strarr script;
-	mv_strarr_alloc(&script, 2);
-	mv_strarr_append(&script, strdup(REQ23));
-	mv_strarr_append(&script, strdup(BADREQ4));
+	mv_strarr script(2);
+	script.append(REQ23);
+	script.append(BADREQ4);
 	try
 	{
-		session.perform(&script);
+		session.perform(script);
 		ASSERT_ERROR(((mv_error*)NULL), MVERROR_SYNTAX);
 	}
 	catch (mv_error* err)
@@ -294,6 +283,4 @@ TEST badupdate() {
 		ASSERT_ERROR(err, MVERROR_SYNTAX);
 		mv_error_release(err);
 	}
-
-	mv_strarr_release(&script);
 }

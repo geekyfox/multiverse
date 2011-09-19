@@ -4,18 +4,8 @@
 
 #include "mvArray.h"
 #include "mvStrBuffer.h"
+#include "mvStrref.h"
 
-typedef struct {
-	char* ptr;
-	int* ctr;
-	int alc;
-} mv_strref;
-
-typedef struct {
-	mv_strref* items;
-	int size;
-	int used;
-} mv_strarr;
 
 enum mvTypeCode {
 	STRING, RAWREF, REF, INTEGER

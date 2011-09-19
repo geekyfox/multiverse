@@ -19,7 +19,7 @@ enum mvCommandType {
 class mvCommand {
 public:
 	bool inited;
-	mvCommand() : inited(false), spec(0)
+	mvCommand() : inited(false), spec(0), vars(10)
 	{
 	}
 	~mvCommand();

@@ -58,10 +58,10 @@ mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
 }
 
 mv_error* mvSession::createImpl(mv_command* cmd) {
-	if (cmd->vars.used == 0) {
+	if (cmd->vars.size() == 0) {
 		return createNew(NULL, cmd->attrs);
-	} else if (cmd->vars.used == 1) {
-		char* varname = cmd->vars.items[0].ptr;
+	} else if (cmd->vars.size() == 1) {
+		char* varname = cmd->vars[0].ptr;
 		int ref = vars.lookup(varname);
 		if (ref != -1) {
 			THROW(BADVAR, "Variable already bound");
@@ -96,8 +96,8 @@ mv_error* mvSession::createNew(int* ref, mv_attrlist attrs) {
 }
 
 mv_error* mvSession::destroyImpl(mv_command* cmd) {
-	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0].ptr;
+	EXPECT(cmd->vars.size() == 1, "Command is damaged");
+	char* name = cmd->vars[0].ptr;
 	int objref = findvar(name);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
@@ -140,21 +140,21 @@ mv_error* mvSession::lookup(mvIntset& ret, mv_command* cmd) {
 	return NULL;
 }
 
-void mvSession::perform(mv_strarr* script)
+void mvSession::perform(mv_strarr& script)
 throw (mv_error*)
 {
 	int i;
 	mvCommand cmd;
-	for (i=0; i<script->used; i++) {
-		mv_command_parse(cmd, script->items[i].ptr);
+	for (i=0; i<script.size(); i++) {
+		mv_command_parse(cmd, script[i].ptr);
 		execute(cmd);
 	}
 }
 
 mv_error* mvSession::updateEntity(mv_command* cmd)
 {
-	EXPECT(cmd->vars.used == 1, "Command is damaged");
-	char* name = cmd->vars.items[0].ptr;
+	EXPECT(cmd->vars.size() == 1, "Command is damaged");
+	char* name = cmd->vars[0].ptr;
 	int objref = findvar(name);
 	if (objref == -1) {
 		THROW(BADVAR, "Unknown variable '%s'", name);
@@ -162,24 +162,24 @@ mv_error* mvSession::updateEntity(mv_command* cmd)
 	return mv_entity_update(&entities[objref], cmd->attrs);
 }
 
-mv_error* mvSession::assign(mv_command* cmd)
+void mvSession::assign(mvCommand& cmd)
+throw (mv_error*)
 {
-	assert(cmd->vars.used == 2);
-	mv_strref clsname = cmd->vars.items[0];
-	char* objname = cmd->vars.items[1].ptr;
+	assert(cmd.vars.size() == 2);
+	mv_strref& clsname = cmd.vars[0];
+	char* objname = cmd.vars[1].ptr;
 	int objref = findvar(objname);
 	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", objname);
+		NEWTHROW(BADVAR, "Unknown variable '%s'", objname);
 	}
 	int clsref = findclass(clsname.ptr);
 	if (clsref == -1) {
-		THROW(BADVAR, "Unknown class '%s'", clsname.ptr);
+		NEWTHROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
 	mv_entity* entity = &(entities[objref]);
 	mv_class* cls = &(classes[clsref]);
-	FAILRET(mv_validate_assign(entity, cls));
-	mv_strarr_appref(&(entity->classes), clsname); 
-	return NULL;
+	FAILTHROW(mv_validate_assign(entity, cls));
+	entity->classes.push(clsname);
 }
 
 char* mvSession::show(char* name)

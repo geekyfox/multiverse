@@ -61,16 +61,16 @@ throw (mv_error*) {
 
 	switch (action.code) {
 	case ASSIGN:
-		error = assign(&action);
-		break;
+		assign(action);
+		return;
 	case CREATE_ENTITY:
 		error = createImpl(&action);
 		break;
 	case CREATE_CLASS:
-		if (action.vars.used != 1) {
+		if (action.vars.size() != 1) {
 			NEWTHROW(INTERNAL, "Strange number of variables");
 		}
-		clsname = action.vars.items[0].ptr;
+		clsname = action.vars[0].ptr;
 		ref = clsnames.lookup(clsname);
 		if (ref != -1) {
 			NEWTHROW(BADVAR, "Class '%s' already defined", clsname);

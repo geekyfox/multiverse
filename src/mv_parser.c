@@ -209,13 +209,7 @@ inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
 	cmd->attrs.size = 0;
 	cmd->attrs.attrs = NULL;
 	cmd->spec.clear();
-	if (vars != 0) {
-		mv_strarr_alloc(&cmd->vars, vars);
-	} else {
-		cmd->vars.used = 0;
-		cmd->vars.size = 0;
-		cmd->vars.items = NULL;
-	}
+	cmd->vars.clear();
 }
 
 mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
@@ -238,7 +232,7 @@ mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
 			      ast[3].type());
 		}
 		__clear__(target, CREATE_ENTITY, 1);
-		mv_strarr_appref(&target->vars, ast[3].leaf());
+		target->vars.push(ast[3].leaf());
 	} else {
 		__clear__(target, CREATE_ENTITY, 0);
 	}
@@ -247,14 +241,13 @@ mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_ast_entry __make_token__(mv_strref* token) {
+inline static mv_ast_entry __make_token__(mv_strref& token) {
 	mv_ast_entry result;
 
-	if (strlen(token->ptr) == 1) {
-		if (__make_char_token__(result, token->ptr[0]))
+	if (strlen(token.ptr) == 1) {
+		if (__make_char_token__(result, token.ptr[0]))
 		{
-			mv_strref_free(token);
-			return result;	
+			return result;
 		}
 	}
 	result.set_leaf(token);
@@ -275,18 +268,16 @@ inline static void __compress__(mv_ast_entry* stack, int* size) {
 
 mvAst::mvAst(const char* data)
 throw (mv_error*) {
-	mv_strarr tokens;
+	mv_strarr tokens(10);
 	FAILTHROW(mv_tokenize(&tokens, data));
-	mv_ast_entry* stack = new mv_ast_entry[tokens.used];
+	mv_ast_entry* stack = new mv_ast_entry[tokens.size()];
 	int i, scan = 0, size = 0;
 
-	while (scan < tokens.used) {
-		stack[size++] = __make_token__(&(tokens.items[scan++]));
+	while (scan < tokens.size()) {
+		stack[size++] = __make_token__(tokens[scan++]);
 		__compress__(stack, &size);
 	}
 	
-	free(tokens.items);
-
 	set(stack, size);
 	delete[] stack;
 
@@ -320,8 +311,7 @@ mv_error* __create__(mv_command* target, mv_ast& ast) {
 			      ast[3].type());
 		}
 		ast[3].subtree().populate(target->spec);
-		mv_strarr_alloc(&target->vars, 1);
-		mv_strarr_appref(&target->vars, ast[2].leaf());
+		target->vars.push(ast[2].leaf());
 		target->attrs.size = 0;
 		target->attrs.attrs = NULL;
 		return NULL;
@@ -339,7 +329,7 @@ mv_error* __destroy__(mv_command* target, mv_ast& ast) {
 		THROW(SYNTAX, "Malformed 'destroy' command");
 	}
 	__clear__(target, DESTROY_ENTITY, 1);
-	mv_strarr_appref(&target->vars, ast[2].leaf());
+	target->vars.push(ast[2].leaf());
 	return NULL;	
 } 
 
@@ -347,7 +337,7 @@ inline static mv_error* __show__(mv_command* cmd, mv_ast& ast) {
 	assert(ast.size() == 2);
 	assert(ast[1].is_leaf());
 	__clear__(cmd, SHOW, 1);
-	mv_strarr_appref(&cmd->vars, ast[1].leaf());
+	cmd->vars.push(ast[1].leaf());
 	return NULL;
 }
 
@@ -366,8 +356,8 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast& ast) {
 	assert(LEAFFIX((ast[2]), "to"));
 	assert(ast[3].is_leaf());
 	__clear__(cmd, ASSIGN, 2);
-	mv_strarr_appref(&cmd->vars, ast[1].leaf());
-	mv_strarr_appref(&cmd->vars, ast[3].leaf());
+	cmd->vars.push(ast[1].leaf());
+	cmd->vars.push(ast[3].leaf());
 	return NULL;
 }
 
@@ -375,14 +365,14 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
 	assert(ast[1].is_leaf());
 	if (ast.size() == 2) {
 		__clear__(cmd, LOOKUP, 1);
-		mv_strarr_appref(&cmd->vars, ast[1].leaf());
+		cmd->vars.push(ast[1].leaf());
 		return NULL;
 	}
 	assert(ast.size() == 4);
 	assert(LEAFFIX((ast[2]), "with"));
 	assert(ast[3].type_is(MVAST_ATTRLIST));
 	__clear__(cmd, LOOKUP, 1);
-	mv_strarr_appref(&cmd->vars, ast[1].leaf());
+	cmd->vars.push(ast[1].leaf());
 	mv_attrlist_parse(&cmd->attrs, ast[3].subtree());
 	return NULL;
 }
@@ -394,7 +384,7 @@ mv_error* __update_entity__(mv_command* target, mv_ast& ast) {
 	if (LEAFFIX(ast[3], "with")) {
 		if (!LIST(ast[4])) goto wrong;
 		__clear__(target, UPDATE_ENTITY, 1);
-		mv_strarr_appref(&target->vars, ast[2].leaf());
+		target->vars.push(ast[2].leaf());
 		mv_attrlist_parse(&target->attrs, ast[4].subtree());
 		return NULL;
 	} 
@@ -481,7 +471,6 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 	assert(target != NULL);
 	enum { WHITESPACE, LITERAL, TOKEN } state = WHITESPACE;
 	int base = 0, scan;
-	mv_strarr_alloc(target, 10);
 	for (scan = 0; data[scan] != '\0'; scan++) {
 		switch (data[scan]) {
 		case ' ': case '\t': case '\n':
@@ -520,13 +509,11 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 		}	
 	}
 	if (state == 1) {
-		mv_strarr_release(target);
 		return mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
 	}
 	if (state == 2) {
 		mv_strarr_appslice(target, data, base, scan);
 	}
-	target->items = (mv_strref*)realloc(target->items, sizeof(mv_strref) * target->used);
-	target->size = target->used;
+	target->pack();
 	return NULL;
 } // style:60

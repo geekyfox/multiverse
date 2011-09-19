@@ -11,7 +11,7 @@ void mvCommand::destroy()
 {
 	if (!inited) return;
 	mv_attrlist_release(&attrs);
-	mv_strarr_release(&vars);
+	vars.clear();
 	spec.clear();
 	inited = false;
 }

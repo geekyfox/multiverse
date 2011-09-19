@@ -13,11 +13,3 @@ int mv_strhash(char* str) {
 	return result;
 }
 
-mv_strref mv_strslice(const char* source, int first, int last) {
-	int len = last - first;
-	mv_strref ref = mv_strref_alloc(len);
-	strncpy(ref.ptr, source + first, len);
-	ref.ptr[len] = '\0';
-	return ref;
-}
-

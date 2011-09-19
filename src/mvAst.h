@@ -76,10 +76,10 @@ public:
 		assert(_subtree != NULL);
 		return *_subtree;
 	}
-	void set_leaf(mv_strref* leaf)
+	void set_leaf(mv_strref& leaf)
 	{
-		_leaf = (mv_strref*)malloc(sizeof(mv_strref));
-		*_leaf = *leaf;
+		_leaf = new mv_strref;
+		*_leaf = leaf;
 	}
 	void set_type(int code)
 	{
@@ -87,8 +87,7 @@ public:
 	}
 	void clear_leaf()
 	{
-		mv_strref_free(_leaf);
-		free(_leaf);
+		delete _leaf;
 	}
 	mv_strref& leaf()
 	{

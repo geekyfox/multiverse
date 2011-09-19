@@ -88,7 +88,6 @@ public:
 	}
 	~mvDynamicArray()
 	{
-		resize(_used);
 		delete[] _data;
 	}
 	const int size()
@@ -99,13 +98,20 @@ public:
 	{
 		return _data[index];
 	}
-	int push(T& value)
+	int push(const T& value)
 	{
-		if (_size == _used) resize(_used * 2);
+		if (_size == _used) resize(_used * 2 + 2);
 		int index = _used;
 		_data[index] = value;
 		_used++;
 		return index;
+	}
+	void pack()
+	{
+	}
+	void clear()
+	{
+		_used = 0;
 	}
 };
 
