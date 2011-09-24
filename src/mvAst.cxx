@@ -7,26 +7,25 @@
 #include "multiverse.h"
 #include "parser.h"
 
-void mv_ast_entry::set_subtree(int code)
+void mv_ast_entry::operator= (mvAstType code)
 {
-	mv_ast* tree = new mv_ast(0);
-	set(code, tree);
+	(*this) = new mv_ast(code, 0);
 }
 
-void mv_ast_entry::set_subtree(int code, mv_ast_entry& first)
+void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first)
 {
-	mv_ast* tree = new mv_ast(1);
+	mv_ast* tree = new mv_ast(code, 1);
 	(*tree)[0] = first;
-	set(code, tree);
+	(*this) = tree;
 }
 
-void mv_ast_entry::set_subtree(int code, mv_ast_entry& first,
+void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first,
                                mv_ast_entry& second)
 {
-	mv_ast* tree = new mv_ast(2);
+	mv_ast* tree = new mv_ast(code, 2);
 	(*tree)[0] = first;
 	(*tree)[1] = second;
-	set(code, tree);
+	(*this) = tree;
 }
 
 void mv_ast_entry::clear()
@@ -39,26 +38,55 @@ void mv_ast_entry::clear()
 	{
 		delete _subtree;
 	}
-	return;
-	if (_type == 0) return;
-	switch(_type) {
-	case MVAST_TEMPOPENBRACE:
-	case MVAST_TEMPCLOSEBRACE:
-	case MVAST_TEMPCOMMA:
-	case MVAST_TEMPCOLON:
-	case MVAST_TEMPEQUALS:
-		break;
-	case MVAST_ATTRLIST:
-	case MVAST_ATTRPAIR:
-	case MVAST_TYPESPEC:
-	case MVAST_ATTRSPECLIST:
-	case MVAST_SUBQUERY:
-	case MVAST_ATTRQUERY:
-		delete _subtree;
-		break;
-	default:
-		printf("code = %d\n", _type);
+}
+
+void mv_ast_entry::operator=(mv_strref& token)
+{
+	if (_leaf != NULL)
+	{
+		_leaf = NULL;
 	}
+	if (_subtree != NULL)
+	{
+		_subtree = NULL;
+	}
+	if (strlen(token.ptr) == 1)
+	{
+		switch (token.ptr[0])
+		{
+		case '{': _type = OpenBrace;              return;
+		case '}': _type = MVAST_TEMPCLOSEBRACE;   return;
+		case ',': _type = MVAST_TEMPCOMMA;        return;
+		case ':': _type = MVAST_TEMPCOLON;        return;
+		case '=': _type = MVAST_TEMPEQUALS;       return;
+		case '[': _type = MVAST_TEMPOPENBRACKET;  return;
+		case ']': _type = MVAST_TEMPCLOSEBRACKET; return;
+		}
+	}
+	_leaf = new mv_strref(token);
+	_type = Leaf;
+}
+
+bool mv_ast_entry::operator==(mvAstEntryType code)
+{
+	return _type == code;
+}
+
+bool mv_ast_entry::operator!=(mvAstEntryType code)
+{
+	return _type != code;
+}
+
+bool mv_ast_entry::operator==(mvAstType type)
+{
+	if (_subtree == NULL) return false;
+	return _subtree->type() == type;
+}
+
+bool mv_ast_entry::operator!=(mvAstType type)
+{
+	if (_subtree == NULL) return true;
+	return _subtree->type() != type;
 }
 
 void mvAst::populate(mv_speclist& target) {
@@ -71,12 +99,13 @@ void mvAst::populate(mv_speclist& target) {
 			"Two elements expected"
 		);
 		mv_ast& sub = src.subtree();
-		EXPECT(sub[0].is_leaf(), "Leaf expected as a first item");
+		EXPECT(sub[0] == Leaf, "Leaf expected as a first item");
 		char* key = sub[0].leaf().ptr;
-		switch (src.type()) {
+		switch (src.subtree().type())
+		{
 		case MVAST_ATTRQUERY:
 			EXPECT(
-			    sub[1].is_subquery(),
+			    sub[1] == SubQuery,
 			    "First item of AttrQuery should be a Subquery"
 			);
 			mv_attrquery_parse(
@@ -85,9 +114,9 @@ void mvAst::populate(mv_speclist& target) {
 			break;
 		case MVAST_ATTRPAIR:
 		case MVAST_TYPESPEC:
-			EXPECT(sub[1].is_leaf(), "Leaf expected as a second item");
+			EXPECT(sub[1] == Leaf, "Leaf expected as a second item");
 			mv_spec_parse(
-				&(target[i]), key, sub[1].leaf().ptr, src.type()
+				&(target[i]), key, sub[1].leaf().ptr, src.subtree().type()
 			);
 			break;
 		default:

@@ -37,7 +37,7 @@ mv_error* mv_error_unmatched(int objcode, const char* command) {
 	case MVAST_TEMPAPOSTROPHE:
 		meaning = "\"'\"";
 		break;
-	case MVAST_TEMPOPENBRACE:
+	case OpenBrace:
 		meaning = "'{'";
 		break;
 	}

@@ -9,25 +9,71 @@
 
 class mv_ast_entry;
 
+enum mvAstType
+{
+	Command, AttrList, AttrSpecList, AttrPair, AttrQuery,
+	TypeSpec, AttrListTMP, AttrSpecListTMP, SubQuery
+};
+
+#define MVAST_ATTRLIST     AttrList
+#define MVAST_ATTRSPECLIST AttrSpecList
+#define MVAST_ATTRPAIR     AttrPair
+#define MVAST_ATTRQUERY    AttrQuery
+#define MVAST_TYPESPEC     TypeSpec
+#define MVAST_TEMPATTRLIST AttrListTMP
+#define MVAST_TEMPATTRSPECLIST AttrSpecListTMP
+#define MVAST_SUBQUERY     SubQuery
+
 class mvAst : public mvStaticArray<mv_ast_entry> {
+private:
+	mvAstType _type;
 public:
-	mvAst() :
-		mvStaticArray<mv_ast_entry>()
+	mvAst(mvAstType type) :
+		mvStaticArray<mv_ast_entry>(),
+		_type(type)
 	{
 	}
-	mvAst(int size) :
-		mvStaticArray<mv_ast_entry>(size)
+	mvAst(mvAstType type, int size) :
+		mvStaticArray<mv_ast_entry>(size),
+		_type(type)
 	{
 	}
 	mvAst(const char* request) throw (mv_error*);
 	void populate(mv_speclist& specs);
 	void* operator new(size_t size);
 	void operator delete(void* ptr);
+	void fix()
+	{
+		switch(_type)
+		{
+		case AttrListTMP: _type = AttrList; return;
+		case AttrSpecListTMP: _type = AttrSpecList; return;
+		default: assert(0);
+		}
+	}
+	mvAstType type()
+	{
+		return _type;
+	}
 };
 
-#define MVAST_SUBQUERY          2006
 
 typedef mvAst mv_ast;
+
+enum mvAstEntryType
+{
+	Unset, Leaf, Subtree, OpenBrace, CloseBrace,
+	Comma, Colon, Equals, Apostrophe, CloseBracket,
+	OpenBracket
+};
+
+#define MVAST_TEMPCLOSEBRACKET CloseBracket
+#define MVAST_TEMPOPENBRACKET  OpenBracket
+#define MVAST_TEMPCOLON        Colon
+#define MVAST_TEMPEQUALS       Equals
+#define MVAST_TEMPCOMMA        Comma
+#define MVAST_TEMPAPOSTROPHE   Apostrophe
+#define MVAST_TEMPCLOSEBRACE   CloseBrace
 
 /*
  *  This structure represents an abstract syntax
@@ -37,16 +83,15 @@ class mv_ast_entry {
 private:
 	mv_ast* _subtree;
 	mv_strref* _leaf;
-	int _type;
+	mvAstEntryType _type;
 public:
-	mv_ast_entry() : _subtree(NULL), _leaf(NULL), _type(0)
+	mv_ast_entry() : _subtree(NULL), _leaf(NULL), _type(Unset)
 	{
 	}
-	bool type_is(int code)
-	{
-		if (_leaf != NULL) return false;
-		return _type == code;
-	}
+	bool operator==(mvAstEntryType code);
+	bool operator!=(mvAstEntryType code);
+	bool operator==(mvAstType type);
+	bool operator!=(mvAstType type);
 	int type()
 	{
 		return _type;
@@ -63,28 +108,21 @@ public:
 	 * mv_ast_release() for a full list), there's no value.
 	 */
 	void clear();
-	void set(int type, mv_ast* subtree)
+	void operator= (mv_ast* subtree)
 	{
 		_subtree = subtree;
-		this->_type = type;
+		this->_type = Subtree;
 		this->_leaf = NULL;
 	}
-	void set_subtree(int type);
-	void set_subtree(int type, mv_ast_entry& first);
-	void set_subtree(int type, mv_ast_entry& first, mv_ast_entry& second);
+	void operator= (mvAstType type);
+	void set_subtree(mvAstType type, mv_ast_entry& first);
+	void set_subtree(mvAstType type, mv_ast_entry& first, mv_ast_entry& second);
 	mv_ast& subtree()
 	{
 		assert(_subtree != NULL);
 		return *_subtree;
 	}
-	void set_leaf(mv_strref& leaf)
-	{
-		_leaf = new mv_strref(leaf);
-	}
-	void set_type(int code)
-	{
-		_type = code;
-	}
+	void operator= (mv_strref& leaf);
 	void clear_leaf()
 	{
 		delete _leaf;
@@ -94,34 +132,11 @@ public:
 		assert(_leaf != NULL);
 		return *_leaf;
 	}	
-	bool is_leaf()
-	{
-		return _leaf != NULL;
-	}
-	bool is_subquery()
-	{
-		return _type == MVAST_SUBQUERY;
-	}
 };
 
 /*
  * Constants for syntax tree entry's type
  */
-#define MVAST_TEMPCLOSEBRACKET -2010
-#define MVAST_TEMPOPENBRACKET  -2009
-#define MVAST_TEMPCOLON        -2008
-#define MVAST_TEMPEQUALS       -2007
-#define MVAST_TEMPCOMMA        -2006
-#define MVAST_TEMPAPOSTROPHE   -2005
-#define MVAST_TEMPATTRSPECLIST -2004
-#define MVAST_TEMPCLOSEBRACE   -2003
-#define MVAST_TEMPOPENBRACE    -2002
-#define MVAST_TEMPATTRLIST     -2001
-#define MVAST_ATTRLIST          2002
-#define MVAST_ATTRPAIR          2003
-#define MVAST_TYPESPEC          2004
-#define MVAST_ATTRSPECLIST      2005
-#define MVAST_ATTRQUERY         2007
 
 
 

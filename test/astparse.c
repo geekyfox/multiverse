@@ -14,41 +14,41 @@ catch (mv_error* err) { error = err; }
 
 TESTREQ 1 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[0].is_leaf(), true);
+	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
-	ASSERT_INT(ast[2].subtree()[0].type_is(MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
 
 TESTREQ 2 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[0].is_leaf(), true);
+	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[2].subtree().size(), 2);
-	ASSERT_INT(ast[2].subtree()[0].type_is(MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
 
 TESTREQ 4 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[0].is_leaf(), true);
+	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
-	ASSERT_INT(ast[2].subtree()[0].type_is(MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
 
 TESTREQ 6 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3].type_is(MVAST_ATTRSPECLIST), true);
+	ASSERT_INT(ast[3] == (MVAST_ATTRSPECLIST), true);
 	ASSERT_INT(ast[3].subtree().size(), 1);
-	ASSERT_INT(ast[3].subtree()[0].type_is(MVAST_TYPESPEC), true);
+	ASSERT_INT(ast[3].subtree()[0] == (MVAST_TYPESPEC), true);
 }
 
 TESTREQ 9 {
 	ASSERT_INT(ast.size(), 3);
-	ASSERT_INT(ast[2].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[2].subtree().size(), 3);
 }
 
@@ -58,13 +58,13 @@ TESTREQ 10 {
 
 TESTREQ 11 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[3] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[3].subtree().size(), 1);
 }
 
 TESTREQ 14 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[2].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
 }
 
@@ -77,7 +77,7 @@ TEST selfquery() {
 TEST subquery() {
 	BEFORE("[book with { author = $$ }]");
 	ASSERT_INT(ast.size(), 1);
-	ASSERT_INT(ast[0].type_is(MVAST_SUBQUERY), true);
+	ASSERT_INT(ast[0] == (MVAST_SUBQUERY), true);
 	ASSERT_INT(ast[0].subtree().size(), 2);
 	AFTER;
 }
@@ -96,18 +96,18 @@ TEST subquery3() {
 
 TESTREQ 18 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3].type_is(MVAST_ATTRSPECLIST), true);
+	ASSERT_INT(ast[3] == MVAST_ATTRSPECLIST, true);
 	mv_ast& subtree = ast[3].subtree();
 	ASSERT_INT(subtree.size(), 1);
-	ASSERT_INT(subtree[0].type_is(MVAST_ATTRQUERY), true);
+	ASSERT_INT(subtree[0] == MVAST_ATTRQUERY, true);
 }
 
 TESTREQ 20 {
 	ASSERT_INT(ast.size(), 5);
-	ASSERT_INT(ast[4].type_is(MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[4] == MVAST_ATTRLIST, true);
 	mv_ast& subtree = ast[4].subtree();
 	ASSERT_INT(subtree.size(), 1);
-	ASSERT_INT(subtree[0].type_is(MVAST_ATTRPAIR), true);
+	ASSERT_INT(subtree[0] == MVAST_ATTRPAIR, true);
 }
 
 TESTBADREQ 1 {

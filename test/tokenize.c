@@ -2,16 +2,13 @@
 #include <stdarg.h>
 #include "test.h"
 
-#define BEFORE(RQ) \
-mv_strarr tokens(10); \
-FAILFAST(mv_tokenize(&tokens, RQ)); 
+#define BEFORE(RQ) try { mvTokenizer tokens(RQ); 
 
-#define AFTER
+#define AFTER } catch (mv_error* err) { FAIL(err); }
 
-#define BEFOREBAD(RQ) \
-mv_strarr tokens(10); \
-mv_error* error = mv_tokenize(&tokens, RQ); \
-ASSERT_NOTNULL(error)
+#define BEFOREBAD(RQ) mv_error* error; \
+try { mvTokenizer tokens(RQ); DIE("Error expected"); }\
+catch (mv_error* err) {error = err;}
 
 #define AFTERBAD mv_error_release(error);
 

@@ -28,13 +28,16 @@ void mv_attrlist_parse(mv_attrlist* target, mv_ast& source);
 void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);
 
 /* Builds attribute's specification. */
-void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel);
+void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, mvAstType rel);
 
 /* Parses a string into a command. */
 void mv_command_parse(mvCommand& target, const char* request) throw (mv_error*);
 
-/* Tokenizes a string. */
-mv_error* mv_tokenize(mv_strarr* target, const char* request);
+class mvTokenizer : public mv_strarr
+{
+public:
+	mvTokenizer(const char* request) throw (mv_error*);
+};	
 
 #endif
 

@@ -9,12 +9,12 @@
 #include "multiverse.h"
 #include "parser.h"
 
-#define LIST(var)  ((var).type_is(MVAST_ATTRLIST))
-#define PAIR(var)  ((var).type_is(MVAST_ATTRPAIR))
-#define QPAIR(var) ((var).type_is(MVAST_ATTRQUERY))
-#define SPEC(var)  ((var).type_is(MVAST_TYPESPEC))
-#define SUBQ(var)  ((var).type_is(MVAST_SUBQUERY))
-#define LEAF(var)  ((var).is_leaf())
+#define LIST(var)  (var == AttrList)
+#define PAIR(var)  (var == AttrPair)
+#define QPAIR(var) (var == AttrQuery)
+#define SPEC(var)  (var == TypeSpec)
+#define SUBQ(var)  (var == SubQuery)
+#define LEAF(var)  (var == Leaf)
 #define LEAFFIX(var, text) (LEAF(var) && STREQ((var).leaf().ptr, text))
 #define TEMPFIX(var, code) (var.type_is(MVAST_TEMP##code))
 
@@ -25,8 +25,9 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 	mv_ast_entry& b = stack[*count - 1];
 	mv_ast_entry& sep = stack[*count - 2];
 
-	int typecode = 0;
-	if (TEMPFIX(sep, EQUALS)) {
+	mvAstType typecode;
+	if (sep == Equals)
+	{
 		if (LEAF(b)) {
 			typecode = MVAST_ATTRPAIR;
 		} else if (SUBQ(b)) {
@@ -34,7 +35,9 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 		} else {
 			return;
 		}
-	} else if (TEMPFIX(sep, COLON)) {
+	}
+	else if (sep == Colon)
+	{
 		if (LEAF(b)) {
 			typecode = MVAST_TYPESPEC;
 		} else {
@@ -49,12 +52,12 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 inline static void __comma__(mv_ast_entry* stack, int *count) {
 	if (*count < 3) return;
 	mv_ast_entry& sep = stack[*count - 2];
-	if (! TEMPFIX(sep, COMMA)) return;
+	if (sep != Comma) return;
 
 	mv_ast_entry& a = stack[*count - 3];
 	mv_ast_entry& b = stack[*count - 1];
 
-	if (TEMPFIX(a, ATTRLIST) && PAIR(b)) {	
+	if (a == AttrListTMP && PAIR(b)) {	
 		a.subtree().push(b);
 		*count -= 2;
 	}
@@ -78,23 +81,25 @@ inline static void __emptylist__(mv_ast_entry* stack, int* size) {
 	mv_ast_entry& a = stack[*size - 2];
 	mv_ast_entry& b = stack[*size - 1];
 
-	if (TEMPFIX(a, OPENBRACE) && TEMPFIX(b, CLOSEBRACE)) {
-		a.set_subtree(MVAST_ATTRLIST);
+	if (a == OpenBrace && b == CloseBrace)
+	{
+		a = AttrList;
 		(*size)--;
 	}
 }
 
-inline static void __list__(mv_ast_entry* stack, int* count) {
-	if ((*count) < 3) return;
+inline static void __list__(mv_ast_entry* stack, int& count) {
+	if (count < 3) return;
 
-	mv_ast_entry& e1 = stack[*count - 3];
-	mv_ast_entry& e3 = stack[*count - 1];
+	mv_ast_entry& e1 = stack[count - 3];
+	mv_ast_entry& e3 = stack[count - 1];
 
-	if (!TEMPFIX(e1, OPENBRACE) || !TEMPFIX(e3, CLOSEBRACE)) {
+	if (e1 != OpenBrace || e3 != CloseBrace)
+	{
 		return;
 	}
 
-	mv_ast_entry& e2 = stack[*count - 2];
+	mv_ast_entry& e2 = stack[count - 2];
 
 	if (PAIR(e2) || SPEC(e2) || QPAIR(e2)) {
 		if (PAIR(e2)) {
@@ -102,17 +107,15 @@ inline static void __list__(mv_ast_entry* stack, int* count) {
 		} else {
 			e1.set_subtree(MVAST_ATTRSPECLIST, e2);
 		}
-		(*count) -= 2;
+		count -= 2;
 		return;
 	}
 
-	if (TEMPFIX(e2, ATTRLIST) || TEMPFIX(e2, ATTRSPECLIST)) {
-		if (TEMPFIX(e2, ATTRLIST)) {
-			e1.set(MVAST_ATTRLIST, &e2.subtree());
-		} else {
-			e1.set(MVAST_ATTRSPECLIST, &e2.subtree());
-		}
-		(*count) -= 2;
+	if (e2 == AttrListTMP || e2 == AttrSpecListTMP)
+	{
+		e2.subtree().fix();
+		e1 = &e2.subtree();
+		count -= 2;
 		return;
 	}
 }
@@ -122,7 +125,7 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 
 	mv_ast_entry& e1 = stack[*count - 5];
 	mv_ast_entry& e5 = stack[*count - 1];
-	if (!TEMPFIX(e1, OPENBRACKET) || !TEMPFIX(e5, CLOSEBRACKET)) return;
+	if (e1 != OpenBracket || e5 != CloseBracket) return;
 
 	mv_ast_entry& e2 = stack[*count - 4];
 	if (!LEAF(e2)) return;
@@ -140,28 +143,12 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 	(*count) -= 4;
 }
 
-inline static bool __make_char_token__(mv_ast_entry& e, char token) {
-	int code;
-	switch (token) {
-	case '{': code = MVAST_TEMPOPENBRACE; break;
-	case '}': code = MVAST_TEMPCLOSEBRACE; break;
-	case ',': code = MVAST_TEMPCOMMA; break;
-	case ':': code = MVAST_TEMPCOLON; break;
-	case '=': code = MVAST_TEMPEQUALS; break;
-	case '[': code = MVAST_TEMPOPENBRACKET; break;
-	case ']': code = MVAST_TEMPCLOSEBRACKET; break;
-	default:  return false;
-	}
-	e.set_type(code);
-	return true;
-}
-
 void mv_attrlist_parse(mv_attrlist* target, mv_ast& source) {
 	mv_attrlist_alloc(target, source.size());
 	int i;
 	for (i=0; i<source.size(); i++) {
 		mv_ast_entry srcitem = source[i];
-		EXPECT(srcitem.type_is(MVAST_ATTRPAIR), "AttrPair expected");
+		EXPECT(srcitem == AttrPair, "AttrPair expected");
 		mv_ast& astpair = srcitem.subtree();
 		EXPECT(astpair.size() == 2, "Two elements expected");
 		EXPECT(LEAF(astpair[0]), "Leafs expected");
@@ -241,41 +228,29 @@ mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_ast_entry __make_token__(mv_strref& token) {
-	mv_ast_entry result;
-
-	if (strlen(token.ptr) == 1) {
-		if (__make_char_token__(result, token.ptr[0]))
-		{
-			return result;
-		}
-	}
-	result.set_leaf(token);
-	return result;
-}
-
-inline static void __compress__(mv_ast_entry* stack, int* size) {
+inline static void __compress__(mv_ast_entry* stack, int& size) {
 	int oldsize;
 	do {
-		oldsize = *size;
-		__emptylist__(stack, size);
-		__pair__(stack, size);
-		__comma__(stack, size);
+		oldsize = size;
+		__emptylist__(stack, &size);
+		__pair__(stack, &size);
+		__comma__(stack, &size);
 		__list__(stack, size);
-		__subquery__(stack, size);
-	} while (oldsize != *size);
+		__subquery__(stack, &size);
+	} while (oldsize != size);
 }
 
 mvAst::mvAst(const char* data)
-throw (mv_error*) {
-	mv_strarr tokens(10);
-	FAILTHROW(mv_tokenize(&tokens, data));
+throw (mv_error*) :
+	_type(Command)
+{
+	mvTokenizer tokens(data);
 	mv_ast_entry* stack = new mv_ast_entry[tokens.size()];
 	int i, scan = 0, size = 0;
 
 	while (scan < tokens.size()) {
-		stack[size++] = __make_token__(tokens[scan++]);
-		__compress__(stack, &size);
+		stack[size++] = tokens[scan++];
+		__compress__(stack, size);
 	}
 	
 	set(stack, size);
@@ -283,8 +258,8 @@ throw (mv_error*) {
 
 	for (i=0; i < size; i++) {
 		mv_ast_entry& ref = (*this)[i];
-		if (ref.is_leaf()) continue;
-		if (ref.type() < 0) {
+		if (ref != Leaf && ref != Subtree)
+		{
 			throw mv_error_unmatched(ref.type(), data);
 		}
 	}
@@ -305,7 +280,8 @@ mv_error* __create__(mv_command* target, mv_ast& ast) {
 			      "Expected class name, got %d",
 			      ast[2].type());
 		}
-		if (!ast[3].type_is(MVAST_ATTRSPECLIST)) {
+		if (ast[3] != AttrSpecList)
+		{
 			THROW(INTERNAL,
 			      "Expected AttrSpecList, got %d",
 			      ast[3].type());
@@ -335,7 +311,7 @@ mv_error* __destroy__(mv_command* target, mv_ast& ast) {
 
 inline static mv_error* __show__(mv_command* cmd, mv_ast& ast) {
 	assert(ast.size() == 2);
-	assert(ast[1].is_leaf());
+	assert(ast[1] == Leaf);
 	__clear__(cmd, SHOW, 1);
 	cmd->vars.push(ast[1].leaf());
 	return NULL;
@@ -352,9 +328,9 @@ inline static mv_error* __quit__(mv_command* cmd, mv_ast& ast) {
 inline static mv_error* __assign__(mv_command* cmd, mv_ast& ast) {
 	int size = ast.size();
 	assert(size == 4);
-	assert(ast[1].is_leaf());
+	assert(ast[1] == Leaf);
 	assert(LEAFFIX((ast[2]), "to"));
-	assert(ast[3].is_leaf());
+	assert(ast[3] == Leaf);
 	__clear__(cmd, ASSIGN, 2);
 	cmd->vars.push(ast[1].leaf());
 	cmd->vars.push(ast[3].leaf());
@@ -362,7 +338,7 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast& ast) {
 }
 
 inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
-	assert(ast[1].is_leaf());
+	assert(ast[1] == Leaf);
 	if (ast.size() == 2) {
 		__clear__(cmd, LOOKUP, 1);
 		cmd->vars.push(ast[1].leaf());
@@ -370,7 +346,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
 	}
 	assert(ast.size() == 4);
 	assert(LEAFFIX((ast[2]), "with"));
-	assert(ast[3].type_is(MVAST_ATTRLIST));
+	assert(ast[3] == AttrList);
 	__clear__(cmd, LOOKUP, 1);
 	cmd->vars.push(ast[1].leaf());
 	mv_attrlist_parse(&cmd->attrs, ast[3].subtree());
@@ -380,7 +356,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
 inline static
 mv_error* __update_entity__(mv_command* target, mv_ast& ast) {
 	if (ast.size() != 5) goto wrong; 
-	if (!ast[2].is_leaf()) goto wrong;
+	if (ast[2] != Leaf) goto wrong;
 	if (LEAFFIX(ast[3], "with")) {
 		if (!LIST(ast[4])) goto wrong;
 		__clear__(target, UPDATE_ENTITY, 1);
@@ -395,7 +371,7 @@ wrong:
 
 inline static
 mv_error* __update__(mv_command* target, mv_ast& ast) {
-	if ((ast.size() == 1) || !(ast[1].is_leaf()))
+	if ((ast.size() == 1) || ast[1] != Leaf)
 	{
 		THROW(INTERNAL, "Malformed 'update' command");
 	}
@@ -436,7 +412,7 @@ throw (mv_error*)
 	command.init_done();
 }
 
-void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, int rel) {
+void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, mvAstType rel) {
 	mvTypeCode code;
 
 	switch(rel) {
@@ -466,9 +442,10 @@ void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value) {
 	ptr->name = strdup(key);
 }
 
-mv_error* mv_tokenize(mv_strarr* target, const char* data) {
+mvTokenizer::mvTokenizer(const char* data)
+throw (mv_error*) : mv_strarr(2)
+{
 	assert(data != NULL);
-	assert(target != NULL);
 	enum { WHITESPACE, LITERAL, TOKEN } state = WHITESPACE;
 	int base = 0, scan;
 	for (scan = 0; data[scan] != '\0'; scan++) {
@@ -476,7 +453,7 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 		case ' ': case '\t': case '\n':
 			if (state == TOKEN) {
 				state = WHITESPACE;
-				target->append(data, base, scan);
+				append(data, base, scan);
 			}
 			break;
 		case '\'':
@@ -484,20 +461,20 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 				base = scan;
 				state = LITERAL;
 			} else if (state == LITERAL) {
-				target->append(data, base, scan);
+				append(data, base, scan);
 				state = WHITESPACE;
 			} else {
-				target->append(data, base, scan - 1);
+				append(data, base, scan - 1);
 				state = LITERAL;
 			}
 			break;
 		case ',': case '{': case '}': case ':':
 		case '[': case ']':
 			if (state == WHITESPACE) {
-				target->append(data, scan, scan + 1);
+				append(data, scan, scan + 1);
 			} else if (state == TOKEN) {
-				target->append(data, base, scan);
-				target->append(data, scan, scan + 1);
+				append(data, base, scan);
+				append(data, scan, scan + 1);
 				state = WHITESPACE;
 			}
 			break;
@@ -509,11 +486,10 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 		}	
 	}
 	if (state == 1) {
-		return mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
+		throw mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
 	}
 	if (state == 2) {
-		target->append(data, base, scan);
+		append(data, base, scan);
 	}
-	target->pack();
-	return NULL;
+	pack();
 } // style:60
