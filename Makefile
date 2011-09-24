@@ -15,11 +15,12 @@ DEMO_MODULES = demo
 
 COPTS = -Wall -g
 
-PERFOPTS = -Wall -O3
+PERFOPTS = -Wall
 
 CXX_OBJS     = $(foreach i,$(CXX_MODULES),build/mvxx_$(i).o)
+CXXOPT_OBJS  = $(foreach i,$(CXX_MODULES),build/opxx_$(i).o)
 CORE_OBJS    = $(foreach i,$(CORE_MODULES),build/mv_$(i).o) $(CXX_OBJS)
-OPT_OBJS     = $(foreach i,$(CORE_MODULES),build/op_$(i).o)
+OPT_OBJS     = $(foreach i,$(CORE_MODULES),build/op_$(i).o) $(CXXOPT_OBJS)
 DEMO_OBJS    = $(foreach i,$(DEMO_MODULES),build/dm_$(i).o)
 TEST_SRCS    = $(foreach i,$(TEST_MODULES),build/$i.c)
 TEST_OBJS    = $(foreach i,$(TEST_MODULES) suite,build/ts_$(i).o)
@@ -66,6 +67,9 @@ build/op_%.o : src/mv_%.c $(CORE_HEADERS)
 
 build/mvxx_%.o : src/mv%.cxx $(CORE_HEADERS)
 	g++ $(COPTS) -c $< -o $@
+
+build/opxx_%.o : src/mv%.cxx $(CORE_HEADERS)
+	g++ $(PERFOPTS) -c $< -o $@
 
 build/perftest.o : test/perftest.c $(CORE_HEADERS) $(TEST_HEADERS)
 	g++ $(PERFOPTS) -I src -I test -c $< -o $@

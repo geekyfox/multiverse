@@ -68,18 +68,6 @@ void mv_attrspec_show(mv_strbuf* buf, mv_attrspec* ptr);
 
 void mv_speclist_show(mv_strbuf* buf, mv_speclist& ptr);
 
-/******************************/
-/* Expandable array of string */
-/******************************/
-
-void mv_strarr_appslice(mv_strarr* ptr, const char* source, int start, int end);
-
-/*****************/
-/* Single entity */
-/*****************/
-
-
-
 /*********************/
 /* Cache of entities */
 /*********************/

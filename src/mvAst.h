@@ -20,8 +20,9 @@ public:
 	{
 	}
 	mvAst(const char* request) throw (mv_error*);
-
 	void populate(mv_speclist& specs);
+	void* operator new(size_t size);
+	void operator delete(void* ptr);
 };
 
 #define MVAST_SUBQUERY          2006
@@ -78,8 +79,7 @@ public:
 	}
 	void set_leaf(mv_strref& leaf)
 	{
-		_leaf = new mv_strref;
-		*_leaf = leaf;
+		_leaf = new mv_strref(leaf);
 	}
 	void set_type(int code)
 	{

@@ -4,8 +4,14 @@
 
 static inline void __parse_entry__(char* text) {
 	mv_command cmd;
-	FAILFAST(mv_command_parse(&cmd, text));
-	mv_command_release(&cmd);
+	try
+	{
+		mv_command_parse(cmd, text);
+	}
+	catch (mv_error* err)
+	{
+		FAIL(err);
+	}
 }
 
 static inline void __parse_all() {

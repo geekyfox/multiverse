@@ -159,12 +159,6 @@ void mv_query_release(mv_query* query) {
 	mv_attrlist_release(&(query->attrs));
 }
 
-void mv_strarr_appslice(mv_strarr* ptr, const char* source, int first, int last) {
-	mv_strref ref;
-	ref.set(source, first, last);
-	ptr->push(ref);
-}
-
 void mv_typespec_release(mv_typespec* spec) {
 	switch (spec->type) {
 	case STRING:

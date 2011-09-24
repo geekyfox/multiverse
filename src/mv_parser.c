@@ -476,7 +476,7 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 		case ' ': case '\t': case '\n':
 			if (state == TOKEN) {
 				state = WHITESPACE;
-				mv_strarr_appslice(target, data, base, scan);
+				target->append(data, base, scan);
 			}
 			break;
 		case '\'':
@@ -484,20 +484,20 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 				base = scan;
 				state = LITERAL;
 			} else if (state == LITERAL) {
-				mv_strarr_appslice(target, data, base, scan);
+				target->append(data, base, scan);
 				state = WHITESPACE;
 			} else {
-				mv_strarr_appslice(target, data, base, scan - 1);
+				target->append(data, base, scan - 1);
 				state = LITERAL;
 			}
 			break;
 		case ',': case '{': case '}': case ':':
 		case '[': case ']':
 			if (state == WHITESPACE) {
-				mv_strarr_appslice(target, data, scan, scan + 1);
+				target->append(data, scan, scan + 1);
 			} else if (state == TOKEN) {
-				mv_strarr_appslice(target, data, base, scan);
-				mv_strarr_appslice(target, data, scan, scan + 1);
+				target->append(data, base, scan);
+				target->append(data, scan, scan + 1);
 				state = WHITESPACE;
 			}
 			break;
@@ -512,7 +512,7 @@ mv_error* mv_tokenize(mv_strarr* target, const char* data) {
 		return mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
 	}
 	if (state == 2) {
-		mv_strarr_appslice(target, data, base, scan);
+		target->append(data, base, scan);
 	}
 	target->pack();
 	return NULL;

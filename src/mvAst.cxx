@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "mvAst.h"
+#include "mvMemPool.h"
 #include "multiverse.h"
 #include "parser.h"
 
@@ -34,6 +35,11 @@ void mv_ast_entry::clear()
 	{
 		delete _leaf;
 	}
+	if (_subtree != NULL)
+	{
+		delete _subtree;
+	}
+	return;
 	if (_type == 0) return;
 	switch(_type) {
 	case MVAST_TEMPOPENBRACE:
@@ -89,4 +95,17 @@ void mvAst::populate(mv_speclist& target) {
 		}
 	}
 }
+
+mvMemPool<mvAst, 512, 1> mempool;
+
+void* mvAst::operator new(size_t size)
+{
+	return mempool.get();
+}
+
+void mvAst::operator delete(void* ptr)
+{
+	mempool.release((mvAst*)ptr);
+}
+
 

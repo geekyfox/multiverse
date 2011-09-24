@@ -15,14 +15,13 @@ private:
 public:
 	mv_strref();
 	mv_strref(const mv_strref& ref);
-	~mv_strref()
-	{
-		clear();
-	}
+	mv_strref(const char* source, int first, int last);
+	~mv_strref();
 	char* ptr;
 	mv_strref& operator= (char* value);
 	mv_strref& operator= (const mv_strref& ref);
-	void set(const char* source, int first, int last);
+	void* operator new(size_t size);
+	void operator delete(void* ptr);
 };
 
 class mv_strarr : public mvDynamicArray<mv_strref>
@@ -32,6 +31,7 @@ public:
 	{
 	}
 	void append(char* value);
+	void append(const char* source, int first, int last);
 };
 
 #endif
