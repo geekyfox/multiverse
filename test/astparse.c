@@ -16,7 +16,7 @@ TESTREQ 1 {
 	ASSERT_INT(ast.size(), 4);
 	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
 	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
@@ -25,7 +25,7 @@ TESTREQ 2 {
 	ASSERT_INT(ast.size(), 4);
 	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 2);
 	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
@@ -34,7 +34,7 @@ TESTREQ 4 {
 	ASSERT_INT(ast.size(), 4);
 	ASSERT_INT(ast[0] == Leaf, true);
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
-	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
 	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
 }
@@ -48,7 +48,7 @@ TESTREQ 6 {
 
 TESTREQ 9 {
 	ASSERT_INT(ast.size(), 3);
-	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 3);
 }
 
@@ -58,13 +58,13 @@ TESTREQ 10 {
 
 TESTREQ 11 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[3] == AttrList, true);
 	ASSERT_INT(ast[3].subtree().size(), 1);
 }
 
 TESTREQ 14 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[2] == (MVAST_ATTRLIST), true);
+	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
 }
 
@@ -97,15 +97,15 @@ TEST subquery3() {
 TESTREQ 18 {
 	ASSERT_INT(ast.size(), 4);
 	ASSERT_INT(ast[3] == MVAST_ATTRSPECLIST, true);
-	mv_ast& subtree = ast[3].subtree();
+	const mv_ast& subtree = ast[3].subtree();
 	ASSERT_INT(subtree.size(), 1);
 	ASSERT_INT(subtree[0] == MVAST_ATTRQUERY, true);
 }
 
 TESTREQ 20 {
 	ASSERT_INT(ast.size(), 5);
-	ASSERT_INT(ast[4] == MVAST_ATTRLIST, true);
-	mv_ast& subtree = ast[4].subtree();
+	ASSERT_INT(ast[4] == AttrList, true);
+	const mv_ast& subtree = ast[4].subtree();
 	ASSERT_INT(subtree.size(), 1);
 	ASSERT_INT(subtree[0] == MVAST_ATTRPAIR, true);
 }

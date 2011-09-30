@@ -7,13 +7,17 @@ int main() {
 
 	while (1) {
 		mv_command cmd;
-		mv_error* error = mv_local_read(&cmd);
-		if (error != NULL) {
+		try
+		{
+			mv_local_read(cmd);
+		}
+		catch (mv_error* error)
+		{
 			mv_error_display(error, stderr);
 			continue;
 		}
-		if (cmd.code == MVCMD_QUIT) break;
-		if (cmd.code == MVCMD_DO_NOTHING) continue;
+		if (cmd.code == QUIT) break;
+		if (cmd.code == DO_NOTHING) continue;
 		mv_local_execute(&cmd);
 	}
 

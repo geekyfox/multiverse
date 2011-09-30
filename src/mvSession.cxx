@@ -5,6 +5,7 @@
 #include "multiverse.h"
 #include "mvSession.h"
 #include "parser.h"
+#include "mvValidator.h"
 
 mvSession::mvSession() :
 	vars(8),
@@ -19,7 +20,9 @@ mvSession::~mvSession()
 {
 }
 
-mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
+void mvSession::copyAttr(mv_attr* dst, mv_attr* src)
+throw (mv_error*)
+{
 	int ref;
 
 	dst->type = src->type;
@@ -29,7 +32,7 @@ mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
 		ref = findvar(src->value.rawref);
 		if (ref == -1) {
 			if (autovalidate) {
-				THROW(BADVAR, "Unknown variable '%s'", src->name);
+				NEWTHROW(BADVAR, "Unknown variable '%s'", src->name);
 			} else {
 				dst->type = RAWREF;
 				dst->value.rawref = strdup(src->value.rawref);	
@@ -53,61 +56,63 @@ mv_error* mvSession::copyAttr(mv_attr* dst, mv_attr* src) {
 	}
 
 	dst->name = strdup(src->name);
-
-	return NULL;
 }
 
-mv_error* mvSession::createImpl(mv_command* cmd) {
-	if (cmd->vars.size() == 0) {
-		return createNew(NULL, cmd->attrs);
-	} else if (cmd->vars.size() == 1) {
-		char* varname = cmd->vars[0].ptr;
+void mvSession::createImpl(mvCommand& cmd)
+throw (mv_error*)
+{
+	if (cmd.vars.size() == 0) {
+		createNew(cmd.attrs);
+	} else if (cmd.vars.size() == 1) {
+		const char* varname = cmd.vars[0].ptr;
 		int ref = vars.lookup(varname);
 		if (ref != -1) {
-			THROW(BADVAR, "Variable already bound");
+			NEWTHROW(BADVAR, "Variable already bound");
 		}
-		mv_error* error;
-		if ((error = createNew(&ref, cmd->attrs))) {
-			return error;
-		}
+		ref = createNew(cmd.attrs);
 		vars.insert(varname, ref);
-		return NULL;
 	} else {
-		THROW(INTERNAL, "Malformed action");
+		NEWTHROW(INTERNAL, "Malformed action");
 	}
 }
 
-mv_error* mvSession::createNew(int* ref, mv_attrlist attrs) {
+int mvSession::createNew(mv_attrlist& attrs)
+throw (mv_error*)
+{
 	int i, j;
-	mv_entity* entity = new mv_entity(attrs.size, 0);
+	mv_entity* entity = new mv_entity(attrs.size(), 0);
 	mv_error *error;
 	mv_attr *src, *dst;
 	//
-	for (i=0; i<attrs.size; i++) {
-		src = &attrs.attrs[i];
-		dst = &entity->data.attrs[i];
-		if ((error = copyAttr(dst, src))) {
-			for (j=0; j<i; j++) mv_attr_release(&entity->data.attrs[j]);
-			return error;
+	for (i=0; i<attrs.size(); i++) {
+		src = &attrs[i];
+		dst = &entity->data[i];
+		try
+		{
+			copyAttr(dst, src);
+		}
+		catch (mv_error* err)
+		{
+			delete entity;
+			throw error;
 		}
 	}
-	*ref = entities.push(entity);
-	return NULL;
+	return entities.push(entity);
 }
 
-mv_error* mvSession::destroyImpl(mv_command* cmd) {
-	EXPECT(cmd->vars.size() == 1, "Command is damaged");
-	char* name = cmd->vars[0].ptr;
+void mvSession::destroyImpl(mvCommand& cmd)
+throw (mv_error*) {
+	EXPECT(cmd.vars.size() == 1, "Command is damaged");
+	const char* name = cmd.vars[0].ptr;
 	int objref = findvar(name);
 	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", name);
+		NEWTHROW(BADVAR, "Unknown variable '%s'", name);
 	}
 	entities.drop(objref);
 	if (name[0] != '#') vars.remove(name);
-	return NULL;
 } 
 
-int mvSession::findvar(char* name) {
+int mvSession::findvar(const char* name) {
 	if (name[0] == '#' && name[1] == '#') {
 		int ref = atoi(name + 2);
 		if ((ref < 0) ||
@@ -118,25 +123,21 @@ int mvSession::findvar(char* name) {
 	return vars.lookup(name);
 }
 
-int mvSession::findclass(char* name) {
+int mvSession::findclass(const char* name) {
 	return clsnames.lookup(name);
 }
 
-mv_error* mvSession::lookup(mvIntset& ret, mv_command* cmd) {
-	mv_query query;
-	mv_error* error = mv_query_compile(&query, cmd);
+mv_error* mvSession::lookup(mvIntset& ret, mvCommand& cmd) {
+	mvQuery query(cmd);
 
-	if (error != NULL) return error;
-	
 	int i;
 	for (i=0; i<entities.size(); i++) {
 		if (!entities.exists(i)) continue;
-		if (mv_query_match(&query, &(entities[i]))) {
+		if (query.match(entities[i])) {
 			ret.put(i);
 		}
 	}
 
-	mv_query_release(&query);
 	return NULL;
 }
 
@@ -151,23 +152,24 @@ throw (mv_error*)
 	}
 }
 
-mv_error* mvSession::updateEntity(mv_command* cmd)
+void mvSession::updateEntity(mvCommand& cmd)
+throw (mv_error*)
 {
-	EXPECT(cmd->vars.size() == 1, "Command is damaged");
-	char* name = cmd->vars[0].ptr;
+	EXPECT(cmd.vars.size() == 1, "Command is damaged");
+	const char* name = cmd.vars[0].ptr;
 	int objref = findvar(name);
 	if (objref == -1) {
-		THROW(BADVAR, "Unknown variable '%s'", name);
+		NEWTHROW(BADVAR, "Unknown variable '%s'", name);
 	}
-	return mv_entity_update(&entities[objref], cmd->attrs);
+	entities[objref].update(cmd.attrs);
 }
 
 void mvSession::assign(mvCommand& cmd)
 throw (mv_error*)
 {
 	assert(cmd.vars.size() == 2);
-	mv_strref& clsname = cmd.vars[0];
-	char* objname = cmd.vars[1].ptr;
+	mvStrref& clsname = cmd.vars[0];
+	const char* objname = cmd.vars[1].ptr;
 	int objref = findvar(objname);
 	if (objref == -1) {
 		NEWTHROW(BADVAR, "Unknown variable '%s'", objname);
@@ -176,13 +178,13 @@ throw (mv_error*)
 	if (clsref == -1) {
 		NEWTHROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
-	mv_entity* entity = &(entities[objref]);
-	mv_class* cls = &(classes[clsref]);
-	FAILTHROW(mv_validate_assign(entity, cls));
-	entity->classes.push(clsname);
+	mv_entity& entity = entities[objref];
+	mv_class& cls = classes[clsref];
+	singletonValidator.validate(entity, cls);
+	entity.classes.push(clsname);
 }
 
-char* mvSession::show(char* name)
+char* mvSession::show(const char* name)
 throw (mv_error*)
 {
 	int ref = findvar(name);
@@ -194,8 +196,7 @@ throw (mv_error*)
 	ref = findclass(name);
 	if (ref != -1) {
 		mv_strbuf buf(1000);
-		buf << name << " = ";
-		mv_class_show(&buf, &(classes[ref]));
+		buf << name << " = " << classes[ref];
 		return buf.release();
 	}
 	NEWTHROW(BADVAR, "Unknown name '%s'", name);

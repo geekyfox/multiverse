@@ -7,8 +7,10 @@
 template <class T>
 class mvStaticArray {
 private:
+	mvStaticArray<T>* operator&();
 	int _size;
 	T* items;
+	mvStaticArray<T>& operator=(const mvStaticArray<T>&);
 public:
 	mvStaticArray() :
 		_size(0), items(NULL)
@@ -23,7 +25,7 @@ public:
 	{
 		clear();
 	}
-	void push(const T& value)
+	void push(T& value)
 	{
 		T* update = new T[_size + 1];
 		for (int i=0; i<_size; i++) update[i] = items[i];
@@ -34,15 +36,14 @@ public:
 	}
 	void set(T* values, int count)
 	{
-		items = new T[count];
+		alloc(count);
 		for (int i=0; i<count; i++) items[i] = values[i];
-		_size = count;
 	}
-	int size()
+	int size() const
 	{
 		return _size;
 	}
-	T& operator[](const int index)
+	T& operator[](const int index) const
 	{
 		return items[index];
 	}
@@ -50,12 +51,10 @@ public:
 	{
 		if (items != NULL)
 		{
-			for (int i=size() - 1; i >= 0; i--) {
-				items[i].clear();
-			}
 			delete[] items;
+			items = NULL;
+			_size = 0;
 		}
-		alloc(0);
 	}
 	void alloc(int size)
 	{

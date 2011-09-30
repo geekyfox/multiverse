@@ -1,12 +1,12 @@
 
-#ifndef __MULTIVERSE_PARSER_HEADER__
-#define __MULTIVERSE_PARSER_HEADER__
+#ifndef __MULTIVERSE_OLDPARSER_HEADER__
+#define __MULTIVERSE_OLDPARSER_HEADER__
 
 #include <assert.h>
 
 #include "mvAst.h"
 #include "error.h"
-#include "model.h"
+#include "mvAttr.h"
 #include "mvArray.h"
 #include "mvCommand.h"
 
@@ -19,16 +19,11 @@
  * memory and returns an mv_error.
  */
 
-void mv_attr_parse(mv_attr* target, char* key, char* value);
-
-/* Populates an mv_attrlist from AST. */
-void mv_attrlist_parse(mv_attrlist* target, mv_ast& source);
-
 /* Builds a subquery from corresponding AST. */
-void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value);
+void mv_attrquery_parse(mv_attrspec* ptr, const mvStrref& key, const mv_ast& value);
 
 /* Builds attribute's specification. */
-void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, mvAstType rel);
+void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel);
 
 /* Parses a string into a command. */
 void mv_command_parse(mvCommand& target, const char* request) throw (mv_error*);

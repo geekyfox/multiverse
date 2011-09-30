@@ -3,6 +3,9 @@
 #define __MULTIVERSE_MEMPOOL_HEADER__
 
 #include <stdlib.h>
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 template <class T, int SIZE, int ELEM_SIZE>
 class mvMemPool {
@@ -22,7 +25,19 @@ public:
 			return pool[used];
 		}
 	}
-	void release(T* item) {
+	void release(T* item)
+	{
+#ifdef DEBUG
+		for (int i=0; i<used; i++)
+		{
+			if (pool[i] == item)
+			{
+				printf("Double release!\n");
+				malloc(1138);
+				abort();
+			}
+		}
+#endif
 		if (used == SIZE) {
 			free(item);
 		} else {

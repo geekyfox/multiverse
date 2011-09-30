@@ -2,6 +2,8 @@
 #ifndef __MULTIVERSE_COMMAND_HEADER__
 #define __MULTIVERSE_COMMAND_HEADER__
 
+#include "mvAttrSpec.h"
+
 enum mvCommandType {
 	DO_NOTHING,
 	QUIT,
@@ -22,6 +24,7 @@ public:
 	mvCommand() : inited(false), spec(0), vars(10)
 	{
 	}
+	mvCommand(const char* request);
 	~mvCommand();
 	// Command's code, should be one of MVCMD_ codes.
 	mvCommandType code;

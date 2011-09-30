@@ -1,11 +1,10 @@
 
-#ifndef __MULTIVERSE_MODEL_HEADER__
-#define __MULTIVERSE_MODEL_HEADER__
+#ifndef __MULTIVERSE_ATTR_HEADER__
+#define __MULTIVERSE_ATTR_HEADER__
 
 #include "mvArray.h"
 #include "mvStrBuffer.h"
 #include "mvStrref.h"
-
 
 enum mvTypeCode {
 	STRING, RAWREF, REF, INTEGER
@@ -14,7 +13,13 @@ enum mvTypeCode {
 // Multiverse is an object-oriented database and this
 // is why there's such a basic building element as a
 // key-value pair.
-typedef struct {
+class mv_attr {
+private:
+public:
+	mv_attr();
+	mv_attr(const mv_attr&);
+	~mv_attr();
+	void operator=(const mv_attr&);
 	// Key of the attribute.
 	char* name;
 	// Type code, should be one of MVTYPE_ codes.
@@ -36,45 +41,20 @@ typedef struct {
 		// An integer number.
 		int integer;
 	} value;
-} mv_attr;
-
-// Key-value pairs should also be grouped.
-// Grouping is done using simple lists wrapped
-// around pointers.
-typedef struct {
-	mv_attr* attrs;
-	int size;
-} mv_attrlist;
-
-typedef struct {
-	char* classname;
-	mv_attrlist attrs;
-} mv_query;
-
-typedef struct {
-	mvTypeCode type;
-	char* classname;
-} mv_typespec;
-
-enum mvAttrSpecType {
-	UNSET, TYPE, SUBQUERY
 };
 
-class mv_attrspec {
+mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_attr& attr);
+
+class mv_attrlist : public mvStaticArray<mv_attr> {
+private:
+	mv_attrlist(const mv_attrlist&);
 public:
-	mv_attrspec() : type(UNSET)
-	{
-	}
-	char* name;
-	mvAttrSpecType type;
-	union {
-		mv_typespec typespec;
-		mv_query subquery;
-	} value;	
-	void clear();
+	mv_attrlist() : mvStaticArray<mv_attr>() {}
+	mv_attrlist(int sz) : mvStaticArray<mv_attr>(sz) {}
+	void copy_from(const mv_attrlist& src);
 };
 
-typedef mvStaticArray<mv_attrspec> mv_speclist;
+mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_attrlist& attr);
 
 #endif
  

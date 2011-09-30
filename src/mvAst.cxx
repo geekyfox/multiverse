@@ -4,12 +4,27 @@
 
 #include "mvAst.h"
 #include "mvMemPool.h"
+#include "mvParser.h"
 #include "multiverse.h"
 #include "parser.h"
 
 void mv_ast_entry::operator= (mvAstType code)
 {
 	(*this) = new mv_ast(code, 0);
+}
+
+void mv_ast_entry::operator= (mv_ast_entry& ref)
+{
+	if (this->_leaf != NULL) delete _leaf;
+	if (this->_subtree != NULL) delete _subtree;
+	//
+	this->_leaf = ref._leaf;
+	this->_subtree = ref._subtree;
+	this->_type = ref._type;
+	//
+	ref._leaf = NULL;
+	ref._subtree = NULL;
+	ref._type = Unset;
 }
 
 void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first)
@@ -28,19 +43,21 @@ void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first,
 	(*this) = tree;
 }
 
-void mv_ast_entry::clear()
+mv_ast_entry::~mv_ast_entry()
 {
 	if (_leaf != NULL)
 	{
 		delete _leaf;
+		_leaf = NULL;
 	}
 	if (_subtree != NULL)
 	{
 		delete _subtree;
+		_subtree = NULL;
 	}
 }
 
-void mv_ast_entry::operator=(mv_strref& token)
+void mv_ast_entry::operator=(mvStrref& token)
 {
 	if (_leaf != NULL)
 	{
@@ -63,7 +80,7 @@ void mv_ast_entry::operator=(mv_strref& token)
 		case ']': _type = MVAST_TEMPCLOSEBRACKET; return;
 		}
 	}
-	_leaf = new mv_strref(token);
+	_leaf = new mvStrref(token);
 	_type = Leaf;
 }
 
@@ -89,7 +106,8 @@ bool mv_ast_entry::operator!=(mvAstType type)
 	return _subtree->type() != type;
 }
 
-void mvAst::populate(mv_speclist& target) {
+void mvAst::populate(mv_speclist& target) const
+{
 	target.alloc(size());
 	int i;
 	for (i=0; i<size(); i++) {
@@ -98,9 +116,9 @@ void mvAst::populate(mv_speclist& target) {
 		    src.subtree().size() == 2,
 			"Two elements expected"
 		);
-		mv_ast& sub = src.subtree();
+		const mv_ast& sub = src.subtree();
 		EXPECT(sub[0] == Leaf, "Leaf expected as a first item");
-		char* key = sub[0].leaf().ptr;
+		mvStrref& key = sub[0].leaf();
 		switch (src.subtree().type())
 		{
 		case MVAST_ATTRQUERY:
@@ -116,7 +134,7 @@ void mvAst::populate(mv_speclist& target) {
 		case MVAST_TYPESPEC:
 			EXPECT(sub[1] == Leaf, "Leaf expected as a second item");
 			mv_spec_parse(
-				&(target[i]), key, sub[1].leaf().ptr, src.subtree().type()
+				&(target[i]), key, sub[1].leaf(), src.subtree().type()
 			);
 			break;
 		default:
@@ -137,4 +155,26 @@ void mvAst::operator delete(void* ptr)
 	mempool.release((mvAst*)ptr);
 }
 
+void mvAst::populate(mv_attrlist& target) const
+{
+	target.alloc(size());
+	for (int i=0; i<size(); i++)
+	{
+		mv_ast_entry& srcitem = (*this)[i];
+		EXPECT(srcitem == AttrPair, "AttrPair expected");
+		const mv_ast& astpair = srcitem.subtree();
+		EXPECT(astpair.size() == 2, "Two elements expected");
+		EXPECT(astpair[0] == Leaf, "Leafs expected");
+		EXPECT(astpair[1] == Leaf, "Leafs expected");
+		singletonParser.parse(target[i],
+		                      astpair[0].leaf().ptr,
+		                      astpair[1].leaf().ptr);
+	}
+}
+
+void mvAst::populate(mvQuery& target) const
+{
+	target.classname = strdup((*this)[0].leaf().ptr);
+	(*this)[1].subtree().populate(target.attrs);
+}
 

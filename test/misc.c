@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "mvParser.h"
 #include "test.h"
 
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
@@ -19,7 +20,7 @@ TEST mv_command_test() {
 		FAIL(err);
 	}
 	assert(action.code == QUIT);
-	assert(action.attrs.size == 0);
+	assert(action.attrs.size() == 0);
 	assert(action.vars.size() == 0);
 
 	try
@@ -31,7 +32,7 @@ TEST mv_command_test() {
 		FAIL(err);
 	}
 	assert(action.code == SHOW);
-	assert(action.attrs.size == 0);
+	assert(action.attrs.size() == 0);
 	assert(action.vars.size() == 1);
 	ASSERT_STRREF(action.vars[0], "umberto_eco");
 
@@ -44,10 +45,10 @@ TEST mv_command_test() {
 		FAIL(err);
 	}
 	assert(action.code == CREATE_ENTITY);
-	assert(action.attrs.size == 2);
-	assert(strcmp(action.attrs.attrs[1].name, "author") == 0);
-	assert(action.attrs.attrs[1].type == RAWREF);
-	assert(strcmp(action.attrs.attrs[1].value.rawref, "umberto_eco") == 0);
+	assert(action.attrs.size() == 2);
+	assert(strcmp(action.attrs[1].name, "author") == 0);
+	assert(action.attrs[1].type == RAWREF);
+	assert(strcmp(action.attrs[1].value.rawref, "umberto_eco") == 0);
 }
 
 TEST mv_execute_test() {
@@ -70,9 +71,9 @@ TEST mv_execute_test() {
 	}
 	ASSERT_INT(state.varcount(), 2);
 	assert(state.entities.size() == 2);
-	assert(state.entities[1].data.size == 2);
-	assert(state.entities[1].data.attrs[1].type == REF);
-	assert(state.entities[1].data.attrs[1].value.ref == 0);
+	assert(state.entities[1].data.size() == 2);
+	assert(state.entities[1].data[1].type == REF);
+	assert(state.entities[1].data[1].value.ref == 0);
 
 	ASSERT_INT(state.classes.size(), 0);
 	ASSERT_INT(state.clscount(), 0);
@@ -89,7 +90,7 @@ TEST mv_execute_test() {
 	ASSERT_INT(state.classes.size(), 1);
 	ASSERT_INT(state.clscount(), 1);
 	ASSERT_INT(state.classes[0].data.size(), 1);
-	ASSERT_INT(state.classes[0].data[0].type, TYPE);
+	ASSERT_INT(state.classes[0].data[0].get_type(), TYPE);
 
 	try
 	{
@@ -105,13 +106,11 @@ TEST mv_execute_test() {
 
 TEST mv_attrlist_show_test() {
 	mv_attrlist attrs;
-	mv_attrlist_alloc(&attrs, 1);
-	mv_attr_parse(attrs.attrs, "name", "'Umberto Eco");
-	assert(attrs.attrs[0].type == STRING);
-	assert(strcmp(attrs.attrs[0].name, "name") == 0);
-	assert(strcmp(attrs.attrs[0].value.string, "Umberto Eco") == 0);
-
-	mv_attrlist_release(&attrs);
+	attrs.alloc(1);
+	singletonParser.parse(attrs[0], "name", "'Umberto Eco");
+	assert(attrs[0].type == STRING);
+	assert(strcmp(attrs[0].name, "name") == 0);
+	assert(strcmp(attrs[0].value.string, "Umberto Eco") == 0);
 }
 
 TEST mv_session_findvar_test() {
@@ -165,8 +164,7 @@ TEST mv_attrspec_release_test() {
 	{
 		mv_command_parse(cmd, REQ7);
 		mv_command_parse(cmd, "show person");
-		ASSERT_NULL(cmd.attrs.attrs);
-		ASSERT_INT(cmd.attrs.size, 0);
+		ASSERT_INT(cmd.attrs.size(), 0);
 		ASSERT_INT(cmd.spec.size(), 0);
 	}
 	catch (mv_error* err)

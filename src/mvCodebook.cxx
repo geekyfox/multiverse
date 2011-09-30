@@ -45,12 +45,12 @@ void mvCodebook::expand() {
 	free(hashes);
 }
 
-void mvCodebook::insert(char* key, int value) {
+void mvCodebook::insert(const char* key, int value) {
 	expand();
 	push(strdup(key), value);
 }
 
-int mvCodebook::lookup(char* key) {
+int mvCodebook::lookup(const char* key) {
 	int hash = mv_strhash(key) % size, i, j;
 	for (i=0, j=hash; i<size; i++, j++) {
 		if (j == size) j = 0;
@@ -94,7 +94,7 @@ void mvCodebook::push(char* keyCopy, int value) {
 	}
 }
 
-void mvCodebook::remove(char* key) {
+void mvCodebook::remove(const char* key) {
 	int hash = mv_strhash(key) % size, i, j;
 	for (i=0, j=hash; i<size; i++, j++) {
 		if (j == size) j = 0;

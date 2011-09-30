@@ -5,28 +5,28 @@
 #include "mvMemPool.h"
 #include "mvStrref.h"
 
-mv_strref::mv_strref() :
+mvStrref::mvStrref() :
 	ptr(NULL), ctr(NULL), alc(WILD)
 {
 }
 
-mv_strref::mv_strref(const mv_strref& ref) :
+mvStrref::mvStrref(const mvStrref& ref) :
 	ptr(ref.ptr), ctr(ref.ctr), alc(ref.alc)
 {
 	if (ctr != NULL) (*ctr)++;
 }
 
-mv_strref::mv_strref(char* value) :
+mvStrref::mvStrref(char* value) :
 	ptr(value), ctr(NULL), alc(WILD)
 {
 }
 
-mv_strref::~mv_strref()
+mvStrref::~mvStrref()
 {
 	if (ptr != NULL && ctr != NULL) clear();
 }
 
-mv_strref& mv_strref::operator= (char* value)
+mvStrref& mvStrref::operator= (const char* value)
 {
 	clear();
 	this->ptr = value;
@@ -34,7 +34,7 @@ mv_strref& mv_strref::operator= (char* value)
 	this->alc = WILD;
 }
 
-mv_strref& mv_strref::operator= (const mv_strref& ref)
+mvStrref& mvStrref::operator= (const mvStrref& ref)
 {
 	clear();
 	this->ptr = ref.ptr;
@@ -44,16 +44,21 @@ mv_strref& mv_strref::operator= (const mv_strref& ref)
 	if (ctr != NULL) (*ctr)++;
 }
 
-void mv_strref::clear()
+bool mvStrref::operator== (const char* value) const
+{
+	return strcmp(ptr, value) == 0;
+}
+
+void mvStrref::clear()
 {
 	if (ptr == NULL) return;
 	if (ctr == NULL) return;
 	int x = *ctr;
 	if (x == 1) {
 		if (alc == OWN) {
-			free(ptr);
+			free((void*)ptr);
 		} else if (alc == POOLED) {
-			localStrPool.release(ptr);
+			localStrPool.release((char*)ptr);
 		}
 
 		localIntPool.release(ctr);
@@ -62,42 +67,44 @@ void mv_strref::clear()
 	}
 }
 
-mv_strref::mv_strref(const char* source, int first, int last) {
+mvStrref::mvStrref(const char* source, int first, int last) {
 	int len = last - first;
 	ctr = localIntPool.acquire(1);
+	char* target;
 	if (len >= 16) {
-		ptr = (char*)malloc(sizeof(char) * (len + 1));
+		target = (char*)malloc(sizeof(char) * (len + 1));
 		alc = OWN;
 	} else {
-		ptr = localStrPool.get();
+		target = localStrPool.get();
 		alc = POOLED;
 	}
-	strncpy(ptr, source + first, len);
-	ptr[len] = '\0';
+	strncpy(target, source + first, len);
+	target[len] = '\0';
+	ptr = target;	
 }
 
-static mvMemPool<mv_strref, 512, 1> refPool;
+static mvMemPool<mvStrref, 512, 1> refPool;
 
-void* mv_strref::operator new(size_t size)
+void* mvStrref::operator new(size_t size)
 {
 	return refPool.get();
 }
 
-void mv_strref::operator delete(void* ptr)
+void mvStrref::operator delete(void* ptr)
 {
-	refPool.release((mv_strref*)ptr);
+	refPool.release((mvStrref*)ptr);
 }
 
-void mv_strarr::append(char* value)
+void mv_strarr::append(const char* value)
 {
-	mv_strref ref;
+	mvStrref ref;
 	ref = value;
 	push(ref);
 }
 
 void mv_strarr::append(const char* source, int first, int last)
 {
-	mv_strref ref(source, first, last);
+	mvStrref ref(source, first, last);
 	push(ref);
 }
 

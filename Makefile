@@ -1,20 +1,23 @@
 
 CXX_MODULES  = Codebook Intset Session MemPool \
-               Command Entity StrBuffer Class Ast Strref
+               Command Entity StrBuffer Class Ast Strref \
+               AttrSpec Query Attr Validator Parser
 CXX_PURES    = Array
 CXX_HEADERS  = $(foreach i,$(CXX_MODULES) $(CXX_PURES),src/mv$(i).h)
 
-CORE_HEADERS = src/multiverse.h src/error.h src/model.h src/parser.h \
+CORE_HEADERS = src/multiverse.h src/error.h src/parser.h \
 $(CXX_HEADERS)
 TEST_HEADERS = test/test.h
 
-MODULES      = data parser matcher printer session validator
+MODULES      = parser session
 CORE_MODULES = $(MODULES) common local error
-TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc
+TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc matcher data \
+               printer validator
 DEMO_MODULES = demo
 
 COPTS = -Wall -g
 
+TESTOPTS = -Wall -g -DDEBUG
 PERFOPTS = -Wall
 
 CXX_OBJS     = $(foreach i,$(CXX_MODULES),build/mvxx_$(i).o)
@@ -66,7 +69,7 @@ build/op_%.o : src/mv_%.c $(CORE_HEADERS)
 	g++ $(PERFOPTS) -c $< -o $@
 
 build/mvxx_%.o : src/mv%.cxx $(CORE_HEADERS)
-	g++ $(COPTS) -c $< -o $@
+	g++ $(TESTOPTS) -c $< -o $@
 
 build/opxx_%.o : src/mv%.cxx $(CORE_HEADERS)
 	g++ $(PERFOPTS) -c $< -o $@

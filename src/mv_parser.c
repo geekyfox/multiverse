@@ -45,6 +45,8 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 		}
 	} else return;
 
+	sep.reset();
+
 	a.set_subtree(typecode, a, b);
 	(*count)-=2;
 }
@@ -58,19 +60,23 @@ inline static void __comma__(mv_ast_entry* stack, int *count) {
 	mv_ast_entry& b = stack[*count - 1];
 
 	if (a == AttrListTMP && PAIR(b)) {	
-		a.subtree().push(b);
+		a.subtree_push(b);
 		*count -= 2;
+		sep.reset();
+		return;
 	}
 
 	if (PAIR(a) && PAIR(b)) {
 		a.set_subtree(MVAST_TEMPATTRLIST, a, b);
 		*count -= 2;
+		sep.reset();
 		return;
 	}
 
 	if (SPEC(a) && SPEC(b)) {
 		a.set_subtree(MVAST_TEMPATTRSPECLIST, a, b);
 		*count -= 2;
+		sep.reset();
 		return;
 	}
 } // style:40
@@ -84,6 +90,7 @@ inline static void __emptylist__(mv_ast_entry* stack, int* size) {
 	if (a == OpenBrace && b == CloseBrace)
 	{
 		a = AttrList;
+		b.reset();
 		(*size)--;
 	}
 }
@@ -103,18 +110,20 @@ inline static void __list__(mv_ast_entry* stack, int& count) {
 
 	if (PAIR(e2) || SPEC(e2) || QPAIR(e2)) {
 		if (PAIR(e2)) {
-			e1.set_subtree(MVAST_ATTRLIST, e2);
+			e1.set_subtree(AttrList, e2);
 		} else {
 			e1.set_subtree(MVAST_ATTRSPECLIST, e2);
 		}
+		e3.reset();
 		count -= 2;
 		return;
 	}
 
 	if (e2 == AttrListTMP || e2 == AttrSpecListTMP)
 	{
-		e2.subtree().fix();
-		e1 = &e2.subtree();
+		e2.subtree_fix();
+		e1 = e2;
+		e3.reset();
 		count -= 2;
 		return;
 	}
@@ -140,61 +149,14 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 
 	e1.set_subtree(MVAST_SUBQUERY, e2, e4);
 
+	e5.reset();
+
 	(*count) -= 4;
-}
-
-void mv_attrlist_parse(mv_attrlist* target, mv_ast& source) {
-	mv_attrlist_alloc(target, source.size());
-	int i;
-	for (i=0; i<source.size(); i++) {
-		mv_ast_entry srcitem = source[i];
-		EXPECT(srcitem == AttrPair, "AttrPair expected");
-		mv_ast& astpair = srcitem.subtree();
-		EXPECT(astpair.size() == 2, "Two elements expected");
-		EXPECT(LEAF(astpair[0]), "Leafs expected");
-		EXPECT(LEAF(astpair[1]), "Leafs expected");
-		char *key = astpair[0].leaf().ptr;
-		char *value = astpair[1].leaf().ptr;
-		mv_attr_parse(&target->attrs[i], key, value);
-	}
-}
-
-inline static int __parse_number__(mv_attr* target, char* value) {
-	int ival = 0;
-	if (*value == '\0') return 0;
-	while (1) {
-		if (isdigit(*value)) {
-			ival = ival * 10 + (*value - '0');
-			value++;
-			continue;
-		} else if (*value == '\0') {
-			target->type = INTEGER;
-			target->value.integer = ival;
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-}
-
-void mv_attr_parse(mv_attr* target, char* name, char* value) {
-	target->name = strdup(name);
-	if (value[0] == '\'') {
-		target->type = STRING;
-		target->value.string = strdup(value + 1);
-		return;
-	}
-	if (__parse_number__(target, value)) {
-		return;
-	}
-	target->type = RAWREF;
-	target->value.rawref = strdup(value);
 }
 
 inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
 	cmd->code = code;
-	cmd->attrs.size = 0;
-	cmd->attrs.attrs = NULL;
+	cmd->attrs.clear();
 	cmd->spec.clear();
 	cmd->vars.clear();
 }
@@ -224,7 +186,7 @@ mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
 		__clear__(target, CREATE_ENTITY, 0);
 	}
 
-	mv_attrlist_parse(&target->attrs, ast[2].subtree());
+	ast[2].subtree().populate(target->attrs);
 	return NULL;
 }
 
@@ -233,10 +195,30 @@ inline static void __compress__(mv_ast_entry* stack, int& size) {
 	do {
 		oldsize = size;
 		__emptylist__(stack, &size);
+		for (int i=size; i<oldsize; i++)
+		{
+			assert(stack[i] == Unset);
+		}
 		__pair__(stack, &size);
+		for (int i=size; i<oldsize; i++)
+		{
+			assert(stack[i] == Unset);
+		}
 		__comma__(stack, &size);
+		for (int i=size; i<oldsize; i++)
+		{
+			assert(stack[i] == Unset);
+		}
 		__list__(stack, size);
+		for (int i=size; i<oldsize; i++)
+		{
+			assert(stack[i] == Unset);
+		}
 		__subquery__(stack, &size);
+		for (int i=size; i<oldsize; i++)
+		{
+			assert(stack[i] == Unset);
+		}
 	} while (oldsize != size);
 }
 
@@ -254,15 +236,23 @@ throw (mv_error*) :
 	}
 	
 	set(stack, size);
+	int die = 0;
+	for (int i=0; i<tokens.size(); i++)
+	{
+		if (stack[i] != Unset) die = 1;
+	}
+	if (die) abort();
 	delete[] stack;
 
+	mv_error* err = NULL;
 	for (i=0; i < size; i++) {
 		mv_ast_entry& ref = (*this)[i];
-		if (ref != Leaf && ref != Subtree)
+		if (ref != Leaf && ref != Subtree && err == NULL)
 		{
-			throw mv_error_unmatched(ref.type(), data);
+			err = mv_error_unmatched(ref.type(), data);
 		}
 	}
+	if (err != NULL) throw err;
 }
 mv_error* __create__(mv_command* target, mv_ast& ast) {
 	if ((ast.size() == 1) || !(LEAF(ast[1]))) {
@@ -288,14 +278,13 @@ mv_error* __create__(mv_command* target, mv_ast& ast) {
 		}
 		ast[3].subtree().populate(target->spec);
 		target->vars.push(ast[2].leaf());
-		target->attrs.size = 0;
-		target->attrs.attrs = NULL;
+		target->attrs.clear();
 		return NULL;
 	}
 	
 	THROW(SYNTAX,
 	      "Invalid task for create - '%s'",
-	      ast[1].leaf());
+	      &ast[1].leaf());
 }
 
 mv_error* __destroy__(mv_command* target, mv_ast& ast) {
@@ -349,7 +338,7 @@ inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
 	assert(ast[3] == AttrList);
 	__clear__(cmd, LOOKUP, 1);
 	cmd->vars.push(ast[1].leaf());
-	mv_attrlist_parse(&cmd->attrs, ast[3].subtree());
+	ast[3].subtree().populate(cmd->attrs);
 	return NULL;
 }
 
@@ -361,7 +350,7 @@ mv_error* __update_entity__(mv_command* target, mv_ast& ast) {
 		if (!LIST(ast[4])) goto wrong;
 		__clear__(target, UPDATE_ENTITY, 1);
 		target->vars.push(ast[2].leaf());
-		mv_attrlist_parse(&target->attrs, ast[4].subtree());
+		ast[4].subtree().populate(target->attrs);
 		return NULL;
 	} 
 
@@ -396,50 +385,42 @@ throw (mv_error*)
 	if (!LEAF((ast[0]))) {
 		NEWTHROW(SYNTAX, "Syntax error");
 	}
-	char* cmdname = ast[0].leaf().ptr;
+	mvStrref& cmdname = ast[0].leaf();
 
 	mv_error* error;
-	if (STREQ(cmdname, "assign"))  error = __assign__(cmd, ast);
-	else if (STREQ(cmdname, "create"))  error = __create__(cmd, ast);
-	else if (STREQ(cmdname, "destroy")) error = __destroy__(cmd, ast);
-	else if (STREQ(cmdname, "lookup"))  error = __lookup__(cmd, ast);
-	else if (STREQ(cmdname, "show"))    error = __show__(cmd, ast);
-	else if (STREQ(cmdname, "quit"))    error = __quit__(cmd, ast);
-	else if (STREQ(cmdname, "update"))  error = __update__(cmd, ast);
-	else NEWTHROW(BADCMD, cmdname);
+	if (cmdname == "assign")       error = __assign__(cmd, ast);
+	else if (cmdname == "create")  error = __create__(cmd, ast);
+	else if (cmdname == "destroy") error = __destroy__(cmd, ast);
+	else if (cmdname == "lookup")  error = __lookup__(cmd, ast);
+	else if (cmdname == "show")    error = __show__(cmd, ast);
+	else if (cmdname == "quit")    error = __quit__(cmd, ast);
+	else if (cmdname == "update")  error = __update__(cmd, ast);
+	else NEWTHROW(BADCMD, cmdname.ptr);
 
 	if (error != NULL) throw error;
 	command.init_done();
 }
 
-void mv_spec_parse(mv_attrspec* ptr, char* key, char* value, mvAstType rel) {
-	mvTypeCode code;
-
+void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel) {
 	switch(rel) {
 		case MVAST_TYPESPEC:
-			ptr->type = TYPE;
-			ptr->value.typespec.classname = NULL;
-			if (STREQ(value, "string")) {
-				code = STRING;
-			} else if (STREQ(value, "integer")) {
-				code = INTEGER;
+			if (value == "string") {
+				ptr->set_typespec(STRING);
+			} else if (value == "integer") {
+				ptr->set_typespec(INTEGER);
 			} else {
-				code = RAWREF;
-				ptr->value.typespec.classname = strdup(value);
+				ptr->set_typespec(value);
 			}
-			ptr->value.typespec.type = code;
 			break;
 		default:
 			DIE("Unknown relationship code (%d)", rel);
 	}
-	ptr->name = strdup(key);
+	ptr->name = key;
 }
 
-void mv_attrquery_parse(mv_attrspec* ptr, char* key, mv_ast& value) {
-	ptr->type = SUBQUERY;
-	ptr->value.subquery.classname = strdup(value[0].leaf().ptr);
-	mv_attrlist_parse(&ptr->value.subquery.attrs, value[1].subtree());
-	ptr->name = strdup(key);
+void mv_attrquery_parse(mv_attrspec* ptr, const mvStrref& key, const mv_ast& value) {
+	value.populate(ptr->subquery_mutable());
+	ptr->name = key;
 }
 
 mvTokenizer::mvTokenizer(const char* data)

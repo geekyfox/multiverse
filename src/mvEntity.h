@@ -2,7 +2,8 @@
 #ifndef __MULTIVERSE_ENTITY_CACHE__
 #define __MULTIVERSE_ENTITY_CACHE__
 
-#include "model.h"
+#include "error.h"
+#include "mvAttr.h"
 #include "mvArray.h"
 
 class mvEntity {
@@ -12,13 +13,12 @@ public:
 	mv_attrlist data;
 	mv_strarr classes;
 	void show(mvStrBuffer& buff) const;
+	void update(const mv_attrlist& attrs) throw (mv_error*);
 };
 
 mvStrBuffer& operator << (mvStrBuffer& buf, const mvEntity& enty);
 
 typedef mvEntity mv_entity;
-
-mv_error* mv_entity_update(mv_entity* entity, mv_attrlist attrs);
 
 typedef mvObjectCache<mv_entity> mvEntityCache;
 

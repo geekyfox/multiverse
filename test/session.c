@@ -20,11 +20,11 @@ TEST execute_REQ1() {
 	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist attrs = state.entities[0].data;
-	ASSERT_INT(attrs.size, 1);
-	ASSERT_INT(attrs.attrs[0].type, STRING);
-	ASSERT_STRING(attrs.attrs[0].name, "name");
-	ASSERT_STRING(attrs.attrs[0].value.string, "Umberto Eco");
+	mv_attrlist& attrs = state.entities[0].data;
+	ASSERT_INT(attrs.size(), 1);
+	ASSERT_INT(attrs[0].type, STRING);
+	ASSERT_STRING(attrs[0].name, "name");
+	ASSERT_STRING(attrs[0].value.string, "Umberto Eco");
 }
 
 static void __prepare_for_REQ10_11(mvSession* session, int bind) {
@@ -102,7 +102,7 @@ TEST execute_REQ11() {
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.lookup(result, &action));
+	FAILFAST(state.lookup(result, action));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.get(0), 0);
@@ -132,11 +132,11 @@ TEST execute_REQ14() {
 	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist attrs = state.entities[0].data;
-	ASSERT_INT(attrs.size, 1);
-	ASSERT_INT(attrs.attrs[0].type, INTEGER);
-	ASSERT_STRING(attrs.attrs[0].name, "height");
-	ASSERT_INT(attrs.attrs[0].value.integer, 324);
+	mv_attrlist& attrs = state.entities[0].data;
+	ASSERT_INT(attrs.size(), 1);
+	ASSERT_INT(attrs[0].type, INTEGER);
+	ASSERT_STRING(attrs[0].name, "height");
+	ASSERT_INT(attrs[0].value.integer, 324);
 }
 
 TEST lookup_after_destroy() {
@@ -155,7 +155,7 @@ TEST lookup_after_destroy() {
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.lookup(result, &lookup));
+	FAILFAST(state.lookup(result, lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.get(0), 0);
@@ -169,7 +169,7 @@ TEST lookup_after_destroy() {
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.lookup(result, &lookup));
+	FAILFAST(state.lookup(result, lookup));
 
 	ASSERT_INT(result.cardinality(), 0);
 }
@@ -189,7 +189,7 @@ TEST lookup_all_items() {
 	{
 		FAIL(err);
 	}
-	FAILFAST(state.lookup(result, &lookup));
+	FAILFAST(state.lookup(result, lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
@@ -221,7 +221,7 @@ TEST numlookup() {
 	{
 		FAIL(err);
 	}
-	FAILFAST(session.lookup(result, &lookup));
+	FAILFAST(session.lookup(result, lookup));
 
 	ASSERT_INT(result.cardinality(), 1);
 	ASSERT_INT(result.contains(0), 1);
@@ -243,9 +243,9 @@ TEST subquery() {
 	ASSERT_INT(session.classes.size(), 2);
 	ASSERT_INT(session.classes[1].data.size(), 1);
 
-	mv_attrspec spc = session.classes[1].data[0];
-	ASSERT_INT(spc.type, SUBQUERY);
-	mv_query qr = spc.value.subquery;
+	mv_attrspec& spc = session.classes[1].data[0];
+	ASSERT_INT(spc.get_type(), SUBQUERY);
+	const mvQuery& qr = spc.subquery();
 	ASSERT_STRING(qr.classname, "book");
 }
 
@@ -264,8 +264,8 @@ TEST update() {
 	}
 
 	ASSERT_INT(session.entities.size(), 1);
-	mv_attrlist data = session.entities[0].data;
-	ASSERT_INT(data.size, 2);
+	mv_attrlist& data = session.entities[0].data;
+	ASSERT_INT(data.size(), 2);
 }
 
 TEST badupdate() {

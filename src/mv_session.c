@@ -7,29 +7,27 @@
 #include "parser.h"
 
 mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
-	mv_typespec *dtype, *stype;
-	mv_query *dquery, *squery;
-	dst->type = src->type;
-
-	switch (src->type) {
+	switch (src->get_type()) {
 	case TYPE:
-		dtype = &(dst->value.typespec);
-		stype = &(src->value.typespec);
-		dtype->type = stype->type;
-		dtype->classname = (stype->classname == NULL) ? NULL :
-			strdup(stype->classname);
+		switch (src->typespec().type)
+		{
+		case STRING: case INTEGER:
+			dst->set_typespec(src->typespec().type); break;
+		case RAWREF:
+			dst->set_typespec(src->typespec().name()); break;
+		default:
+			assert(0);
+		}
 		break;
 	case SUBQUERY:
-		dquery = &(dst->value.subquery);
-		squery = &(src->value.subquery);
-		dquery->classname = strdup(squery->classname);
-		dquery->attrs = mv_attrlist_copy(&(squery->attrs));
+		dst->subquery_mutable().classname = strdup(src->subquery().classname);
+		dst->subquery_mutable().attrs.copy_from(src->subquery().attrs);
 		break;
 	default:
-		THROW(INTERNAL, "Unknown attrspec code (%d)", src->type);
+		THROW(INTERNAL, "Unknown attrspec code (%d)", src->get_type());
 	}
 
-	dst->name = strdup(src->name);
+	dst->name = src->name;
 	return NULL;
 }
 
@@ -57,15 +55,15 @@ void mvSession::execute(mvCommand& action)
 throw (mv_error*) {
 	int ref;
 	mv_error* error = NULL;
-	char* clsname;
+	const char* clsname;
 
 	switch (action.code) {
 	case ASSIGN:
 		assign(action);
 		return;
 	case CREATE_ENTITY:
-		error = createImpl(&action);
-		break;
+		createImpl(action);
+		return;
 	case CREATE_CLASS:
 		if (action.vars.size() != 1) {
 			NEWTHROW(INTERNAL, "Strange number of variables");
@@ -81,11 +79,11 @@ throw (mv_error*) {
 		clsnames.insert(clsname, ref);
 		return;
 	case DESTROY_ENTITY:
-		error = destroyImpl(&action);
-		break;
+		destroyImpl(action);
+		return;
 	case UPDATE_ENTITY:
-		error = updateEntity(&action);
-		break;
+		updateEntity(action);
+		return;
 	default:
 		NEWTHROW(INTERNAL, "Unknown action (%d)", action.code);
 	}

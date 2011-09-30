@@ -6,31 +6,32 @@
 
 enum mvStrrefAlloc { WILD, POOLED, OWN };
 
-class mv_strref {
+class mvStrref {
 private:
 	mvStrrefAlloc alc;
-	mv_strref(char* value);
+	mvStrref(char* value);
 	void clear();
 	int* ctr;
 public:
-	mv_strref();
-	mv_strref(const mv_strref& ref);
-	mv_strref(const char* source, int first, int last);
-	~mv_strref();
-	char* ptr;
-	mv_strref& operator= (char* value);
-	mv_strref& operator= (const mv_strref& ref);
+	const char* ptr;
+	mvStrref();
+	mvStrref(const mvStrref& ref);
+	mvStrref(const char* source, int first, int last);
+	~mvStrref();
+	mvStrref& operator= (const char* value);
+	mvStrref& operator= (const mvStrref& ref);
+	bool operator== (const char* value) const;
 	void* operator new(size_t size);
 	void operator delete(void* ptr);
 };
 
-class mv_strarr : public mvDynamicArray<mv_strref>
+class mv_strarr : public mvDynamicArray<mvStrref>
 {
 public:
-	mv_strarr(int size) : mvDynamicArray<mv_strref>(size)
+	mv_strarr(int size) : mvDynamicArray<mvStrref>(size)
 	{
 	}
-	void append(char* value);
+	void append(const char* value);
 	void append(const char* source, int first, int last);
 };
 

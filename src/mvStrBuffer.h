@@ -2,6 +2,8 @@
 #ifndef __MULTIVERSE_STRBUFFER_HEADER__
 #define __MULTIVERSE_STRBUFFER_HEADER__
 
+#include "mvStrref.h"
+
 class mvStrBuffer {
 private:
 	char* data;
@@ -17,6 +19,16 @@ public:
 	mvStrBuffer& operator <<(const char* text)
 	{
 		append(text);
+		return *this;
+	}
+	mvStrBuffer& operator <<(const mvStrref& text)
+	{
+		append(text.ptr);
+		return *this;
+	}
+	mvStrBuffer& operator <<(int value)
+	{
+		append(value);
 		return *this;
 	}
 	void indent(int shift)

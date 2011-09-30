@@ -15,9 +15,9 @@ private:
 public:
 	mvCodebook(int);
 	~mvCodebook();
-	void insert(char* key, int value);
-	int lookup(char* key);
-	void remove(char* key);
+	void insert(const char* key, int value);
+	int lookup(const char* key);
+	void remove(const char* key);
 	int cardinality() {
 		return used;
 	}

@@ -10,7 +10,7 @@ void mv_local_start() {
 	__LOCAL_SESSION__ = new mvSession();
 }
 
-mv_error* __local_lookup(mv_command* c) {
+mv_error* __local_lookup(mv_command& c) {
 	mvIntset res(1);
 	
 	mv_error* error = __LOCAL_SESSION__->lookup(res, c);
@@ -47,11 +47,11 @@ inline static void __display_success(mv_command* cmd) {
 	}
 }
 
-void mv_local_execute(mv_command* cmd) {
+void mv_local_execute(mv_command& cmd) {
 	mv_error* error = NULL;
 	char *tmpstr = NULL;
 
-	switch(cmd->code) {
+	switch(cmd.code) {
 	case DO_NOTHING:
 		break;
 	case ASSIGN:
@@ -61,8 +61,8 @@ void mv_local_execute(mv_command* cmd) {
 	case UPDATE_ENTITY:
 		try
 		{
-			__LOCAL_SESSION__->execute(*cmd);
-			__display_success(cmd);
+			__LOCAL_SESSION__->execute(cmd);
+			__display_success(&cmd);
 		}
 		catch (mv_error* err)
 		{
@@ -72,7 +72,7 @@ void mv_local_execute(mv_command* cmd) {
 	case SHOW:
 		try
 		{
-			tmpstr = __LOCAL_SESSION__->show(cmd->vars[0].ptr);
+			tmpstr = __LOCAL_SESSION__->show(cmd.vars[0].ptr);
 		}
 		catch (mv_error* err)
 		{
@@ -87,7 +87,7 @@ void mv_local_execute(mv_command* cmd) {
 		error = __local_lookup(cmd);
 		break;
 	default:
-		DIE("Unknown command code %d\n", cmd->code);
+		DIE("Unknown command code %d\n", cmd.code);
 	}
 
 	if (error != NULL) {
@@ -99,7 +99,7 @@ void mv_local_end() {
 	delete __LOCAL_SESSION__;
 }
 
-mv_error* mv_local_read(mvCommand& cmd) {
+void mv_local_read(mvCommand& cmd) throw (mv_error*) {
 	char *buffer = (char*)malloc(sizeof(char) * 1000);
 	int point = 0, size = 1000;
 	char c[10];
@@ -129,10 +129,9 @@ mv_error* mv_local_read(mvCommand& cmd) {
 	try {
 		mv_command_parse(cmd, buffer);
 		free(buffer);
-		return NULL;
 	} catch (mv_error* err) {
 		free(buffer);
-		return err;
+		throw err;
 	}
 }
 

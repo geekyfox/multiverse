@@ -10,7 +10,7 @@ mvCommand::~mvCommand()
 void mvCommand::destroy()
 {
 	if (!inited) return;
-	mv_attrlist_release(&attrs);
+	attrs.clear();
 	vars.clear();
 	spec.clear();
 	inited = false;

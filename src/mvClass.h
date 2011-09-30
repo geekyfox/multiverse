@@ -2,9 +2,9 @@
 #ifndef __MULTIVERSE_CLASS_HEADER__
 #define __MULTIVERSE_CLASS_HEADER__
 
-#include "model.h"
-#include "multiverse.h"
+#include "mvAttr.h"
 #include "mvArray.h"
+#include "mvAttrSpec.h"
 
 class mvClass {
 public:
@@ -20,9 +20,11 @@ public:
 
 typedef mvClass mv_class;
 
-void mv_class_show(mv_strbuf* buf, mv_class* cls);
+mvStrBuffer& operator<<(mvStrBuffer&, const mvClass&);
 
-typedef mvObjectCache<mv_class> mvClassCache;
+typedef mvObjectCache<mvClass> mvClassCache;
+
+mv_error* mv_validate_assign(mv_entity* entity, mv_class* cls);
 
 #endif
 
