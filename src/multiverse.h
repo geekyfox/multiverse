@@ -52,7 +52,7 @@ void    mv_attr_update(mv_attr* dst, mv_attr* src);
 
 void      mv_local_end();
 void      mv_local_read(mvCommand& target) throw (mv_error*);
-void      mv_local_execute(mv_command* cmd);
+void      mv_local_execute(mvCommand& cmd);
 void      mv_local_start();
 
 #endif

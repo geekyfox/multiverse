@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "multiverse.h"
 #include "parser.h"
+#include "mvParser.h"
 
 mvSession* __LOCAL_SESSION__ = NULL;
 
@@ -127,7 +128,7 @@ void mv_local_read(mvCommand& cmd) throw (mv_error*) {
 	buffer[point] = '\0';
 
 	try {
-		mv_command_parse(cmd, buffer);
+		singletonParser.parse(cmd, buffer);
 		free(buffer);
 	} catch (mv_error* err) {
 		free(buffer);

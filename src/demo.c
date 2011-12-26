@@ -18,7 +18,7 @@ int main() {
 		}
 		if (cmd.code == QUIT) break;
 		if (cmd.code == DO_NOTHING) continue;
-		mv_local_execute(&cmd);
+		mv_local_execute(cmd);
 	}
 
 	mv_local_end();

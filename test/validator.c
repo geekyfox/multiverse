@@ -1,5 +1,6 @@
 
 #include "test.h"
+#include "mvParser.h"
 
 TEST validity_assign() {
 	mv_strarr script(2);
@@ -11,7 +12,7 @@ TEST validity_assign() {
 	try
 	{
 		session.perform(script);
-		mv_command_parse(cmd, REQ24);
+		singletonParser.parse(cmd, REQ24);
 	}
 	catch (mv_error* err)
 	{

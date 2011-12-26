@@ -2,6 +2,7 @@
 #ifndef __MULTIVERSE_AST_HEADER__
 #define __MULTIVERSE_AST_HEADER__
 
+#include <assert.h>
 #include "mvAttr.h"
 #include "mvArray.h"
 #include "error.h"
@@ -94,6 +95,8 @@ public:
 	bool operator!=(mvAstEntryType code);
 	bool operator==(mvAstType type);
 	bool operator!=(mvAstType type);
+	bool operator==(const char* leafval);
+	bool operator!=(const char* leafval);
 	int type()
 	{
 		return _type;

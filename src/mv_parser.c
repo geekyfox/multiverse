@@ -15,7 +15,6 @@
 #define SPEC(var)  (var == TypeSpec)
 #define SUBQ(var)  (var == SubQuery)
 #define LEAF(var)  (var == Leaf)
-#define LEAFFIX(var, text) (LEAF(var) && STREQ((var).leaf().ptr, text))
 #define TEMPFIX(var, code) (var.type_is(MVAST_TEMP##code))
 
 inline static void __pair__(mv_ast_entry* stack, int* count) {
@@ -140,7 +139,7 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 	if (!LEAF(e2)) return;
 
 	mv_ast_entry& e3 = stack[*count - 3];
-	if (!LEAFFIX(e3, "with")) return;
+	if (e3 != "with") return;
 
 	mv_ast_entry& e4 = stack[*count - 2];
 	if (!LIST(e4)) return;
@@ -161,7 +160,7 @@ inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
 	cmd->vars.clear();
 }
 
-mv_error* __create_entity__(mv_command* target, mv_ast& ast) {
+mv_error* __create_entity__(mv_command* target, const mv_ast& ast) {
 	if (ast.size() < 3) {
 		THROW(SYNTAX, "'create entity' command is incomplete");
 	} else if (ast.size() > 4) {
@@ -254,16 +253,16 @@ throw (mv_error*) :
 	}
 	if (err != NULL) throw err;
 }
-mv_error* __create__(mv_command* target, mv_ast& ast) {
+mv_error* __create__(mv_command* target, const mv_ast& ast) {
 	if ((ast.size() == 1) || !(LEAF(ast[1]))) {
 		THROW(INTERNAL, "Malformed 'create' command");
 	}
 
-	if (LEAFFIX(ast[1], "entity")) {
+	if (ast[1] == "entity") {
 		return __create_entity__(target, ast);
 	}
 
-	if (LEAFFIX(ast[1], "class")) {
+	if (ast[1] == "class") {
 		target->code = CREATE_CLASS;
 		if (!LEAF(ast[2])) {
 			THROW(INTERNAL,
@@ -287,8 +286,8 @@ mv_error* __create__(mv_command* target, mv_ast& ast) {
 	      &ast[1].leaf());
 }
 
-mv_error* __destroy__(mv_command* target, mv_ast& ast) {
-	if ((ast.size() != 3) || !LEAFFIX(ast[1], "entity") ||
+mv_error* __destroy__(mv_command* target, const mv_ast& ast) {
+	if ((ast.size() != 3) || (ast[1] != "entity") ||
 	    !LEAF(ast[2]))
 	{
 		THROW(SYNTAX, "Malformed 'destroy' command");
@@ -298,7 +297,7 @@ mv_error* __destroy__(mv_command* target, mv_ast& ast) {
 	return NULL;	
 } 
 
-inline static mv_error* __show__(mv_command* cmd, mv_ast& ast) {
+inline static mv_error* __show__(mv_command* cmd, const mv_ast& ast) {
 	assert(ast.size() == 2);
 	assert(ast[1] == Leaf);
 	__clear__(cmd, SHOW, 1);
@@ -306,7 +305,7 @@ inline static mv_error* __show__(mv_command* cmd, mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_error* __quit__(mv_command* cmd, mv_ast& ast) {
+inline static mv_error* __quit__(mv_command* cmd, const mv_ast& ast) {
 	if (ast.size() != 1) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
@@ -314,11 +313,11 @@ inline static mv_error* __quit__(mv_command* cmd, mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_error* __assign__(mv_command* cmd, mv_ast& ast) {
+inline static mv_error* __assign__(mv_command* cmd, const mv_ast& ast) {
 	int size = ast.size();
 	assert(size == 4);
 	assert(ast[1] == Leaf);
-	assert(LEAFFIX((ast[2]), "to"));
+	assert(ast[2] == "to");
 	assert(ast[3] == Leaf);
 	__clear__(cmd, ASSIGN, 2);
 	cmd->vars.push(ast[1].leaf());
@@ -326,27 +325,11 @@ inline static mv_error* __assign__(mv_command* cmd, mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_error* __lookup__(mv_command* cmd, mv_ast& ast) {
-	assert(ast[1] == Leaf);
-	if (ast.size() == 2) {
-		__clear__(cmd, LOOKUP, 1);
-		cmd->vars.push(ast[1].leaf());
-		return NULL;
-	}
-	assert(ast.size() == 4);
-	assert(LEAFFIX((ast[2]), "with"));
-	assert(ast[3] == AttrList);
-	__clear__(cmd, LOOKUP, 1);
-	cmd->vars.push(ast[1].leaf());
-	ast[3].subtree().populate(cmd->attrs);
-	return NULL;
-}
-
 inline static
-mv_error* __update_entity__(mv_command* target, mv_ast& ast) {
+mv_error* __update_entity__(mv_command* target, const mv_ast& ast) {
 	if (ast.size() != 5) goto wrong; 
 	if (ast[2] != Leaf) goto wrong;
-	if (LEAFFIX(ast[3], "with")) {
+	if (ast[3] == "with") {
 		if (!LIST(ast[4])) goto wrong;
 		__clear__(target, UPDATE_ENTITY, 1);
 		target->vars.push(ast[2].leaf());
@@ -359,13 +342,13 @@ wrong:
 }
 
 inline static
-mv_error* __update__(mv_command* target, mv_ast& ast) {
+mv_error* __update__(mv_command* target, const mv_ast& ast) {
 	if ((ast.size() == 1) || ast[1] != Leaf)
 	{
 		THROW(INTERNAL, "Malformed 'update' command");
 	}
 
-	if (LEAFFIX(ast[1], "entity")) {
+	if (ast[1] == "entity") {
 		return __update_entity__(target, ast);
 	}	
 
@@ -376,22 +359,17 @@ mv_error* __update__(mv_command* target, mv_ast& ast) {
 	return err;
 }
 
-void mv_command_parse(mvCommand& command, const char* data)
+void mv_command_parse(mvCommand& command, 
+                      const mvStrref& cmdname,
+                      const mvAst& ast)
 throw (mv_error*)
 {
-	mv_ast ast(data);
-	command.destroy();
 	mv_command* cmd = &command;
-	if (!LEAF((ast[0]))) {
-		NEWTHROW(SYNTAX, "Syntax error");
-	}
-	mvStrref& cmdname = ast[0].leaf();
 
 	mv_error* error;
 	if (cmdname == "assign")       error = __assign__(cmd, ast);
 	else if (cmdname == "create")  error = __create__(cmd, ast);
 	else if (cmdname == "destroy") error = __destroy__(cmd, ast);
-	else if (cmdname == "lookup")  error = __lookup__(cmd, ast);
 	else if (cmdname == "show")    error = __show__(cmd, ast);
 	else if (cmdname == "quit")    error = __quit__(cmd, ast);
 	else if (cmdname == "update")  error = __update__(cmd, ast);

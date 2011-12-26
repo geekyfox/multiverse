@@ -1,8 +1,9 @@
 
 #include "test.h"
+#include "mvParser.h"
 
 #define BEFORE(RQ) \
-mv_command action; try { mv_command_parse(action, RQ); } \
+mv_command action; try { singletonParser.parse(action, RQ); } \
 catch (mv_error* err) { FAIL(err); }
 
 #define AFTER
@@ -38,6 +39,16 @@ TESTREQ 11 {
 	ASSERT_INT(action.spec.size(), 0);
 	ASSERT_INT(action.vars.size(), 1);
 	ASSERT_STRREF(action.vars[0], "person");
+	ASSERT_INT(action.attrs.size(), 1);
+	ASSERT_STRING(action.attrs[0].name, "name");
+	ASSERT_INT(action.attrs[0].type, STRING);
+	ASSERT_STRING(action.attrs[0].value.string, "Umberto Eco");
+}
+
+TESTREQ 25 {
+	ASSERT_INT(action.code, LOOKUP);
+	ASSERT_INT(action.spec.size(), 0);
+    ASSERT_INT(action.vars.size(), 0);
 	ASSERT_INT(action.attrs.size(), 1);
 	ASSERT_STRING(action.attrs[0].name, "name");
 	ASSERT_INT(action.attrs[0].type, STRING);

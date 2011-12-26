@@ -79,6 +79,7 @@ books = [book with { author = $$ }] }"
 #define REQ22 "update entity eiffel_tower remove location"
 #define REQ23 "create entity {} dummy"
 #define REQ24 "assign person to dummy"
+#define REQ25 "lookup entity with { name = 'Umberto Eco' }"
 
 #define RESP2 "name_of_the_rose = entity {\n  title = 'Name of the \
 Rose',\n  author = ##0\n}\n"

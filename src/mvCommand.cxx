@@ -16,3 +16,11 @@ void mvCommand::destroy()
 	inited = false;
 }
 
+void mvCommand::operator=(mvCommandType cmdtype)
+{
+	this->code = cmdtype;
+	this->attrs.clear();
+	this->spec.clear();
+	this->vars.clear();
+}
+

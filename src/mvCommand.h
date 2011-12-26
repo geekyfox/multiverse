@@ -36,6 +36,7 @@ public:
 	mv_strarr vars;
 	void init_done() { inited = true; }
 	void destroy();
+	void operator=(mvCommandType type);
 };
 
 typedef mvCommand mv_command;

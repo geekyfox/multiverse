@@ -13,8 +13,15 @@ mvQuery::mvQuery()
 mvQuery::mvQuery(mvCommand& cmd)
 {
 	assert(cmd.code == LOOKUP);
-	assert(cmd.vars.size() == 1);
-	classname = strdup(cmd.vars[0].ptr);
+	if (cmd.vars.size() == 0)
+	{
+		classname = NULL;
+	}
+	else
+	{
+		assert(cmd.vars.size() == 1);
+		classname = strdup(cmd.vars[0].ptr);
+	}
 	attrs.copy_from(cmd.attrs);
 }
 
@@ -41,28 +48,35 @@ bool __attrmatch(mv_attr& x, mv_attr& y)
 bool mvQuery::match(mv_entity& entity)
 {
 	int i, j;
-	bool match = false;
-	for (i=0; i<entity.classes.size(); i++) {
-		if (STREQ(classname, entity.classes[i].ptr)) {
-			match = true;
-			break;
-		}
-	}
-	if (!match) return false;
-
-	for (i=0; i<attrs.size(); i++) {
-		mv_attr& x = attrs[i];
-		match = 0;
-		for (j=0; j<entity.data.size(); j++) {
-			mv_attr& y = entity.data[j];
-			if (__attrmatch(x, y)) {
-				match = 1;
+	
+	if (classname != NULL)
+	{
+		bool match = false;
+		for (i=0; i<entity.classes.size(); i++)
+		{
+			if (STREQ(classname, entity.classes[i].ptr))
+			{
+				match = true;
 				break;
 			}
 		}
-		if (!match) return 0;
+		if (!match) return false;
 	}
-	return 1;
+
+	for (i=0; i<attrs.size(); i++)
+	{
+		mv_attr& x = attrs[i];
+		bool match = false;
+		for (j=0; j<entity.data.size(); j++) {
+			mv_attr& y = entity.data[j];
+			if (__attrmatch(x, y)) {
+				match = true;
+				break;
+			}
+		}
+		if (!match) return false;
+	}
+	return true;
 }
 
 mvStrBuffer& operator<<(mvStrBuffer& buff, const mvQuery& q)

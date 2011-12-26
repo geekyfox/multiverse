@@ -106,6 +106,16 @@ bool mv_ast_entry::operator!=(mvAstType type)
 	return _subtree->type() != type;
 }
 
+bool mv_ast_entry::operator==(const char* leafval)
+{
+	return (_leaf != NULL) && ((*_leaf) == leafval);
+}
+
+bool mv_ast_entry::operator!=(const char* leafval)
+{
+	return (_leaf == NULL) || ((*_leaf) != leafval);
+}
+
 void mvAst::populate(mv_speclist& target) const
 {
 	target.alloc(size());

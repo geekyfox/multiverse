@@ -1,11 +1,12 @@
 
 #include <test.h>
+#include "mvParser.h"
 
 inline static void __perform__(mvSession* state, const char* cmd) {
 	mv_command action;
 	try
 	{
-		mv_command_parse(action, cmd);
+		singletonParser.parse(action, cmd);
 		state->execute(action);
 	}
 	catch (mv_error* err)
@@ -49,7 +50,7 @@ TEST execute_REQ10() {
 
 	try
 	{
-		mv_command_parse(action, REQ10);
+		singletonParser.parse(action, REQ10);
 		state.execute(action);
 	}
 	catch (mv_error* err)
@@ -68,7 +69,7 @@ TEST fail_REQ10() {
 
 	try
 	{
-		mv_command_parse(action, REQ10);
+		singletonParser.parse(action, REQ10);
 	}
 	catch (mv_error* err)
 	{
@@ -96,7 +97,7 @@ TEST execute_REQ11() {
 
 	try
 	{
-		mv_command_parse(action, REQ11);
+		singletonParser.parse(action, REQ11);
 	}
 	catch (mv_error* err)
 	{
@@ -116,7 +117,7 @@ TEST execute_REQ12() {
 
 	try
 	{
-		mv_command_parse(action, REQ12);
+		singletonParser.parse(action, REQ12);
 		state.execute(action);
 	}
 	catch (mv_error* err)
@@ -148,8 +149,8 @@ TEST lookup_after_destroy() {
 
 	try
 	{
-		mv_command_parse(lookup, REQ11);
-		mv_command_parse(destroy, REQ12);
+		singletonParser.parse(lookup, REQ11);
+		singletonParser.parse(destroy, REQ12);
 	}
 	catch (mv_error* err)
 	{
@@ -183,7 +184,7 @@ TEST lookup_all_items() {
 
 	try
 	{
-		mv_command_parse(lookup, REQ13);
+		singletonParser.parse(lookup, REQ13);
 	}
 	catch (mv_error* err)
 	{
@@ -215,7 +216,7 @@ TEST numlookup() {
 	mv_command lookup;
 	try
 	{
-		mv_command_parse(lookup, REQ17);
+		singletonParser.parse(lookup, REQ17);
 	}
 	catch (mv_error* err)
 	{

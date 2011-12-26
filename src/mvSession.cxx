@@ -5,6 +5,7 @@
 #include "multiverse.h"
 #include "mvSession.h"
 #include "parser.h"
+#include "mvParser.h"
 #include "mvValidator.h"
 
 mvSession::mvSession() :
@@ -147,7 +148,7 @@ throw (mv_error*)
 	int i;
 	mvCommand cmd;
 	for (i=0; i<script.size(); i++) {
-		mv_command_parse(cmd, script[i].ptr);
+		singletonParser.parse(cmd, script[i].ptr);
 		execute(cmd);
 	}
 }

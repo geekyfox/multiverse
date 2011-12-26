@@ -13,7 +13,7 @@ TEST mv_command_test() {
 
 	try
 	{
-		mv_command_parse(action, "quit");
+		singletonParser.parse(action, "quit");
 	}
 	catch (mv_error* err)
 	{
@@ -25,7 +25,7 @@ TEST mv_command_test() {
 
 	try
 	{
-		mv_command_parse(action, REQ3);
+		singletonParser.parse(action, REQ3);
 	}
 	catch (mv_error* err)
 	{
@@ -38,7 +38,7 @@ TEST mv_command_test() {
 
 	try
 	{
-		mv_command_parse(action, REQ5);
+		singletonParser.parse(action, REQ5);
 	}
 	catch (mv_error* err)
 	{
@@ -57,11 +57,11 @@ TEST mv_execute_test() {
 
 	try
 	{
-		mv_command_parse(action, REQ1);
+		singletonParser.parse(action, REQ1);
 		assert(action.inited);
 		state.execute(action);
 
-		mv_command_parse(action, REQ5);
+		singletonParser.parse(action, REQ5);
 		assert(action.inited);
 		state.execute(action);
 	}
@@ -79,7 +79,7 @@ TEST mv_execute_test() {
 	ASSERT_INT(state.clscount(), 0);
 	try
 	{
-		mv_command_parse(action, REQ6);
+		singletonParser.parse(action, REQ6);
 		assert(action.inited);
 		state.execute(action);
 	}
@@ -94,7 +94,7 @@ TEST mv_execute_test() {
 
 	try
 	{
-		mv_command_parse(action, REQ8);
+		singletonParser.parse(action, REQ8);
 		assert(action.inited);
 		state.execute(action);
 	}
@@ -122,7 +122,7 @@ TEST mv_session_findvar_test() {
 	mv_command action;
 	try
 	{
-		mv_command_parse(action, REQ1);
+		singletonParser.parse(action, REQ1);
 		state.execute(action);
 	}
 	catch (mv_error* err)
@@ -162,8 +162,8 @@ TEST mv_attrspec_release_test() {
 
 	try
 	{
-		mv_command_parse(cmd, REQ7);
-		mv_command_parse(cmd, "show person");
+		singletonParser.parse(cmd, REQ7);
+		singletonParser.parse(cmd, "show person");
 		ASSERT_INT(cmd.attrs.size(), 0);
 		ASSERT_INT(cmd.spec.size(), 0);
 	}

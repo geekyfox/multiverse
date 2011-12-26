@@ -67,7 +67,7 @@ static void __cmdparse_fail(char* request) {
 	mv_command action;
 	try
 	{
-		mv_command_parse(action, request);
+		singletonParser.parse(action, request);
 		DIE("Parsing not failed '%s'", request);
 	}
 	catch (mv_error* error)

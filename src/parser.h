@@ -26,7 +26,8 @@ void mv_attrquery_parse(mv_attrspec* ptr, const mvStrref& key, const mv_ast& val
 void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel);
 
 /* Parses a string into a command. */
-void mv_command_parse(mvCommand& target, const char* request) throw (mv_error*);
+void mv_command_parse(mvCommand& target, const mvStrref& cmdname,
+const mvAst& ast) throw (mv_error*);
 
 class mvTokenizer : public mv_strarr
 {

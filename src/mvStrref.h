@@ -21,6 +21,10 @@ public:
 	mvStrref& operator= (const char* value);
 	mvStrref& operator= (const mvStrref& ref);
 	bool operator== (const char* value) const;
+	bool operator!= (const char* value) const
+	{
+		return !((*this) == value);
+	}
 	void* operator new(size_t size);
 	void operator delete(void* ptr);
 };
