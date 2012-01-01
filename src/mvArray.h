@@ -89,11 +89,11 @@ public:
 	{
 		delete[] _data;
 	}
-	const int size()
+	int size() const
 	{
 		return _used;
 	}
-	T& operator[](int index)
+	T& operator[](int index) const
 	{
 		return _data[index];
 	}

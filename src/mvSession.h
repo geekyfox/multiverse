@@ -10,14 +10,19 @@ private:
 	mvCodebook clsnames;
 	//
 	int autovalidate;
-	void createImpl(mvCommand&) throw (mvError*);
-	int createNew(mvAttrlist& attrs) throw (mvError*);
 	void destroyImpl(mvCommand&) throw (mvError*);
 	void copyAttr(mvAttr* dst, mvAttr* src) throw (mvError*);
 	void updateEntity(mvCommand& cmd) throw (mvError*);
 	void assign(mvCommand& cmd) throw (mvError*);
-	void _create_class(const mvSpecList& specs, const mvStrref& name)
-	throw (mvError*);
+	void _create_class(
+		const mvSpecList& specs, const mvStrref& name
+	) throw (mvError*);
+	void _create_entity(
+		const mvAttrlist&, const mvStrArray&
+	) throw (mvError*);
+	int _create_new_entity(
+		const mvAttrlist& attrs
+	) throw (mvError*);
 public:
 	mvEntityCache entities;
 	mvClassCache classes;

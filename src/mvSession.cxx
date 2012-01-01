@@ -60,28 +60,35 @@ throw (mvError*)
 	dst->name = strdup(src->name);
 }
 
-void mvSession::createImpl(mvCommand& cmd)
-throw (mvError*)
+void mvSession::_create_entity(
+	const mvAttrlist& attrs,
+	const mvStrArray& cmd_vars
+) throw (mvError*)
 {
-	if (cmd.vars.size() == 0) {
-		createNew(cmd.attrs);
-	} else if (cmd.vars.size() == 1) {
-		const char* varname = cmd.vars[0].ptr;
-		int ref = vars.lookup(varname);
-		if (ref != -1) {
+	if (cmd_vars.size() == 0)
+	{
+		_create_new_entity(attrs);
+	}
+	else if (cmd_vars.size() == 1)
+	{
+		int ref = vars.lookup(cmd_vars[0]);
+		if (ref != -1)
+		{
 			NEWTHROW(BADVAR, "Variable already bound");
 		}
-		ref = createNew(cmd.attrs);
-		vars.insert(varname, ref);
-	} else {
+		ref = _create_new_entity(attrs);
+		vars.insert(cmd_vars[0], ref);
+	}
+	else
+	{
 		NEWTHROW(INTERNAL, "Malformed action");
 	}
 }
 
-int mvSession::createNew(mvAttrlist& attrs)
+int mvSession::_create_new_entity(const mvAttrlist& attrs)
 throw (mvError*)
 {
-	int i, j;
+	int i;
 	mvEntity* entity = new mvEntity(attrs.size(), 0);
 	mvError *error;
 	mvAttr *src, *dst;
@@ -239,7 +246,7 @@ throw (mvError*) {
 		assign(action);
 		return;
 	case CREATE_ENTITY:
-		createImpl(action);
+		_create_entity(action.attrs, action.vars);
 		return;
 	case CREATE_CLASS:
 	{
