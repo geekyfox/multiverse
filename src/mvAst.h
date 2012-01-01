@@ -16,14 +16,6 @@ enum mvAstType
 	TypeSpec, AttrListTMP, AttrSpecListTMP, SubQuery
 };
 
-#define MVAST_ATTRSPECLIST AttrSpecList
-#define MVAST_ATTRPAIR     AttrPair
-#define MVAST_ATTRQUERY    AttrQuery
-#define MVAST_TYPESPEC     TypeSpec
-#define MVAST_TEMPATTRLIST AttrListTMP
-#define MVAST_TEMPATTRSPECLIST AttrSpecListTMP
-#define MVAST_SUBQUERY     SubQuery
-
 class mvAst : public mvStaticArray<mvAstEntry> {
 private:
 	mvAstType _type;

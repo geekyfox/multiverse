@@ -1,5 +1,4 @@
 
-#include "parser.h"
 #include "test.h"
 
 #define BEFORE(RQ) try { mvAst ast(RQ);
@@ -18,7 +17,7 @@ TESTREQ 1 {
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
 	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
-	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (AttrPair), true);
 }
 
 TESTREQ 2 {
@@ -27,7 +26,7 @@ TESTREQ 2 {
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
 	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 2);
-	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (AttrPair), true);
 }
 
 TESTREQ 4 {
@@ -36,14 +35,14 @@ TESTREQ 4 {
 	ASSERT_STRING(ast[0].leaf().ptr, "create");
 	ASSERT_INT(ast[2] == AttrList, true);
 	ASSERT_INT(ast[2].subtree().size(), 1);
-	ASSERT_INT(ast[2].subtree()[0] == (MVAST_ATTRPAIR), true);
+	ASSERT_INT(ast[2].subtree()[0] == (AttrPair), true);
 }
 
 TESTREQ 6 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3] == (MVAST_ATTRSPECLIST), true);
+	ASSERT_INT(ast[3] == (AttrSpecList), true);
 	ASSERT_INT(ast[3].subtree().size(), 1);
-	ASSERT_INT(ast[3].subtree()[0] == (MVAST_TYPESPEC), true);
+	ASSERT_INT(ast[3].subtree()[0] == (TypeSpec), true);
 }
 
 TESTREQ 9 {
@@ -77,7 +76,7 @@ TEST selfquery() {
 TEST subquery() {
 	BEFORE("[book with { author = $$ }]");
 	ASSERT_INT(ast.size(), 1);
-	ASSERT_INT(ast[0] == (MVAST_SUBQUERY), true);
+	ASSERT_INT(ast[0] == (SubQuery), true);
 	ASSERT_INT(ast[0].subtree().size(), 2);
 	AFTER;
 }
@@ -96,10 +95,10 @@ TEST subquery3() {
 
 TESTREQ 18 {
 	ASSERT_INT(ast.size(), 4);
-	ASSERT_INT(ast[3] == MVAST_ATTRSPECLIST, true);
+	ASSERT_INT(ast[3] == AttrSpecList, true);
 	const mvAst& subtree = ast[3].subtree();
 	ASSERT_INT(subtree.size(), 1);
-	ASSERT_INT(subtree[0] == MVAST_ATTRQUERY, true);
+	ASSERT_INT(subtree[0] == AttrQuery, true);
 }
 
 TESTREQ 20 {
@@ -107,7 +106,7 @@ TESTREQ 20 {
 	ASSERT_INT(ast[4] == AttrList, true);
 	const mvAst& subtree = ast[4].subtree();
 	ASSERT_INT(subtree.size(), 1);
-	ASSERT_INT(subtree[0] == MVAST_ATTRPAIR, true);
+	ASSERT_INT(subtree[0] == AttrPair, true);
 }
 
 TESTBADREQ 1 {

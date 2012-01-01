@@ -5,14 +5,12 @@ CXX_MODULES  = Codebook Intset Session MemPool \
 CXX_PURES    = Array
 CXX_HEADERS  = $(foreach i,$(CXX_MODULES) $(CXX_PURES),src/mv$(i).h)
 
-CORE_HEADERS = src/multiverse.h src/error.h src/parser.h \
-$(CXX_HEADERS)
+CORE_HEADERS = src/multiverse.h src/error.h $(CXX_HEADERS)
 TEST_HEADERS = test/test.h
 
-MODULES      = parser
-CORE_MODULES = $(MODULES) common local error
-TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc matcher data \
-               printer validator session
+CORE_MODULES = common local error
+TEST_MODULES = tokenize astparse cmdparse misc matcher data \
+               printer validator session parser
 DEMO_MODULES = demo
 
 COPTS = -Wall -g

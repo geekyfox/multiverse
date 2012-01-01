@@ -5,7 +5,7 @@
 #include <string.h>
 #include <multiverse.h>
 
-#include <parser.h>
+#include <mvAst.h>
 
 #define FAIL(__err) do { if (__err != NULL) {  \
 mvError_display(__err, stderr);               \

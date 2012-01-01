@@ -6,7 +6,6 @@
 #include "mvMemPool.h"
 #include "mvParser.h"
 #include "multiverse.h"
-#include "parser.h"
 
 void mvAstEntry::operator= (mvAstType code)
 {
@@ -131,20 +130,19 @@ void mvAst::populate(mvSpecList& target) const
 		mvStrref& key = sub[0].leaf();
 		switch (src.subtree().type())
 		{
-		case MVAST_ATTRQUERY:
+		case AttrQuery:
 			EXPECT(
 			    sub[1] == SubQuery,
 			    "First item of AttrQuery should be a Subquery"
 			);
-			mvAttrquery_parse(
-			    &(target[i]), key, sub[1].subtree()
-			);
+			sub[1].subtree().populate(target[i].subquery_mutable());
+			target[i].name = key;
 			break;
-		case MVAST_ATTRPAIR:
-		case MVAST_TYPESPEC:
+		case AttrPair:
+		case TypeSpec:
 			EXPECT(sub[1] == Leaf, "Leaf expected as a second item");
-			mv_spec_parse(
-				&(target[i]), key, sub[1].leaf(), src.subtree().type()
+			singletonParser.parse(
+				target[i], key, sub[1].leaf(), src.subtree().type()
 			);
 			break;
 		default:
@@ -186,5 +184,37 @@ void mvAst::populate(mvQuery& target) const
 {
 	target.classname = strdup((*this)[0].leaf().ptr);
 	(*this)[1].subtree().populate(target.attrs);
+}
+
+mvAst::mvAst(const char* data)
+throw (mvError*) :
+	_type(Command)
+{
+	mvTokenizer tokens(data);
+	mvAstStack stack(tokens.size());
+	int i, scan = 0;
+
+	while (scan < tokens.size())
+	{
+		stack.add(tokens[scan++]);
+	}
+	
+	this->set(stack.data, stack.last);
+	int die = 0;
+	for (int i=0; i<tokens.size(); i++)
+	{
+		if (stack.data[i] != Unset) die = 1;
+	}
+	if (die) abort();
+
+	mvError* err = NULL;
+	for (i=0; i < stack.last; i++) {
+		mvAstEntry& ref = (*this)[i];
+		if (ref != Leaf && ref != Subtree && err == NULL)
+		{
+			err = mvError_unmatched(ref.type(), data);
+		}
+	}
+	if (err != NULL) throw err;
 }
 

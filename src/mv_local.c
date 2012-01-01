@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "multiverse.h"
-#include "parser.h"
+#include "mvCommand.h"
 #include "mvParser.h"
 
 mvSession* __LOCAL_SESSION__ = NULL;

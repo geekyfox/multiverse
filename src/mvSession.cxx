@@ -5,7 +5,6 @@
 #include <string.h>
 #include "multiverse.h"
 #include "mvSession.h"
-#include "parser.h"
 #include "mvParser.h"
 #include "mvValidator.h"
 
@@ -256,7 +255,7 @@ throw (mvError*) {
 		mvStrref& clsname = action.vars[0];
 		ref = clsnames.lookup(clsname);
 		if (ref != -1) {
-			NEWTHROW(BADVAR, "Class '%s' already defined", clsname);
+			NEWTHROW(BADVAR, "Class '%s' already defined", clsname.ptr);
 		}
 		_create_class(action.spec, clsname); 
 		return;
