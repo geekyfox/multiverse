@@ -29,17 +29,15 @@ public:
 	// Command's code, should be one of MVCMD_ codes.
 	mvCommandType code;
 	// Attributes of the command.
-	mv_attrlist attrs;
+	mvAttrlist attrs;
 	// Attribute specifications of the command.
-	mv_speclist spec;
+	mvSpecList spec;
 	// Variables of the command.
-	mv_strarr vars;
+	mvStrArray vars;
 	void init_done() { inited = true; }
 	void destroy();
 	void operator=(mvCommandType type);
 };
-
-typedef mvCommand mv_command;
 
 #endif
 

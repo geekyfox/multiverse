@@ -7,7 +7,7 @@
 
 #include "mvMemPool.h"
 
-inline static void __mv_attr_set__(mv_attr* dst, const mv_attr* src) {
+inline static void __mvAttr_set__(mvAttr* dst, const mvAttr* src) {
 	dst->type = src->type;
 	switch (src->type) {
 	case STRING:
@@ -27,13 +27,13 @@ inline static void __mv_attr_set__(mv_attr* dst, const mv_attr* src) {
 	}
 }
 
-void mv_attr::operator=(const mv_attr& src)
+void mvAttr::operator=(const mvAttr& src)
 {
 	this->name = strdup(src.name);
-	__mv_attr_set__(this, &src);
+	__mvAttr_set__(this, &src);
 }
 
-inline static void __mv_attr_release_value__(mv_attr* attr) {
+inline static void __mvAttr_release_value__(mvAttr* attr) {
 	switch (attr->type) {
 	case STRING:
 		free(attr->value.string);
@@ -49,18 +49,18 @@ inline static void __mv_attr_release_value__(mv_attr* attr) {
 	}
 }
 
-mv_attr::~mv_attr()
+mvAttr::~mvAttr()
 {
-	__mv_attr_release_value__(this);
+	__mvAttr_release_value__(this);
 	free(this->name);
 }
 
-void mv_attr_update(mv_attr* dst, mv_attr* src) {
-	__mv_attr_release_value__(dst);
-	__mv_attr_set__(dst, src);
+void mvAttr_update(mvAttr* dst, mvAttr* src) {
+	__mvAttr_release_value__(dst);
+	__mvAttr_set__(dst, src);
 }
 
-void mv_attrlist::copy_from(const mv_attrlist& src)
+void mvAttrlist::copy_from(const mvAttrlist& src)
 {
 	alloc(src.size());
 	for (int i=0; i<src.size(); i++) {
@@ -68,16 +68,16 @@ void mv_attrlist::copy_from(const mv_attrlist& src)
 	}
 }
 
-mv_attr::mv_attr()
+mvAttr::mvAttr()
 {
 }
 
-mv_attr::mv_attr(const mv_attr& src)
+mvAttr::mvAttr(const mvAttr& src)
 {
 	(*this) = src;
 }
 
-mvStrBuffer& operator<<(mvStrBuffer& buf, const mv_attr& attr)
+mvStrBuffer& operator<<(mvStrBuffer& buf, const mvAttr& attr)
 {
 	buf << attr.name << " = ";
 	switch (attr.type) {
@@ -99,7 +99,7 @@ mvStrBuffer& operator<<(mvStrBuffer& buf, const mv_attr& attr)
 	return buf;
 }
 
-mv_strbuf& operator<<(mv_strbuf& buf, const mv_attrlist& ptr)
+mvStrBuffer& operator<<(mvStrBuffer& buf, const mvAttrlist& ptr)
 {
 	buf.append("{\n");
 	for (int i=0; i<ptr.size(); i++) {

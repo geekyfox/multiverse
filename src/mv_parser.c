@@ -17,12 +17,12 @@
 #define LEAF(var)  (var == Leaf)
 #define TEMPFIX(var, code) (var.type_is(MVAST_TEMP##code))
 
-inline static void __pair__(mv_ast_entry* stack, int* count) {
+inline static void __pair__(mvAstEntry* stack, int* count) {
 	if (*count < 3) return;
-	mv_ast_entry& a = stack[*count - 3];
+	mvAstEntry& a = stack[*count - 3];
 	if (!LEAF(a)) return;
-	mv_ast_entry& b = stack[*count - 1];
-	mv_ast_entry& sep = stack[*count - 2];
+	mvAstEntry& b = stack[*count - 1];
+	mvAstEntry& sep = stack[*count - 2];
 
 	mvAstType typecode;
 	if (sep == Equals)
@@ -50,13 +50,13 @@ inline static void __pair__(mv_ast_entry* stack, int* count) {
 	(*count)-=2;
 }
 
-inline static void __comma__(mv_ast_entry* stack, int *count) {
+inline static void __comma__(mvAstEntry* stack, int *count) {
 	if (*count < 3) return;
-	mv_ast_entry& sep = stack[*count - 2];
+	mvAstEntry& sep = stack[*count - 2];
 	if (sep != Comma) return;
 
-	mv_ast_entry& a = stack[*count - 3];
-	mv_ast_entry& b = stack[*count - 1];
+	mvAstEntry& a = stack[*count - 3];
+	mvAstEntry& b = stack[*count - 1];
 
 	if (a == AttrListTMP && PAIR(b)) {	
 		a.subtree_push(b);
@@ -80,11 +80,11 @@ inline static void __comma__(mv_ast_entry* stack, int *count) {
 	}
 } // style:40
 
-inline static void __emptylist__(mv_ast_entry* stack, int* size) {
+inline static void __emptylist__(mvAstEntry* stack, int* size) {
 	if (*size < 2) return;
 
-	mv_ast_entry& a = stack[*size - 2];
-	mv_ast_entry& b = stack[*size - 1];
+	mvAstEntry& a = stack[*size - 2];
+	mvAstEntry& b = stack[*size - 1];
 
 	if (a == OpenBrace && b == CloseBrace)
 	{
@@ -94,18 +94,18 @@ inline static void __emptylist__(mv_ast_entry* stack, int* size) {
 	}
 }
 
-inline static void __list__(mv_ast_entry* stack, int& count) {
+inline static void __list__(mvAstEntry* stack, int& count) {
 	if (count < 3) return;
 
-	mv_ast_entry& e1 = stack[count - 3];
-	mv_ast_entry& e3 = stack[count - 1];
+	mvAstEntry& e1 = stack[count - 3];
+	mvAstEntry& e3 = stack[count - 1];
 
 	if (e1 != OpenBrace || e3 != CloseBrace)
 	{
 		return;
 	}
 
-	mv_ast_entry& e2 = stack[count - 2];
+	mvAstEntry& e2 = stack[count - 2];
 
 	if (PAIR(e2) || SPEC(e2) || QPAIR(e2)) {
 		if (PAIR(e2)) {
@@ -128,20 +128,20 @@ inline static void __list__(mv_ast_entry* stack, int& count) {
 	}
 }
 
-inline static void __subquery__(mv_ast_entry* stack, int* count) {
+inline static void __subquery__(mvAstEntry* stack, int* count) {
 	if ((*count) < 5) return;
 
-	mv_ast_entry& e1 = stack[*count - 5];
-	mv_ast_entry& e5 = stack[*count - 1];
+	mvAstEntry& e1 = stack[*count - 5];
+	mvAstEntry& e5 = stack[*count - 1];
 	if (e1 != OpenBracket || e5 != CloseBracket) return;
 
-	mv_ast_entry& e2 = stack[*count - 4];
+	mvAstEntry& e2 = stack[*count - 4];
 	if (!LEAF(e2)) return;
 
-	mv_ast_entry& e3 = stack[*count - 3];
+	mvAstEntry& e3 = stack[*count - 3];
 	if (e3 != "with") return;
 
-	mv_ast_entry& e4 = stack[*count - 2];
+	mvAstEntry& e4 = stack[*count - 2];
 	if (!LIST(e4)) return;
 
 	e3.clear_leaf();
@@ -153,14 +153,14 @@ inline static void __subquery__(mv_ast_entry* stack, int* count) {
 	(*count) -= 4;
 }
 
-inline static void __clear__(mv_command* cmd, mvCommandType code, int vars) {
+inline static void __clear__(mvCommand* cmd, mvCommandType code, int vars) {
 	cmd->code = code;
 	cmd->attrs.clear();
 	cmd->spec.clear();
 	cmd->vars.clear();
 }
 
-mv_error* __create_entity__(mv_command* target, const mv_ast& ast) {
+mvError* __create_entity__(mvCommand* target, const mvAst& ast) {
 	if (ast.size() < 3) {
 		THROW(SYNTAX, "'create entity' command is incomplete");
 	} else if (ast.size() > 4) {
@@ -189,7 +189,7 @@ mv_error* __create_entity__(mv_command* target, const mv_ast& ast) {
 	return NULL;
 }
 
-inline static void __compress__(mv_ast_entry* stack, int& size) {
+inline static void __compress__(mvAstEntry* stack, int& size) {
 	int oldsize;
 	do {
 		oldsize = size;
@@ -222,11 +222,11 @@ inline static void __compress__(mv_ast_entry* stack, int& size) {
 }
 
 mvAst::mvAst(const char* data)
-throw (mv_error*) :
+throw (mvError*) :
 	_type(Command)
 {
 	mvTokenizer tokens(data);
-	mv_ast_entry* stack = new mv_ast_entry[tokens.size()];
+	mvAstEntry* stack = new mvAstEntry[tokens.size()];
 	int i, scan = 0, size = 0;
 
 	while (scan < tokens.size()) {
@@ -243,17 +243,17 @@ throw (mv_error*) :
 	if (die) abort();
 	delete[] stack;
 
-	mv_error* err = NULL;
+	mvError* err = NULL;
 	for (i=0; i < size; i++) {
-		mv_ast_entry& ref = (*this)[i];
+		mvAstEntry& ref = (*this)[i];
 		if (ref != Leaf && ref != Subtree && err == NULL)
 		{
-			err = mv_error_unmatched(ref.type(), data);
+			err = mvError_unmatched(ref.type(), data);
 		}
 	}
 	if (err != NULL) throw err;
 }
-mv_error* __create__(mv_command* target, const mv_ast& ast) {
+mvError* __create__(mvCommand* target, const mvAst& ast) {
 	if ((ast.size() == 1) || !(LEAF(ast[1]))) {
 		THROW(INTERNAL, "Malformed 'create' command");
 	}
@@ -286,7 +286,7 @@ mv_error* __create__(mv_command* target, const mv_ast& ast) {
 	      &ast[1].leaf());
 }
 
-mv_error* __destroy__(mv_command* target, const mv_ast& ast) {
+mvError* __destroy__(mvCommand* target, const mvAst& ast) {
 	if ((ast.size() != 3) || (ast[1] != "entity") ||
 	    !LEAF(ast[2]))
 	{
@@ -297,7 +297,7 @@ mv_error* __destroy__(mv_command* target, const mv_ast& ast) {
 	return NULL;	
 } 
 
-inline static mv_error* __show__(mv_command* cmd, const mv_ast& ast) {
+inline static mvError* __show__(mvCommand* cmd, const mvAst& ast) {
 	assert(ast.size() == 2);
 	assert(ast[1] == Leaf);
 	__clear__(cmd, SHOW, 1);
@@ -305,7 +305,7 @@ inline static mv_error* __show__(mv_command* cmd, const mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_error* __quit__(mv_command* cmd, const mv_ast& ast) {
+inline static mvError* __quit__(mvCommand* cmd, const mvAst& ast) {
 	if (ast.size() != 1) {
 		THROW(SYNTAX, "Malformed 'quit' command");
 	}
@@ -313,7 +313,7 @@ inline static mv_error* __quit__(mv_command* cmd, const mv_ast& ast) {
 	return NULL;
 }
 
-inline static mv_error* __assign__(mv_command* cmd, const mv_ast& ast) {
+inline static mvError* __assign__(mvCommand* cmd, const mvAst& ast) {
 	int size = ast.size();
 	assert(size == 4);
 	assert(ast[1] == Leaf);
@@ -326,7 +326,7 @@ inline static mv_error* __assign__(mv_command* cmd, const mv_ast& ast) {
 }
 
 inline static
-mv_error* __update_entity__(mv_command* target, const mv_ast& ast) {
+mvError* __update_entity__(mvCommand* target, const mvAst& ast) {
 	if (ast.size() != 5) goto wrong; 
 	if (ast[2] != Leaf) goto wrong;
 	if (ast[3] == "with") {
@@ -342,7 +342,7 @@ wrong:
 }
 
 inline static
-mv_error* __update__(mv_command* target, const mv_ast& ast) {
+mvError* __update__(mvCommand* target, const mvAst& ast) {
 	if ((ast.size() == 1) || ast[1] != Leaf)
 	{
 		THROW(INTERNAL, "Malformed 'update' command");
@@ -352,21 +352,21 @@ mv_error* __update__(mv_command* target, const mv_ast& ast) {
 		return __update_entity__(target, ast);
 	}	
 
-	mv_error* err;
+	mvError* err;
 	PREPARE_ERROR(err, SYNTAX,
 	      "Invalid task for update - '%s'",
 		  ast[1].leaf().ptr);
 	return err;
 }
 
-void mv_command_parse(mvCommand& command, 
+void mvCommand_parse(mvCommand& command, 
                       const mvStrref& cmdname,
                       const mvAst& ast)
-throw (mv_error*)
+throw (mvError*)
 {
-	mv_command* cmd = &command;
+	mvCommand* cmd = &command;
 
-	mv_error* error;
+	mvError* error;
 	if (cmdname == "assign")       error = __assign__(cmd, ast);
 	else if (cmdname == "create")  error = __create__(cmd, ast);
 	else if (cmdname == "destroy") error = __destroy__(cmd, ast);
@@ -379,7 +379,7 @@ throw (mv_error*)
 	command.init_done();
 }
 
-void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel) {
+void mv_spec_parse(mvAttrSpec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel) {
 	switch(rel) {
 		case MVAST_TYPESPEC:
 			if (value == "string") {
@@ -396,13 +396,13 @@ void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value,
 	ptr->name = key;
 }
 
-void mv_attrquery_parse(mv_attrspec* ptr, const mvStrref& key, const mv_ast& value) {
+void mvAttrquery_parse(mvAttrSpec* ptr, const mvStrref& key, const mvAst& value) {
 	value.populate(ptr->subquery_mutable());
 	ptr->name = key;
 }
 
 mvTokenizer::mvTokenizer(const char* data)
-throw (mv_error*) : mv_strarr(2)
+throw (mvError*) : mvStrArray(2)
 {
 	assert(data != NULL);
 	enum { WHITESPACE, LITERAL, TOKEN } state = WHITESPACE;
@@ -445,7 +445,7 @@ throw (mv_error*) : mv_strarr(2)
 		}	
 	}
 	if (state == 1) {
-		throw mv_error_unmatched(MVAST_TEMPAPOSTROPHE, data);
+		throw mvError_unmatched(MVAST_TEMPAPOSTROPHE, data);
 	}
 	if (state == 2) {
 		append(data, base, scan);

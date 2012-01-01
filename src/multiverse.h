@@ -42,7 +42,7 @@ int       mv_strhash(const char* str);
 /* Name-value pair */
 /*******************/
 
-void    mv_attr_update(mv_attr* dst, mv_attr* src);
+void    mvAttr_update(mvAttr* dst, mvAttr* src);
 
 /*********************/
 /* Cache of entities */
@@ -51,7 +51,7 @@ void    mv_attr_update(mv_attr* dst, mv_attr* src);
 #include "mvSession.h"
 
 void      mv_local_end();
-void      mv_local_read(mvCommand& target) throw (mv_error*);
+void      mv_local_read(mvCommand& target) throw (mvError*);
 void      mv_local_execute(mvCommand& cmd);
 void      mv_local_start();
 

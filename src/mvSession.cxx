@@ -21,8 +21,8 @@ mvSession::~mvSession()
 {
 }
 
-void mvSession::copyAttr(mv_attr* dst, mv_attr* src)
-throw (mv_error*)
+void mvSession::copyAttr(mvAttr* dst, mvAttr* src)
+throw (mvError*)
 {
 	int ref;
 
@@ -60,7 +60,7 @@ throw (mv_error*)
 }
 
 void mvSession::createImpl(mvCommand& cmd)
-throw (mv_error*)
+throw (mvError*)
 {
 	if (cmd.vars.size() == 0) {
 		createNew(cmd.attrs);
@@ -77,13 +77,13 @@ throw (mv_error*)
 	}
 }
 
-int mvSession::createNew(mv_attrlist& attrs)
-throw (mv_error*)
+int mvSession::createNew(mvAttrlist& attrs)
+throw (mvError*)
 {
 	int i, j;
-	mv_entity* entity = new mv_entity(attrs.size(), 0);
-	mv_error *error;
-	mv_attr *src, *dst;
+	mvEntity* entity = new mvEntity(attrs.size(), 0);
+	mvError *error;
+	mvAttr *src, *dst;
 	//
 	for (i=0; i<attrs.size(); i++) {
 		src = &attrs[i];
@@ -92,7 +92,7 @@ throw (mv_error*)
 		{
 			copyAttr(dst, src);
 		}
-		catch (mv_error* err)
+		catch (mvError* err)
 		{
 			delete entity;
 			throw error;
@@ -102,7 +102,7 @@ throw (mv_error*)
 }
 
 void mvSession::destroyImpl(mvCommand& cmd)
-throw (mv_error*) {
+throw (mvError*) {
 	EXPECT(cmd.vars.size() == 1, "Command is damaged");
 	const char* name = cmd.vars[0].ptr;
 	int objref = findvar(name);
@@ -128,7 +128,7 @@ int mvSession::findclass(const char* name) {
 	return clsnames.lookup(name);
 }
 
-mv_error* mvSession::lookup(mvIntset& ret, mvCommand& cmd) {
+mvError* mvSession::lookup(mvIntset& ret, mvCommand& cmd) {
 	mvQuery query(cmd);
 
 	int i;
@@ -142,8 +142,8 @@ mv_error* mvSession::lookup(mvIntset& ret, mvCommand& cmd) {
 	return NULL;
 }
 
-void mvSession::perform(mv_strarr& script)
-throw (mv_error*)
+void mvSession::perform(mvStrArray& script)
+throw (mvError*)
 {
 	int i;
 	mvCommand cmd;
@@ -154,7 +154,7 @@ throw (mv_error*)
 }
 
 void mvSession::updateEntity(mvCommand& cmd)
-throw (mv_error*)
+throw (mvError*)
 {
 	EXPECT(cmd.vars.size() == 1, "Command is damaged");
 	const char* name = cmd.vars[0].ptr;
@@ -166,7 +166,7 @@ throw (mv_error*)
 }
 
 void mvSession::assign(mvCommand& cmd)
-throw (mv_error*)
+throw (mvError*)
 {
 	assert(cmd.vars.size() == 2);
 	mvStrref& clsname = cmd.vars[0];
@@ -179,24 +179,24 @@ throw (mv_error*)
 	if (clsref == -1) {
 		NEWTHROW(BADVAR, "Unknown class '%s'", clsname.ptr);
 	}
-	mv_entity& entity = entities[objref];
-	mv_class& cls = classes[clsref];
+	mvEntity& entity = entities[objref];
+	mvClass& cls = classes[clsref];
 	singletonValidator.validate(entity, cls);
 	entity.classes.push(clsname);
 }
 
 char* mvSession::show(const char* name)
-throw (mv_error*)
+throw (mvError*)
 {
 	int ref = findvar(name);
 	if (ref != -1) {
-		mv_strbuf buf(1000);
+		mvStrBuffer buf(1000);
 		buf << name << " = " << entities[ref];
 		return buf.release();
 	}
 	ref = findclass(name);
 	if (ref != -1) {
-		mv_strbuf buf(1000);
+		mvStrBuffer buf(1000);
 		buf << name << " = " << classes[ref];
 		return buf.release();
 	}

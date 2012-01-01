@@ -4,7 +4,7 @@
 #include "mvParser.h"
 #include "parser.h"
 
-inline static int __parse_number__(mv_attr& target, const char* value) {
+inline static int __parse_number__(mvAttr& target, const char* value) {
 	int ival = 0;
 	if (*value == '\0') return 0;
 	while (1) {
@@ -22,7 +22,7 @@ inline static int __parse_number__(mv_attr& target, const char* value) {
 	}
 }
 
-void mvParser::parse(mv_attr& target, const char* name, const char* value) {
+void mvParser::parse(mvAttr& target, const char* name, const char* value) {
 	target.name = strdup(name);
 	if (value[0] == '\'') {
 		target.type = STRING;
@@ -37,7 +37,7 @@ void mvParser::parse(mv_attr& target, const char* name, const char* value) {
 }
 
 void mvParser::parse(mvCommand& target, const char* data)
-throw (mv_error*)
+throw (mvError*)
 {
 	mvAst ast(data);
 	target.destroy();
@@ -52,11 +52,11 @@ throw (mv_error*)
 		_parse_lookup(target, ast);
 		return;
 	}
-	mv_command_parse(target, cmdname, ast);
+	mvCommand_parse(target, cmdname, ast);
 }
 
 void mvParser::_parse_lookup(mvCommand& cmd, const mvAst& ast)
-throw (mv_error*)
+throw (mvError*)
 {
 	if (ast[1] != Leaf)
 	{

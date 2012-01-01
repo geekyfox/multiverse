@@ -8,7 +8,7 @@
 #include "error.h"
 #include "multiverse.h"
 
-class mv_ast_entry;
+class mvAstEntry;
 
 enum mvAstType
 {
@@ -24,23 +24,23 @@ enum mvAstType
 #define MVAST_TEMPATTRSPECLIST AttrSpecListTMP
 #define MVAST_SUBQUERY     SubQuery
 
-class mvAst : public mvStaticArray<mv_ast_entry> {
+class mvAst : public mvStaticArray<mvAstEntry> {
 private:
 	mvAstType _type;
 public:
 	mvAst(mvAstType type) :
-		mvStaticArray<mv_ast_entry>(),
+		mvStaticArray<mvAstEntry>(),
 		_type(type)
 	{
 	}
 	mvAst(mvAstType type, int size) :
-		mvStaticArray<mv_ast_entry>(size),
+		mvStaticArray<mvAstEntry>(size),
 		_type(type)
 	{
 	}
-	mvAst(const char* request) throw (mv_error*);
-	void populate(mv_speclist& specs) const;
-	void populate(mv_attrlist& target) const;
+	mvAst(const char* request) throw (mvError*);
+	void populate(mvSpecList& specs) const;
+	void populate(mvAttrlist& target) const;
 	void populate(mvQuery& target) const;
 	void* operator new(size_t size);
 	void operator delete(void* ptr);
@@ -58,8 +58,6 @@ public:
 		return _type;
 	}
 };
-
-typedef mvAst mv_ast;
 
 enum mvAstEntryType
 {
@@ -80,17 +78,17 @@ enum mvAstEntryType
  *  This structure represents an abstract syntax
  *  tree's entry.
  */
-class mv_ast_entry {
+class mvAstEntry {
 private:
-	mv_ast* _subtree;
+	mvAst* _subtree;
 	mvStrref* _leaf;
 	mvAstEntryType _type;
 public:
-	mv_ast_entry() : _subtree(NULL), _leaf(NULL), _type(Unset)
+	mvAstEntry() : _subtree(NULL), _leaf(NULL), _type(Unset)
 	{
 	}
-	mv_ast_entry(mv_ast_entry& ref);
-	~mv_ast_entry();
+	mvAstEntry(mvAstEntry& ref);
+	~mvAstEntry();
 	bool operator==(mvAstEntryType code);
 	bool operator!=(mvAstEntryType code);
 	bool operator==(mvAstType type);
@@ -106,7 +104,7 @@ public:
 		_type = Unset;
 	}
 private:
-	void operator= (mv_ast* subtree)
+	void operator= (mvAst* subtree)
 	{
 		_subtree = subtree;
 		this->_type = Subtree;
@@ -114,14 +112,14 @@ private:
 	}
 public:
 	void operator= (mvAstType type);
-	void set_subtree(mvAstType type, mv_ast_entry& first);
-	void set_subtree(mvAstType type, mv_ast_entry& first, mv_ast_entry& second);
-	const mv_ast& subtree()
+	void set_subtree(mvAstType type, mvAstEntry& first);
+	void set_subtree(mvAstType type, mvAstEntry& first, mvAstEntry& second);
+	const mvAst& subtree()
 	{
 		assert(_subtree != NULL);
 		return *_subtree;
 	}
-	void subtree_push(mv_ast_entry& entry)
+	void subtree_push(mvAstEntry& entry)
 	{
 		assert(_subtree != NULL);
 		_subtree->push(entry);
@@ -131,7 +129,7 @@ public:
 		_subtree->fix();
 	}
 	void operator= (mvStrref& leaf);
-	void operator= (mv_ast_entry& entry);
+	void operator= (mvAstEntry& entry);
 	void clear_leaf()
 	{
 		delete _leaf;

@@ -3,13 +3,13 @@
 #include "mvParser.h"
 
 inline static void __perform__(mvSession* state, const char* cmd) {
-	mv_command action;
+	mvCommand action;
 	try
 	{
 		singletonParser.parse(action, cmd);
 		state->execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -21,7 +21,7 @@ TEST execute_REQ1() {
 	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist& attrs = state.entities[0].data;
+	mvAttrlist& attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size(), 1);
 	ASSERT_INT(attrs[0].type, STRING);
 	ASSERT_STRING(attrs[0].name, "name");
@@ -29,7 +29,7 @@ TEST execute_REQ1() {
 }
 
 static void __prepare_for_REQ10_11(mvSession* session, int bind) {
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ1);
 	script.append(REQ6);
 	if (bind) script.append(REQ10);
@@ -37,14 +37,14 @@ static void __prepare_for_REQ10_11(mvSession* session, int bind) {
 	{
 		session->perform(script);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}	
 }
 
 TEST execute_REQ10() {
-	mv_command action;
+	mvCommand action;
 	mvSession state;
 	__prepare_for_REQ10_11(&state, 0);
 
@@ -53,7 +53,7 @@ TEST execute_REQ10() {
 		singletonParser.parse(action, REQ10);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -64,14 +64,14 @@ TEST execute_REQ10() {
 }
 
 TEST fail_REQ10() {
-	mv_command action;
+	mvCommand action;
 	mvSession state;
 
 	try
 	{
 		singletonParser.parse(action, REQ10);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -81,15 +81,15 @@ TEST fail_REQ10() {
 		state.execute(action);
 		DIE("Error expected");
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		ASSERT_INT(err->code, MVERROR_BADVAR);
-		mv_error_release(err);
+		mvError_release(err);
 	}
 }
 
 TEST execute_REQ11() {
-	mv_command action;
+	mvCommand action;
 	mvSession state;
 	mvIntset result(8);
 
@@ -99,7 +99,7 @@ TEST execute_REQ11() {
 	{
 		singletonParser.parse(action, REQ11);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -110,7 +110,7 @@ TEST execute_REQ11() {
 }
 
 TEST execute_REQ12() {
-	mv_command action;
+	mvCommand action;
 	mvSession state;
 
 	__prepare_for_REQ10_11(&state, 0);
@@ -120,7 +120,7 @@ TEST execute_REQ12() {
 		singletonParser.parse(action, REQ12);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -133,7 +133,7 @@ TEST execute_REQ14() {
 	ASSERT_INT(state.varcount(), 1);
 	ASSERT_INT(state.entities.size(), 1);
 	
-	mv_attrlist& attrs = state.entities[0].data;
+	mvAttrlist& attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size(), 1);
 	ASSERT_INT(attrs[0].type, INTEGER);
 	ASSERT_STRING(attrs[0].name, "height");
@@ -141,7 +141,7 @@ TEST execute_REQ14() {
 }
 
 TEST lookup_after_destroy() {
-	mv_command lookup, destroy; 
+	mvCommand lookup, destroy; 
 	mvSession state;
 	mvIntset result(8);
 
@@ -152,7 +152,7 @@ TEST lookup_after_destroy() {
 		singletonParser.parse(lookup, REQ11);
 		singletonParser.parse(destroy, REQ12);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -166,7 +166,7 @@ TEST lookup_after_destroy() {
 	{
 		state.execute(destroy);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -176,7 +176,7 @@ TEST lookup_after_destroy() {
 }
 
 TEST lookup_all_items() {
-	mv_command lookup;
+	mvCommand lookup;
 	mvSession state;
 	mvIntset result(8);
 
@@ -186,7 +186,7 @@ TEST lookup_all_items() {
 	{
 		singletonParser.parse(lookup, REQ13);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -198,7 +198,7 @@ TEST lookup_all_items() {
 
 TEST numlookup() {
 	mvSession session;
-	mv_strarr script(3);
+	mvStrArray script(3);
 	script.append(REQ14);
 	script.append(REQ15);
 	script.append(REQ16);
@@ -206,19 +206,19 @@ TEST numlookup() {
 	{
 		session.perform(script);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
 
 	mvIntset result(8);
 
-	mv_command lookup;
+	mvCommand lookup;
 	try
 	{
 		singletonParser.parse(lookup, REQ17);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -230,21 +230,21 @@ TEST numlookup() {
 
 TEST subquery() {
 	mvSession session;
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ19);
 	script.append(REQ18);
 	try
 	{
 		session.perform(script);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
 	ASSERT_INT(session.classes.size(), 2);
 	ASSERT_INT(session.classes[1].data.size(), 1);
 
-	mv_attrspec& spc = session.classes[1].data[0];
+	mvAttrSpec& spc = session.classes[1].data[0];
 	ASSERT_INT(spc.get_type(), SUBQUERY);
 	const mvQuery& qr = spc.subquery();
 	ASSERT_STRING(qr.classname, "book");
@@ -252,37 +252,37 @@ TEST subquery() {
 
 TEST update() {
 	mvSession session;
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ14);
 	script.append(REQ20);
 	try
 	{
 		session.perform(script);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
 
 	ASSERT_INT(session.entities.size(), 1);
-	mv_attrlist& data = session.entities[0].data;
+	mvAttrlist& data = session.entities[0].data;
 	ASSERT_INT(data.size(), 2);
 }
 
 TEST badupdate() {
 	mvSession session;
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ23);
 	script.append(BADREQ4);
 	try
 	{
 		session.perform(script);
-		ASSERT_ERROR(((mv_error*)NULL), MVERROR_SYNTAX);
+		ASSERT_ERROR(((mvError*)NULL), MVERROR_SYNTAX);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		ASSERT_ERROR(err, MVERROR_SYNTAX);
-		mv_error_release(err);
+		mvError_release(err);
 	}
 }
 

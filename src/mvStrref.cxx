@@ -95,14 +95,14 @@ void mvStrref::operator delete(void* ptr)
 	refPool.release((mvStrref*)ptr);
 }
 
-void mv_strarr::append(const char* value)
+void mvStrArray::append(const char* value)
 {
 	mvStrref ref;
 	ref = value;
 	push(ref);
 }
 
-void mv_strarr::append(const char* source, int first, int last)
+void mvStrArray::append(const char* source, int first, int last)
 {
 	mvStrref ref(source, first, last);
 	push(ref);

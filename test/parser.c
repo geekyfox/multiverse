@@ -9,14 +9,14 @@ static void __tokenizeimpl(char* request, char** expect, int count) {
 		ASSERT_INT(tokens.size(), count);
 		for (int i=0; i<count; i++) ASSERT_STRREF(tokens[i], expect[i]);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{ 
 		FAIL(err);
 	}
 }
 
 TEST attr_test1() {
-	mv_attr pair;
+	mvAttr pair;
 	singletonParser.parse(pair, "name", "'Umberto Eco");
 	ASSERT_INT(pair.type, STRING);
 	ASSERT_STRING(pair.name, "name");
@@ -28,11 +28,11 @@ TEST tokenize_fails() {
 	{
 		mvTokenizer tokens(BADREQ1);
 	}
-	catch (mv_error* error)
+	catch (mvError* error)
 	{
 		ASSERT_NOTNULL(error);
 		ASSERT_INT(error->code, MVERROR_SYNTAX);
-		mv_error_release(error);
+		mvError_release(error);
 	}
 }
 
@@ -42,7 +42,7 @@ TEST tokenize_test() {
 		mvTokenizer tokens("\nquit");
 		ASSERT_INT(tokens.size(), 1);
 	}
-	catch (mv_error* error)
+	catch (mvError* error)
 	{
 		FAIL(error);
 	}
@@ -50,12 +50,12 @@ TEST tokenize_test() {
 
 static void __astparse_fail(char* request) {
 	try {
-		mv_ast ast(request);
+		mvAst ast(request);
 		DIE("Error expected");
-	} catch (mv_error* error) {
+	} catch (mvError* error) {
 		ASSERT_NOTNULL(error);
 		ASSERT_INT(error->code, MVERROR_SYNTAX);
-		mv_error_release(error);
+		mvError_release(error);
 	}
 }
 
@@ -64,20 +64,20 @@ TEST astparse_failures() {
 }
 
 static void __cmdparse_fail(char* request) {
-	mv_command action;
+	mvCommand action;
 	try
 	{
 		singletonParser.parse(action, request);
 		DIE("Parsing not failed '%s'", request);
 	}
-	catch (mv_error* error)
+	catch (mvError* error)
 	{
 		if (error->code != MVERROR_SYNTAX)
 		{
-			mv_error_display(error, stderr);
+			mvError_display(error, stderr);
 			DIE("Error is not syntactic");
 		}
-		mv_error_release(error);
+		mvError_release(error);
 	}
 }
 

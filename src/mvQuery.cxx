@@ -31,7 +31,7 @@ mvQuery::~mvQuery()
 	attrs.clear();
 }
 
-bool __attrmatch(mv_attr& x, mv_attr& y)
+bool __attrmatch(mvAttr& x, mvAttr& y)
 {
 	if (!STREQ(x.name, y.name)) return 0;
 	if (x.type != y.type) return 0;
@@ -45,7 +45,7 @@ bool __attrmatch(mv_attr& x, mv_attr& y)
 	}
 }
 
-bool mvQuery::match(mv_entity& entity)
+bool mvQuery::match(mvEntity& entity)
 {
 	int i, j;
 	
@@ -65,10 +65,10 @@ bool mvQuery::match(mv_entity& entity)
 
 	for (i=0; i<attrs.size(); i++)
 	{
-		mv_attr& x = attrs[i];
+		mvAttr& x = attrs[i];
 		bool match = false;
 		for (j=0; j<entity.data.size(); j++) {
-			mv_attr& y = entity.data[j];
+			mvAttr& y = entity.data[j];
 			if (__attrmatch(x, y)) {
 				match = true;
 				break;

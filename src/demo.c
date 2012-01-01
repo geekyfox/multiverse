@@ -6,14 +6,14 @@ int main() {
 	mv_local_start();
 
 	while (1) {
-		mv_command cmd;
+		mvCommand cmd;
 		try
 		{
 			mv_local_read(cmd);
 		}
-		catch (mv_error* error)
+		catch (mvError* error)
 		{
-			mv_error_display(error, stderr);
+			mvError_display(error, stderr);
 			continue;
 		}
 		if (cmd.code == QUIT) break;

@@ -8,7 +8,7 @@
 #include <parser.h>
 
 #define FAIL(__err) do { if (__err != NULL) {  \
-mv_error_display(__err, stderr);               \
+mvError_display(__err, stderr);               \
 DIE("Unexpected error"); }} while (0)
 
 #define ASSERT_INT(__value, __pattern)              \
@@ -38,14 +38,14 @@ if (__value != NULL) DIE("Unexpected non-NULL value"); \
 
 #define ASSERT_ERROR(__err, __code) do { if (__err == NULL) { \
 DIE("Expected errorcode = %d, got null\n", __code); } else    \
-if (__err->code != __code) { mv_error_display(__err, stderr); \
+if (__err->code != __code) { mvError_display(__err, stderr); \
 DIE("Expected errorcode = %d\n", __code); }}  while (0)
 
 #define ENTER() printf("%s ENTERED\n", __FUNCTION__)
 
 #define SUCCESS() printf("%s PASSED\n", __FUNCTION__)
 
-#define FAILFAST(expr) do { mv_error* __err = expr; \
+#define FAILFAST(expr) do { mvError* __err = expr; \
 FAIL(__err); } while (0)
 
 #define TEST static void

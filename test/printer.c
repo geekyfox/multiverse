@@ -3,15 +3,15 @@
 
 TEST error_unmatched() {
 	try {
-		mv_ast ast(BADREQ1);
+		mvAst ast(BADREQ1);
 		DIE("Error expected");
-	} catch (mv_error* error) {
+	} catch (mvError* error) {
 		ASSERT_STRING(error->message, ERRRESP1);
-		mv_error_release(error);
+		mvError_release(error);
 	}
 }
 
-static void __showcmdimpl(mv_strarr& script, char* ref, char* expect) {
+static void __showcmdimpl(mvStrArray& script, char* ref, char* expect) {
 	mvSession state;
 	char* target;
 
@@ -20,7 +20,7 @@ static void __showcmdimpl(mv_strarr& script, char* ref, char* expect) {
 		state.perform(script);
 		target = state.show(ref);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -31,7 +31,7 @@ static void __showcmdimpl(mv_strarr& script, char* ref, char* expect) {
 }
 
 TEST showcmd1() {
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ1);
 	script.append(REQ5);
 	printf("FOO\n"); fflush(stdout);
@@ -41,14 +41,14 @@ TEST showcmd1() {
 }
 
 TEST showcmd2() {
-	mv_strarr script(1);
+	mvStrArray script(1);
 	script.append(REQ7);
 
 	__showcmdimpl(script, "person", RESP3);
 }
 
 TEST showcmd3() {
-	mv_strarr script(1);
+	mvStrArray script(1);
 	script.append(REQ18);
 
 	__showcmdimpl(script, "writer", RESP4);

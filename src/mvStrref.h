@@ -29,10 +29,10 @@ public:
 	void operator delete(void* ptr);
 };
 
-class mv_strarr : public mvDynamicArray<mvStrref>
+class mvStrArray : public mvDynamicArray<mvStrref>
 {
 public:
-	mv_strarr(int size) : mvDynamicArray<mvStrref>(size)
+	mvStrArray(int size) : mvDynamicArray<mvStrref>(size)
 	{
 	}
 	void append(const char* value);

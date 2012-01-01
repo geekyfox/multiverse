@@ -3,13 +3,13 @@
 #include "mvParser.h"
 
 TEST compile_REQ11() {
-	mv_command cmd;
+	mvCommand cmd;
 
 	try
 	{
 		singletonParser.parse(cmd, REQ11);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -23,7 +23,7 @@ TEST compile_REQ11() {
 }
 
 TEST match_REQ11() {
-	mv_entity entity(1, 1);
+	mvEntity entity(1, 1);
 	mvQuery patt;
 
 	singletonParser.parse(entity.data[0], "name", "'Umberto Eco");
@@ -38,13 +38,13 @@ TEST match_REQ11() {
 }	
 
 TEST compile_REQ25() {
-	mv_command cmd;
+	mvCommand cmd;
 
 	try
 	{
 		singletonParser.parse(cmd, REQ25);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -58,7 +58,7 @@ TEST compile_REQ25() {
 }
 
 TEST match_REQ25() {
-	mv_entity entity(1, 1);
+	mvEntity entity(1, 1);
 	mvQuery patt;
 
 	singletonParser.parse(entity.data[0], "name", "'Umberto Eco");

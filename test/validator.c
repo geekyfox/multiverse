@@ -3,18 +3,18 @@
 #include "mvParser.h"
 
 TEST validity_assign() {
-	mv_strarr script(2);
+	mvStrArray script(2);
 	script.append(REQ23);
 	script.append(REQ6);
 
 	mvSession session;
-	mv_command cmd;
+	mvCommand cmd;
 	try
 	{
 		session.perform(script);
 		singletonParser.parse(cmd, REQ24);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -23,10 +23,10 @@ TEST validity_assign() {
 	{
 		session.execute(cmd);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		ASSERT_ERROR(err, MVERROR_INVALID);
-		mv_error_release(err);
+		mvError_release(err);
 	}
 }
 

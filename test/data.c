@@ -2,8 +2,8 @@
 #include <string.h>
 #include "test.h"
 
-TEST mv_strbuf_test() {
-	mv_strbuf buf(1000);
+TEST mvStrBuffer_test() {
+	mvStrBuffer buf(1000);
 	buf.append("foo");
 	buf.append(" + bar");
 	buf.append(" = baz");

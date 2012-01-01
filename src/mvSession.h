@@ -10,12 +10,12 @@ private:
 	mvCodebook clsnames;
 	//
 	int autovalidate;
-	void createImpl(mvCommand&) throw (mv_error*);
-	int createNew(mv_attrlist& attrs) throw (mv_error*);
-	void destroyImpl(mvCommand&) throw (mv_error*);
-	void copyAttr(mv_attr* dst, mv_attr* src) throw (mv_error*);
-	void updateEntity(mvCommand& cmd) throw (mv_error*);
-	void assign(mvCommand& cmd) throw (mv_error*);
+	void createImpl(mvCommand&) throw (mvError*);
+	int createNew(mvAttrlist& attrs) throw (mvError*);
+	void destroyImpl(mvCommand&) throw (mvError*);
+	void copyAttr(mvAttr* dst, mvAttr* src) throw (mvError*);
+	void updateEntity(mvCommand& cmd) throw (mvError*);
+	void assign(mvCommand& cmd) throw (mvError*);
 public:
 	mvEntityCache entities;
 	mvClassCache classes;
@@ -23,12 +23,12 @@ public:
 	~mvSession();
 	int findvar(const char* name);
 	int findclass(const char* name);
-	void execute(mvCommand& cmd) throw (mv_error*);
-    mv_error* lookup(mvIntset&, mvCommand&);
+	void execute(mvCommand& cmd) throw (mvError*);
+    mvError* lookup(mvIntset&, mvCommand&);
 	int varcount() { return vars.cardinality(); }
 	int clscount() { return clsnames.cardinality(); }
-	void perform(mv_strarr& script) throw (mv_error*);
-	char* show(const char* name) throw (mv_error*);
+	void perform(mvStrArray& script) throw (mvError*);
+	char* show(const char* name) throw (mvError*);
 };
 
 #endif

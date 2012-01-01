@@ -4,15 +4,15 @@
 
 #define BEFORE(RQ) try { mvTokenizer tokens(RQ); 
 
-#define AFTER } catch (mv_error* err) { FAIL(err); }
+#define AFTER } catch (mvError* err) { FAIL(err); }
 
-#define BEFOREBAD(RQ) mv_error* error; \
+#define BEFOREBAD(RQ) mvError* error; \
 try { mvTokenizer tokens(RQ); DIE("Error expected"); }\
-catch (mv_error* err) {error = err;}
+catch (mvError* err) {error = err;}
 
-#define AFTERBAD mv_error_release(error);
+#define AFTERBAD mvError_release(error);
 
-inline static void __validate__(mv_strarr& tokens, int ct, ...) {
+inline static void __validate__(mvStrArray& tokens, int ct, ...) {
 	ASSERT_INT(tokens.size(), ct);
 	va_list args;
 	va_start(args, ct);

@@ -6,7 +6,7 @@
 
 #include "parser.h"
 
-mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
+mvError* __mv_copy_spec(mvAttrSpec* dst, mvAttrSpec* src) {
 	switch (src->get_type()) {
 	case TYPE:
 		switch (src->typespec().type)
@@ -31,17 +31,17 @@ mv_error* __mv_copy_spec(mv_attrspec* dst, mv_attrspec* src) {
 	return NULL;
 }
 
-mv_error* __mv_create_class(int* ref,
+mvError* __mv_create_class(int* ref,
                             mvSession* sess,
-                            mv_speclist& specs)
+                            mvSpecList& specs)
 {
-	mv_class* c = new mv_class(specs.size());
-	mv_speclist& cls = c->data;
-	mv_error *error;
+	mvClass* c = new mvClass(specs.size());
+	mvSpecList& cls = c->data;
+	mvError *error;
 	//
 	for (int i=0; i<specs.size(); i++) {
-		mv_attrspec* src = &specs[i];
-		mv_attrspec* dst = &cls[i];
+		mvAttrSpec* src = &specs[i];
+		mvAttrSpec* dst = &cls[i];
 		if ((error = __mv_copy_spec(dst, src))) {
 			delete c;
 			return error;
@@ -52,9 +52,9 @@ mv_error* __mv_create_class(int* ref,
 }
 
 void mvSession::execute(mvCommand& action)
-throw (mv_error*) {
+throw (mvError*) {
 	int ref;
-	mv_error* error = NULL;
+	mvError* error = NULL;
 	const char* clsname;
 
 	switch (action.code) {

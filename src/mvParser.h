@@ -10,12 +10,12 @@
 class mvParser {
 private:
 	void _parse_lookup(mvCommand&, const mvAst&)
-	throw (mv_error*);
+	throw (mvError*);
 public:
-	void parse(mv_attr& target, const char* name, const char* value);
+	void parse(mvAttr& target, const char* name, const char* value);
 
 	void parse(mvCommand& target, const char* data)
-	throw (mv_error*);
+	throw (mvError*);
 };
 
 extern mvParser singletonParser;

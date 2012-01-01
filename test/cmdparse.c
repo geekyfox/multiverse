@@ -3,8 +3,8 @@
 #include "mvParser.h"
 
 #define BEFORE(RQ) \
-mv_command action; try { singletonParser.parse(action, RQ); } \
-catch (mv_error* err) { FAIL(err); }
+mvCommand action; try { singletonParser.parse(action, RQ); } \
+catch (mvError* err) { FAIL(err); }
 
 #define AFTER
 
@@ -86,7 +86,7 @@ TESTREQ 15 {
 	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.attrs.size(), 0);
 	ASSERT_INT(action.spec.size(), 1);
-	mv_attrspec& asp = action.spec[0];
+	mvAttrSpec& asp = action.spec[0];
 	ASSERT_INT(asp.get_type(), TYPE);
 	ASSERT_STRREF(asp.name, "height");
 	ASSERT_INT(asp.typespec().type, INTEGER);
@@ -95,7 +95,7 @@ TESTREQ 15 {
 TESTREQ 18 {
 	ASSERT_INT(action.code, CREATE_CLASS);
 	ASSERT_INT(action.spec.size(), 1);
-	mv_attrspec& asp = action.spec[0];
+	mvAttrSpec& asp = action.spec[0];
 	ASSERT_INT(asp.get_type(), SUBQUERY);
 	ASSERT_STRREF(asp.name, "books");
 	ASSERT_STRING(asp.subquery().classname, "book");

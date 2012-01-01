@@ -3,7 +3,7 @@
 #include "multiverse.h"
 #include "mvValidator.h"
 
-mv_error* __check_type__(const char* name, const mv_typespec& spec, const mv_attrlist& attrs) {
+mvError* __check_type__(const char* name, const mvTypeSpec& spec, const mvAttrlist& attrs) {
 	int i;
 	for (i=attrs.size() - 1; i >= 0; i--) {
 		if (!STREQ(attrs[i].name, name)) continue;
@@ -26,7 +26,7 @@ mv_error* __check_type__(const char* name, const mv_typespec& spec, const mv_att
 	THROW(INVALID, "Attribute %s not found in object", name);
 }
 
-mv_error* __check_absent__(const char* name, const mv_attrlist& attrs) {
+mvError* __check_absent__(const char* name, const mvAttrlist& attrs) {
 	int i;
 	for (i=attrs.size() - 1; i >= 0; i--) {
 		if (STREQ(attrs[i].name, name)) {
@@ -38,10 +38,10 @@ mv_error* __check_absent__(const char* name, const mv_attrlist& attrs) {
 
 void mvValidator::validate(const mvEntity& enty,
                            const mvClass& cls)
-throw (mv_error*)
+throw (mvError*)
 {
 	for (int i=cls.data.size() - 1; i >= 0; i--) {
-		mv_attrspec* spec = &(cls.data[i]);
+		mvAttrSpec* spec = &(cls.data[i]);
 		const char* name = spec->name.ptr;
 		switch (spec->get_type()) {
 		case TYPE:

@@ -5,7 +5,7 @@
 class mvValidator {
 public:
 	void validate(const mvEntity& enty,
-	              const mvClass& cls) throw (mv_error*);
+	              const mvClass& cls) throw (mvError*);
 };
 
 extern mvValidator singletonValidator;

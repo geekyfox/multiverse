@@ -11,10 +11,10 @@ void mv_local_start() {
 	__LOCAL_SESSION__ = new mvSession();
 }
 
-mv_error* __local_lookup(mv_command& c) {
+mvError* __local_lookup(mvCommand& c) {
 	mvIntset res(1);
 	
-	mv_error* error = __LOCAL_SESSION__->lookup(res, c);
+	mvError* error = __LOCAL_SESSION__->lookup(res, c);
 	if (error == NULL) {
 		int size = res.cardinality();
 		if (size == 0) {
@@ -29,7 +29,7 @@ mv_error* __local_lookup(mv_command& c) {
 	return error;
 }
 
-inline static void __display_success(mv_command* cmd) {
+inline static void __display_success(mvCommand* cmd) {
 	switch(cmd->code) {
 	case CREATE_ENTITY:
 		printf ("OK, entity created\n");
@@ -48,8 +48,8 @@ inline static void __display_success(mv_command* cmd) {
 	}
 }
 
-void mv_local_execute(mv_command& cmd) {
-	mv_error* error = NULL;
+void mv_local_execute(mvCommand& cmd) {
+	mvError* error = NULL;
 	char *tmpstr = NULL;
 
 	switch(cmd.code) {
@@ -65,7 +65,7 @@ void mv_local_execute(mv_command& cmd) {
 			__LOCAL_SESSION__->execute(cmd);
 			__display_success(&cmd);
 		}
-		catch (mv_error* err)
+		catch (mvError* err)
 		{
 			error = err;
 		}
@@ -75,7 +75,7 @@ void mv_local_execute(mv_command& cmd) {
 		{
 			tmpstr = __LOCAL_SESSION__->show(cmd.vars[0].ptr);
 		}
-		catch (mv_error* err)
+		catch (mvError* err)
 		{
 			error = err;
 			break;
@@ -92,7 +92,7 @@ void mv_local_execute(mv_command& cmd) {
 	}
 
 	if (error != NULL) {
-		mv_error_display(error, stderr);
+		mvError_display(error, stderr);
 	}
 }
 
@@ -100,7 +100,7 @@ void mv_local_end() {
 	delete __LOCAL_SESSION__;
 }
 
-void mv_local_read(mvCommand& cmd) throw (mv_error*) {
+void mv_local_read(mvCommand& cmd) throw (mvError*) {
 	char *buffer = (char*)malloc(sizeof(char) * 1000);
 	int point = 0, size = 1000;
 	char c[10];
@@ -130,7 +130,7 @@ void mv_local_read(mvCommand& cmd) throw (mv_error*) {
 	try {
 		singletonParser.parse(cmd, buffer);
 		free(buffer);
-	} catch (mv_error* err) {
+	} catch (mvError* err) {
 		free(buffer);
 		throw err;
 	}

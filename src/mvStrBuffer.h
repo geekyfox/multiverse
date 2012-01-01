@@ -41,7 +41,5 @@ public:
 	}
 };
 
-typedef mvStrBuffer mv_strbuf;
-
 #endif
 

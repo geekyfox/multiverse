@@ -2,21 +2,21 @@
 #include "multiverse.h"
 #include "mvAttrSpec.h"
 
-mv_typespec::mv_typespec(mvTypeCode type) :
+mvTypeSpec::mvTypeSpec(mvTypeCode type) :
 	type(type), classname()
 {
 }
 
-mv_typespec::mv_typespec(const mvStrref& ref) :
+mvTypeSpec::mvTypeSpec(const mvStrref& ref) :
 	type(RAWREF), classname(ref)
 {
 }
 
-mv_typespec::~mv_typespec()
+mvTypeSpec::~mvTypeSpec()
 {
 }
 
-mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_typespec& spec)
+mvStrBuffer& operator<<(mvStrBuffer& buff, const mvTypeSpec& spec)
 {
 	switch (spec.type) {
 	case STRING:
@@ -30,7 +30,7 @@ mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_typespec& spec)
 	}
 }
 
-mv_attrspec::~mv_attrspec()
+mvAttrSpec::~mvAttrSpec()
 {
 	switch (type) {
 	case UNSET:
@@ -46,7 +46,7 @@ mv_attrspec::~mv_attrspec()
 	}
 }
 
-mvStrBuffer& operator<< (mvStrBuffer& buf, const mv_attrspec& spec)
+mvStrBuffer& operator<< (mvStrBuffer& buf, const mvAttrSpec& spec)
 {
 	switch(spec.get_type()) {
 	case TYPE:
@@ -61,7 +61,7 @@ mvStrBuffer& operator<< (mvStrBuffer& buf, const mv_attrspec& spec)
 	return buf;
 }
 
-mvStrBuffer& operator<< (mvStrBuffer& buf, const mv_speclist& spec)
+mvStrBuffer& operator<< (mvStrBuffer& buf, const mvSpecList& spec)
 {
 	buf << "{\n";
 	for (int i=0; i<spec.size(); i++) {

@@ -13,9 +13,9 @@ public:
 	mvQuery();
 	mvQuery(mvCommand& cmd);
 	~mvQuery();
-	bool match(mv_entity& entity);
+	bool match(mvEntity& entity);
 	char* classname;
-	mv_attrlist attrs;
+	mvAttrlist attrs;
 };
 
 mvStrBuffer& operator<<(mvStrBuffer&, const mvQuery&);

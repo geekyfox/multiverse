@@ -16,23 +16,23 @@
  * request - request to parse
  *
  * In case of parsing error, releases all allocated
- * memory and returns an mv_error.
+ * memory and returns an mvError.
  */
 
 /* Builds a subquery from corresponding AST. */
-void mv_attrquery_parse(mv_attrspec* ptr, const mvStrref& key, const mv_ast& value);
+void mvAttrquery_parse(mvAttrSpec* ptr, const mvStrref& key, const mvAst& value);
 
 /* Builds attribute's specification. */
-void mv_spec_parse(mv_attrspec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel);
+void mv_spec_parse(mvAttrSpec* ptr, const mvStrref& key, const mvStrref& value, mvAstType rel);
 
 /* Parses a string into a command. */
-void mv_command_parse(mvCommand& target, const mvStrref& cmdname,
-const mvAst& ast) throw (mv_error*);
+void mvCommand_parse(mvCommand& target, const mvStrref& cmdname,
+const mvAst& ast) throw (mvError*);
 
-class mvTokenizer : public mv_strarr
+class mvTokenizer : public mvStrArray
 {
 public:
-	mvTokenizer(const char* request) throw (mv_error*);
+	mvTokenizer(const char* request) throw (mvError*);
 };	
 
 #endif

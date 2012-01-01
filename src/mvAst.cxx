@@ -8,12 +8,12 @@
 #include "multiverse.h"
 #include "parser.h"
 
-void mv_ast_entry::operator= (mvAstType code)
+void mvAstEntry::operator= (mvAstType code)
 {
-	(*this) = new mv_ast(code, 0);
+	(*this) = new mvAst(code, 0);
 }
 
-void mv_ast_entry::operator= (mv_ast_entry& ref)
+void mvAstEntry::operator= (mvAstEntry& ref)
 {
 	if (this->_leaf != NULL) delete _leaf;
 	if (this->_subtree != NULL) delete _subtree;
@@ -27,23 +27,23 @@ void mv_ast_entry::operator= (mv_ast_entry& ref)
 	ref._type = Unset;
 }
 
-void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first)
+void mvAstEntry::set_subtree(mvAstType code, mvAstEntry& first)
 {
-	mv_ast* tree = new mv_ast(code, 1);
+	mvAst* tree = new mvAst(code, 1);
 	(*tree)[0] = first;
 	(*this) = tree;
 }
 
-void mv_ast_entry::set_subtree(mvAstType code, mv_ast_entry& first,
-                               mv_ast_entry& second)
+void mvAstEntry::set_subtree(mvAstType code, mvAstEntry& first,
+                               mvAstEntry& second)
 {
-	mv_ast* tree = new mv_ast(code, 2);
+	mvAst* tree = new mvAst(code, 2);
 	(*tree)[0] = first;
 	(*tree)[1] = second;
 	(*this) = tree;
 }
 
-mv_ast_entry::~mv_ast_entry()
+mvAstEntry::~mvAstEntry()
 {
 	if (_leaf != NULL)
 	{
@@ -57,7 +57,7 @@ mv_ast_entry::~mv_ast_entry()
 	}
 }
 
-void mv_ast_entry::operator=(mvStrref& token)
+void mvAstEntry::operator=(mvStrref& token)
 {
 	if (_leaf != NULL)
 	{
@@ -84,49 +84,49 @@ void mv_ast_entry::operator=(mvStrref& token)
 	_type = Leaf;
 }
 
-bool mv_ast_entry::operator==(mvAstEntryType code)
+bool mvAstEntry::operator==(mvAstEntryType code)
 {
 	return _type == code;
 }
 
-bool mv_ast_entry::operator!=(mvAstEntryType code)
+bool mvAstEntry::operator!=(mvAstEntryType code)
 {
 	return _type != code;
 }
 
-bool mv_ast_entry::operator==(mvAstType type)
+bool mvAstEntry::operator==(mvAstType type)
 {
 	if (_subtree == NULL) return false;
 	return _subtree->type() == type;
 }
 
-bool mv_ast_entry::operator!=(mvAstType type)
+bool mvAstEntry::operator!=(mvAstType type)
 {
 	if (_subtree == NULL) return true;
 	return _subtree->type() != type;
 }
 
-bool mv_ast_entry::operator==(const char* leafval)
+bool mvAstEntry::operator==(const char* leafval)
 {
 	return (_leaf != NULL) && ((*_leaf) == leafval);
 }
 
-bool mv_ast_entry::operator!=(const char* leafval)
+bool mvAstEntry::operator!=(const char* leafval)
 {
 	return (_leaf == NULL) || ((*_leaf) != leafval);
 }
 
-void mvAst::populate(mv_speclist& target) const
+void mvAst::populate(mvSpecList& target) const
 {
 	target.alloc(size());
 	int i;
 	for (i=0; i<size(); i++) {
-		mv_ast_entry& src = (*this)[i];
+		mvAstEntry& src = (*this)[i];
 		EXPECT(
 		    src.subtree().size() == 2,
 			"Two elements expected"
 		);
-		const mv_ast& sub = src.subtree();
+		const mvAst& sub = src.subtree();
 		EXPECT(sub[0] == Leaf, "Leaf expected as a first item");
 		mvStrref& key = sub[0].leaf();
 		switch (src.subtree().type())
@@ -136,7 +136,7 @@ void mvAst::populate(mv_speclist& target) const
 			    sub[1] == SubQuery,
 			    "First item of AttrQuery should be a Subquery"
 			);
-			mv_attrquery_parse(
+			mvAttrquery_parse(
 			    &(target[i]), key, sub[1].subtree()
 			);
 			break;
@@ -165,14 +165,14 @@ void mvAst::operator delete(void* ptr)
 	mempool.release((mvAst*)ptr);
 }
 
-void mvAst::populate(mv_attrlist& target) const
+void mvAst::populate(mvAttrlist& target) const
 {
 	target.alloc(size());
 	for (int i=0; i<size(); i++)
 	{
-		mv_ast_entry& srcitem = (*this)[i];
+		mvAstEntry& srcitem = (*this)[i];
 		EXPECT(srcitem == AttrPair, "AttrPair expected");
-		const mv_ast& astpair = srcitem.subtree();
+		const mvAst& astpair = srcitem.subtree();
 		EXPECT(astpair.size() == 2, "Two elements expected");
 		EXPECT(astpair[0] == Leaf, "Leafs expected");
 		EXPECT(astpair[1] == Leaf, "Leafs expected");

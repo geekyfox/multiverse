@@ -8,14 +8,14 @@
 
 char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
 
-TEST mv_command_test() {
-	mv_command action;
+TEST mvCommand_test() {
+	mvCommand action;
 
 	try
 	{
 		singletonParser.parse(action, "quit");
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -27,7 +27,7 @@ TEST mv_command_test() {
 	{
 		singletonParser.parse(action, REQ3);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -40,7 +40,7 @@ TEST mv_command_test() {
 	{
 		singletonParser.parse(action, REQ5);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -52,7 +52,7 @@ TEST mv_command_test() {
 }
 
 TEST mv_execute_test() {
-	mv_command action;
+	mvCommand action;
 	mvSession state;
 
 	try
@@ -65,7 +65,7 @@ TEST mv_execute_test() {
 		assert(action.inited);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -83,7 +83,7 @@ TEST mv_execute_test() {
 		assert(action.inited);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -98,14 +98,14 @@ TEST mv_execute_test() {
 		assert(action.inited);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
 }
 
-TEST mv_attrlist_show_test() {
-	mv_attrlist attrs;
+TEST mvAttrlist_show_test() {
+	mvAttrlist attrs;
 	attrs.alloc(1);
 	singletonParser.parse(attrs[0], "name", "'Umberto Eco");
 	assert(attrs[0].type == STRING);
@@ -119,13 +119,13 @@ TEST mv_session_findvar_test() {
 	assert(ref == -1);
 	ref = state.findvar("##0");
 	assert(ref == -1);
-	mv_command action;
+	mvCommand action;
 	try
 	{
 		singletonParser.parse(action, REQ1);
 		state.execute(action);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -138,7 +138,7 @@ TEST mv_session_findvar_test() {
 	{
 		text1 = state.show("umberto_eco");
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}
@@ -150,15 +150,15 @@ TEST mv_session_findvar_test() {
 		text1 = state.show("##1");
 		DIE("Error expected");
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
-		mv_error_release(err);
+		mvError_release(err);
 	}
 }
 
-TEST mv_attrspec_release_test() {
-	mv_command cmd;
-	mv_error* error;
+TEST mvAttrSpec_release_test() {
+	mvCommand cmd;
+	mvError* error;
 
 	try
 	{
@@ -167,7 +167,7 @@ TEST mv_attrspec_release_test() {
 		ASSERT_INT(cmd.attrs.size(), 0);
 		ASSERT_INT(cmd.spec.size(), 0);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(error);
 	}

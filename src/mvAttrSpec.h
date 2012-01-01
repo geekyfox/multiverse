@@ -5,18 +5,18 @@
 #include "mvStrref.h"
 #include "mvStrBuffer.h"
 
-class mv_attrspec;
-typedef mvStaticArray<mv_attrspec> mv_speclist;
+class mvAttrSpec;
+typedef mvStaticArray<mvAttrSpec> mvSpecList;
 
 #include "mvQuery.h"
 
-class mv_typespec {
+class mvTypeSpec {
 private:
 	mvStrref classname;
 public:
-	mv_typespec(mvTypeCode type);
-	mv_typespec(const mvStrref& classname);
-	~mv_typespec();
+	mvTypeSpec(mvTypeCode type);
+	mvTypeSpec(const mvStrref& classname);
+	~mvTypeSpec();
 	const mvTypeCode type;
 	const mvStrref& name() const
 	{
@@ -24,28 +24,28 @@ public:
 	}
 };
 
-mvStrBuffer& operator<<(mvStrBuffer&, const mv_typespec&);
+mvStrBuffer& operator<<(mvStrBuffer&, const mvTypeSpec&);
 
 enum mvAttrSpecType
 {
 	UNSET, TYPE, SUBQUERY
 };
 
-class mv_attrspec
+class mvAttrSpec
 {
 private:
-	mv_attrspec(mv_attrspec&);
-	void operator=(mv_attrspec&);
+	mvAttrSpec(mvAttrSpec&);
+	void operator=(mvAttrSpec&);
 	union {
-		mv_typespec* typespec;
+		mvTypeSpec* typespec;
 		mvQuery* subquery;
 	} value;	
 	mvAttrSpecType type;
 public:
-	mv_attrspec() : type(UNSET)
+	mvAttrSpec() : type(UNSET)
 	{
 	}
-	~mv_attrspec();
+	~mvAttrSpec();
 	mvStrref name;
 	mvAttrSpecType get_type() const { return type; }
 	const mvQuery& subquery() const
@@ -68,23 +68,23 @@ public:
 		if (type == TYPE) delete value.typespec;
 		if (type == SUBQUERY) delete value.subquery;
 		type = TYPE;
-		value.typespec = new mv_typespec(code);
+		value.typespec = new mvTypeSpec(code);
 	}
 	void set_typespec(const mvStrref& classname)
 	{
 		if (type == TYPE) delete value.typespec;
 		if (type == SUBQUERY) delete value.subquery;
 		type = TYPE;
-		value.typespec = new mv_typespec(classname);
+		value.typespec = new mvTypeSpec(classname);
 	}
-	const mv_typespec& typespec() const
+	const mvTypeSpec& typespec() const
 	{
 		return (*value.typespec);
 	}
 };
 
-mvStrBuffer& operator << (mvStrBuffer& buf, const mv_attrspec& enty);
-mvStrBuffer& operator << (mvStrBuffer& buf, const mv_speclist& enty);
+mvStrBuffer& operator << (mvStrBuffer& buf, const mvAttrSpec& enty);
+mvStrBuffer& operator << (mvStrBuffer& buf, const mvSpecList& enty);
 
 
 #endif

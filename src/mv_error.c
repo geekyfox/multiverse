@@ -13,24 +13,24 @@ inline static char* __prefix__(int code) {
 	DIE("Unknown error code (%d)\n", code);
 }
 
-void mv_error_display(mv_error* error, FILE* dst) {
+void mvError_display(mvError* error, FILE* dst) {
 	char* prefix = __prefix__(error->code);
 	fprintf(dst, "%s: %s\n", prefix, error->message);
-	mv_error_release(error);
+	mvError_release(error);
 }
 
-char* mv_error_show(mv_error* error) {
+char* mvError_show(mvError* error) {
 	char *result, *prefix = __prefix__(error->code);
 	asprintf(&result, "%s: %s\n", prefix, error->message);
 	return result;
 }
 
-void mv_error_release(mv_error* error) {
+void mvError_release(mvError* error) {
 	free(error->message);
 	free(error);
 }
 
-mv_error* mv_error_unmatched(int objcode, const char* command) {
+mvError* mvError_unmatched(int objcode, const char* command) {
 	char* meaning = NULL;
 
 	switch (objcode) {

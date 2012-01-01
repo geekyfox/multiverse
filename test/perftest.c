@@ -3,12 +3,12 @@
 #include "test.h"
 
 static inline void __parse_entry__(char* text) {
-	mv_command cmd;
+	mvCommand cmd;
 	try
 	{
-		mv_command_parse(cmd, text);
+		mvCommand_parse(cmd, text);
 	}
-	catch (mv_error* err)
+	catch (mvError* err)
 	{
 		FAIL(err);
 	}

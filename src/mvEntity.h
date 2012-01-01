@@ -10,17 +10,15 @@ class mvEntity {
 public:
 	mvEntity(int attrCount, int classCount);
 	~mvEntity();
-	mv_attrlist data;
-	mv_strarr classes;
+	mvAttrlist data;
+	mvStrArray classes;
 	void show(mvStrBuffer& buff) const;
-	void update(const mv_attrlist& attrs) throw (mv_error*);
+	void update(const mvAttrlist& attrs) throw (mvError*);
 };
 
 mvStrBuffer& operator << (mvStrBuffer& buf, const mvEntity& enty);
 
-typedef mvEntity mv_entity;
-
-typedef mvObjectCache<mv_entity> mvEntityCache;
+typedef mvObjectCache<mvEntity> mvEntityCache;
 
 #endif
 

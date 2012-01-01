@@ -4,13 +4,13 @@
 
 #define BEFORE(RQ) try { mvAst ast(RQ);
 
-#define AFTER } catch (mv_error* err) { FAIL(err); }
+#define AFTER } catch (mvError* err) { FAIL(err); }
 
-#define BEFOREBAD(RQ) mv_error* error; \
-try { mv_ast ast(RQ); DIE("error expected"); } \
-catch (mv_error* err) { error = err; }
+#define BEFOREBAD(RQ) mvError* error; \
+try { mvAst ast(RQ); DIE("error expected"); } \
+catch (mvError* err) { error = err; }
 
-#define AFTERBAD mv_error_release(error);
+#define AFTERBAD mvError_release(error);
 
 TESTREQ 1 {
 	ASSERT_INT(ast.size(), 4);
@@ -97,7 +97,7 @@ TEST subquery3() {
 TESTREQ 18 {
 	ASSERT_INT(ast.size(), 4);
 	ASSERT_INT(ast[3] == MVAST_ATTRSPECLIST, true);
-	const mv_ast& subtree = ast[3].subtree();
+	const mvAst& subtree = ast[3].subtree();
 	ASSERT_INT(subtree.size(), 1);
 	ASSERT_INT(subtree[0] == MVAST_ATTRQUERY, true);
 }
@@ -105,7 +105,7 @@ TESTREQ 18 {
 TESTREQ 20 {
 	ASSERT_INT(ast.size(), 5);
 	ASSERT_INT(ast[4] == AttrList, true);
-	const mv_ast& subtree = ast[4].subtree();
+	const mvAst& subtree = ast[4].subtree();
 	ASSERT_INT(subtree.size(), 1);
 	ASSERT_INT(subtree[0] == MVAST_ATTRPAIR, true);
 }

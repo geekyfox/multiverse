@@ -11,28 +11,29 @@
 #define MVERROR_BADCMD   4
 #define MVERROR_INVALID  5
 
-typedef struct {
+class mvError {
+public:
 	char* message;
 	int code;
-} mv_error;
+};
 
-void      mv_error_display(mv_error* error, FILE* file);
-char*     mv_error_show(mv_error* error);
-void      mv_error_release(mv_error* error);
-mv_error* mv_error_unmatched(int objcode, const char* command);
+void      mvError_display(mvError* error, FILE* file);
+char*     mvError_show(mvError* error);
+void      mvError_release(mvError* error);
+mvError*  mvError_unmatched(int objcode, const char* command);
 
 #define PREPARE_ERROR(__errvar, __errcd, ...) do { \
-__errvar = (mv_error*)malloc(sizeof(mv_error));    \
+__errvar = (mvError*)malloc(sizeof(mvError));    \
 asprintf(&(__errvar->message), __VA_ARGS__);       \
 __errvar->code = MVERROR_##__errcd; } while (0)    \
 
 #define THROW(__errcd, ...) do {                 \
-mv_error* __errtmp__;                            \
+mvError* __errtmp__;                            \
 PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
 return __errtmp__; } while (0)
 
 #define NEWTHROW(__errcd, ...) do { \
-mv_error* __errtmp__;                            \
+mvError* __errtmp__;                            \
 PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
 throw __errtmp__; } while (0)
 
@@ -46,10 +47,10 @@ abort(); } while (0)
 #define EXPECT(cond, ...) do { if (!(cond)) \
 DIE(__VA_ARGS__); } while (0)
 
-#define FAILRET(expr) do { mv_error* __err = (expr); \
+#define FAILRET(expr) do { mvError* __err = (expr); \
 if (__err != NULL) return __err; } while (0)
 
-#define FAILTHROW(expr) do { mv_error* __err = (expr); \
+#define FAILTHROW(expr) do { mvError* __err = (expr); \
 if (__err != NULL) throw __err; } while (0)
 
 #endif

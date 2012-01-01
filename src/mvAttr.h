@@ -13,13 +13,13 @@ enum mvTypeCode {
 // Multiverse is an object-oriented database and this
 // is why there's such a basic building element as a
 // key-value pair.
-class mv_attr {
+class mvAttr {
 private:
 public:
-	mv_attr();
-	mv_attr(const mv_attr&);
-	~mv_attr();
-	void operator=(const mv_attr&);
+	mvAttr();
+	mvAttr(const mvAttr&);
+	~mvAttr();
+	void operator=(const mvAttr&);
 	// Key of the attribute.
 	char* name;
 	// Type code, should be one of MVTYPE_ codes.
@@ -43,18 +43,18 @@ public:
 	} value;
 };
 
-mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_attr& attr);
+mvStrBuffer& operator<<(mvStrBuffer& buff, const mvAttr& attr);
 
-class mv_attrlist : public mvStaticArray<mv_attr> {
+class mvAttrlist : public mvStaticArray<mvAttr> {
 private:
-	mv_attrlist(const mv_attrlist&);
+	mvAttrlist(const mvAttrlist&);
 public:
-	mv_attrlist() : mvStaticArray<mv_attr>() {}
-	mv_attrlist(int sz) : mvStaticArray<mv_attr>(sz) {}
-	void copy_from(const mv_attrlist& src);
+	mvAttrlist() : mvStaticArray<mvAttr>() {}
+	mvAttrlist(int sz) : mvStaticArray<mvAttr>(sz) {}
+	void copy_from(const mvAttrlist& src);
 };
 
-mvStrBuffer& operator<<(mvStrBuffer& buff, const mv_attrlist& attr);
+mvStrBuffer& operator<<(mvStrBuffer& buff, const mvAttrlist& attr);
 
 #endif
  
