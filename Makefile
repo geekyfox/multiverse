@@ -9,10 +9,10 @@ CORE_HEADERS = src/multiverse.h src/error.h src/parser.h \
 $(CXX_HEADERS)
 TEST_HEADERS = test/test.h
 
-MODULES      = parser session
+MODULES      = parser
 CORE_MODULES = $(MODULES) common local error
 TEST_MODULES = tokenize astparse cmdparse $(MODULES) misc matcher data \
-               printer validator
+               printer validator session
 DEMO_MODULES = demo
 
 COPTS = -Wall -g

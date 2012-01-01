@@ -28,14 +28,14 @@ TEST execute_REQ1() {
 	ASSERT_STRING(attrs[0].value.string, "Umberto Eco");
 }
 
-static void __prepare_for_REQ10_11(mvSession* session, int bind) {
+static void __prepare_for_REQ10_11(mvSession& session, int bind) {
 	mvStrArray script(2);
 	script.append(REQ1);
 	script.append(REQ6);
 	if (bind) script.append(REQ10);
 	try
 	{
-		session->perform(script);
+		session.perform(script);
 	}
 	catch (mvError* err)
 	{
@@ -46,7 +46,7 @@ static void __prepare_for_REQ10_11(mvSession* session, int bind) {
 TEST execute_REQ10() {
 	mvCommand action;
 	mvSession state;
-	__prepare_for_REQ10_11(&state, 0);
+	__prepare_for_REQ10_11(state, 0);
 
 	try
 	{
@@ -93,7 +93,7 @@ TEST execute_REQ11() {
 	mvSession state;
 	mvIntset result(8);
 
-	__prepare_for_REQ10_11(&state, 1);
+	__prepare_for_REQ10_11(state, 1);
 
 	try
 	{
@@ -113,7 +113,7 @@ TEST execute_REQ12() {
 	mvCommand action;
 	mvSession state;
 
-	__prepare_for_REQ10_11(&state, 0);
+	__prepare_for_REQ10_11(state, 0);
 
 	try
 	{
@@ -145,7 +145,7 @@ TEST lookup_after_destroy() {
 	mvSession state;
 	mvIntset result(8);
 
-	__prepare_for_REQ10_11(&state, 1);
+	__prepare_for_REQ10_11(state, 1);
 
 	try
 	{
@@ -180,7 +180,7 @@ TEST lookup_all_items() {
 	mvSession state;
 	mvIntset result(8);
 
-	__prepare_for_REQ10_11(&state, 1);
+	__prepare_for_REQ10_11(state, 1);
 
 	try
 	{

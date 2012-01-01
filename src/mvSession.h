@@ -16,6 +16,8 @@ private:
 	void copyAttr(mvAttr* dst, mvAttr* src) throw (mvError*);
 	void updateEntity(mvCommand& cmd) throw (mvError*);
 	void assign(mvCommand& cmd) throw (mvError*);
+	void _create_class(const mvSpecList& specs, const mvStrref& name)
+	throw (mvError*);
 public:
 	mvEntityCache entities;
 	mvClassCache classes;

@@ -1,5 +1,6 @@
 
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "multiverse.h"
@@ -202,4 +203,68 @@ throw (mvError*)
 	}
 	NEWTHROW(BADVAR, "Unknown name '%s'", name);
 }
+
+
+
+
+void mvSession::_create_class(const mvSpecList& specs,
+                              const mvStrref& clsname)
+throw (mvError*)
+{
+	mvClass* c = new mvClass(specs.size());
+	mvSpecList& cls = c->data;
+	//
+	for (int i=0; i<specs.size(); i++) {
+		try
+		{
+			cls[i] = specs[i];
+		}
+		catch (mvError* error)
+		{
+			delete c;
+			throw error;
+		}
+	}
+	int ref = classes.push(c);
+	clsnames.insert(clsname, ref);
+}
+
+void mvSession::execute(mvCommand& action)
+throw (mvError*) {
+	int ref;
+	mvError* error = NULL;
+
+	switch (action.code) {
+	case ASSIGN:
+		assign(action);
+		return;
+	case CREATE_ENTITY:
+		createImpl(action);
+		return;
+	case CREATE_CLASS:
+	{
+		if (action.vars.size() != 1) {
+			NEWTHROW(INTERNAL, "Strange number of variables");
+		}
+		mvStrref& clsname = action.vars[0];
+		ref = clsnames.lookup(clsname);
+		if (ref != -1) {
+			NEWTHROW(BADVAR, "Class '%s' already defined", clsname);
+		}
+		_create_class(action.spec, clsname); 
+		return;
+	}
+	case DESTROY_ENTITY:
+		destroyImpl(action);
+		return;
+	case UPDATE_ENTITY:
+		updateEntity(action);
+		return;
+	default:
+		NEWTHROW(INTERNAL, "Unknown action (%d)", action.code);
+	}
+
+	if (error != NULL) throw error;
+}
+
 

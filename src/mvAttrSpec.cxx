@@ -1,4 +1,7 @@
 
+#include <assert.h>
+#include <string.h>
+
 #include "multiverse.h"
 #include "mvAttrSpec.h"
 
@@ -71,5 +74,31 @@ mvStrBuffer& operator<< (mvStrBuffer& buf, const mvSpecList& spec)
 	}
 	buf << "}\n";
 	return buf;
+}
+
+void mvAttrSpec::operator=(mvAttrSpec& src)
+throw (mvError*)
+{
+	switch (src.get_type()) {
+	case TYPE:
+		switch (src.typespec().type)
+		{
+		case STRING: case INTEGER:
+			set_typespec(src.typespec().type); break;
+		case RAWREF:
+			set_typespec(src.typespec().name()); break;
+		default:
+			assert(0);
+		}
+		break;
+	case SUBQUERY:
+		subquery_mutable().classname = strdup(src.subquery().classname);
+		subquery_mutable().attrs.copy_from(src.subquery().attrs);
+		break;
+	default:
+		NEWTHROW(INTERNAL, "Unknown attrspec code (%d)", src.get_type());
+	}
+
+	name = src.name;
 }
 

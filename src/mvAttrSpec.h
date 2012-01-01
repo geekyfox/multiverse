@@ -35,7 +35,6 @@ class mvAttrSpec
 {
 private:
 	mvAttrSpec(mvAttrSpec&);
-	void operator=(mvAttrSpec&);
 	union {
 		mvTypeSpec* typespec;
 		mvQuery* subquery;
@@ -81,6 +80,8 @@ public:
 	{
 		return (*value.typespec);
 	}
+	void operator=(mvAttrSpec&)
+	throw (mvError*);
 };
 
 mvStrBuffer& operator << (mvStrBuffer& buf, const mvAttrSpec& enty);
