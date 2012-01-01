@@ -16,6 +16,7 @@ inline static char* __prefix__(int code) {
 void mvError_display(mvError* error, FILE* dst) {
 	char* prefix = __prefix__(error->code);
 	fprintf(dst, "%s: %s\n", prefix, error->message);
+	fprintf(dst, "at %s\n", error->location);
 	mvError_release(error);
 }
 
@@ -27,6 +28,7 @@ char* mvError_show(mvError* error) {
 
 void mvError_release(mvError* error) {
 	free(error->message);
+	free(error->location);
 	free(error);
 }
 

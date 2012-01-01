@@ -13,6 +13,7 @@
 
 class mvError {
 public:
+	char* location;
 	char* message;
 	int code;
 };
@@ -25,6 +26,7 @@ mvError*  mvError_unmatched(int objcode, const char* command);
 #define PREPARE_ERROR(__errvar, __errcd, ...) do { \
 __errvar = (mvError*)malloc(sizeof(mvError));    \
 asprintf(&(__errvar->message), __VA_ARGS__);       \
+asprintf(&(__errvar->location), "%s : %d", __FILE__, __LINE__); \
 __errvar->code = MVERROR_##__errcd; } while (0)    \
 
 #define THROW(__errcd, ...) do {                 \
@@ -32,8 +34,8 @@ mvError* __errtmp__;                            \
 PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
 return __errtmp__; } while (0)
 
-#define NEWTHROW(__errcd, ...) do { \
-mvError* __errtmp__;                            \
+#define NEWTHROW(__errcd, ...) do {              \
+mvError* __errtmp__;                             \
 PREPARE_ERROR(__errtmp__, __errcd, __VA_ARGS__); \
 throw __errtmp__; } while (0)
 
