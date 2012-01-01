@@ -161,5 +161,57 @@ public:
 	}
 };
 
+template <class T>
+class mvStack {
+private:
+	int _size;
+public:
+	T* data;
+	int last;
+	mvStack(int size) :
+		data(new T[size]),
+		last(0),
+		_size(size)
+	{
+	}
+	~mvStack()
+	{
+		delete[] data;
+	}
+	int size() const { return last; }
+	T& operator[](int index)
+	{
+		return data[last + index];
+	}
+	T& get(int index)
+	{
+		return data[last + index];
+	}
+	void push(T& value)
+	{
+		data[last++] = value;
+	}
+	T& push()
+	{
+		return data[last++];
+	}
+	void purge(int count)
+	{
+		for (int i=0; i<count; i++)
+		{
+			last--;
+			data[last].reset();
+		}
+	}
+	bool operator<(int expect)
+	{
+		return last < expect;
+	}
+	bool operator>=(int expect)
+	{
+		return last >= expect;
+	}
+};
+
 #endif
 
