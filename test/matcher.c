@@ -17,7 +17,7 @@ TEST compile_REQ11() {
 
 	ASSERT_STRING(patt.classname, "person");
 	ASSERT_INT(patt.attrs.size(), 1);
-	ASSERT_STRING(patt.attrs[0].name, "name");
+	ASSERT_STRREF(patt.attrs[0].name, "name");
 	ASSERT_INT(patt.attrs[0].type, STRING);
 	ASSERT_STRING(patt.attrs[0].value.string, "Umberto Eco");
 }
@@ -52,7 +52,7 @@ TEST compile_REQ25() {
 
 	ASSERT_NULL(patt.classname);
 	ASSERT_INT(patt.attrs.size(), 1);
-	ASSERT_STRING(patt.attrs[0].name, "name");
+	ASSERT_STRREF(patt.attrs[0].name, "name");
 	ASSERT_INT(patt.attrs[0].type, STRING);
 	ASSERT_STRING(patt.attrs[0].value.string, "Umberto Eco");
 }

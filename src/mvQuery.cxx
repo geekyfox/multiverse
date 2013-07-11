@@ -33,7 +33,7 @@ mvQuery::~mvQuery()
 
 bool __attrmatch(mvAttr& x, mvAttr& y)
 {
-	if (!STREQ(x.name, y.name)) return 0;
+	if (x.name != y.name) return 0;
 	if (x.type != y.type) return 0;
 	switch (x.type) {
 	case STRING:

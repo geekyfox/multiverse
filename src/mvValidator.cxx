@@ -6,7 +6,7 @@
 mvError* __check_type__(const char* name, const mvTypeSpec& spec, const mvAttrlist& attrs) {
 	int i;
 	for (i=attrs.size() - 1; i >= 0; i--) {
-		if (!STREQ(attrs[i].name, name)) continue;
+		if (attrs[i].name != name) continue;
 		switch (spec.type) {
 		case STRING:
 			if (attrs[i].type != STRING) {
@@ -29,7 +29,7 @@ mvError* __check_type__(const char* name, const mvTypeSpec& spec, const mvAttrli
 mvError* __check_absent__(const char* name, const mvAttrlist& attrs) {
 	int i;
 	for (i=attrs.size() - 1; i >= 0; i--) {
-		if (STREQ(attrs[i].name, name)) {
+		if (attrs[i].name == name) {
 			THROW(INVALID, "Custom attribute for %s\n", name);
 		}
 	}

@@ -46,7 +46,7 @@ TEST mvCommand_test() {
 	}
 	assert(action.code == CREATE_ENTITY);
 	assert(action.attrs.size() == 2);
-	assert(strcmp(action.attrs[1].name, "author") == 0);
+	ASSERT_STRREF(action.attrs[1].name, "author");
 	assert(action.attrs[1].type == RAWREF);
 	assert(strcmp(action.attrs[1].value.rawref, "umberto_eco") == 0);
 }
@@ -109,7 +109,7 @@ TEST mvAttrlist_show_test() {
 	attrs.alloc(1);
 	singletonParser.parse(attrs[0], "name", "'Umberto Eco");
 	assert(attrs[0].type == STRING);
-	assert(strcmp(attrs[0].name, "name") == 0);
+	ASSERT_STRREF(attrs[0].name, "name");
 	assert(strcmp(attrs[0].value.string, "Umberto Eco") == 0);
 }
 

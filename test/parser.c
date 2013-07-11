@@ -19,7 +19,7 @@ TEST attr_test1() {
 	mvAttr pair;
 	singletonParser.parse(pair, "name", "'Umberto Eco");
 	ASSERT_INT(pair.type, STRING);
-	ASSERT_STRING(pair.name, "name");
+	ASSERT_STRREF(pair.name, "name");
 	ASSERT_STRING(pair.value.string, "Umberto Eco");
 }
 

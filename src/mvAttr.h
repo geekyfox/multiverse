@@ -21,7 +21,7 @@ public:
 	~mvAttr();
 	void operator=(const mvAttr&);
 	// Key of the attribute.
-	char* name;
+	mvStrref name;
 	// Type code, should be one of MVTYPE_ codes.
 	mvTypeCode type;
 	// Value of the attribute.

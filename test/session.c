@@ -24,7 +24,7 @@ TEST execute_REQ1() {
 	mvAttrlist& attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size(), 1);
 	ASSERT_INT(attrs[0].type, STRING);
-	ASSERT_STRING(attrs[0].name, "name");
+	ASSERT_STRREF(attrs[0].name, "name");
 	ASSERT_STRING(attrs[0].value.string, "Umberto Eco");
 }
 
@@ -136,7 +136,7 @@ TEST execute_REQ14() {
 	mvAttrlist& attrs = state.entities[0].data;
 	ASSERT_INT(attrs.size(), 1);
 	ASSERT_INT(attrs[0].type, INTEGER);
-	ASSERT_STRING(attrs[0].name, "height");
+	ASSERT_STRREF(attrs[0].name, "height");
 	ASSERT_INT(attrs[0].value.integer, 324);
 }
 

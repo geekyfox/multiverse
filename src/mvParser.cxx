@@ -81,7 +81,7 @@ inline static int __parse_number__(mvAttr& target, const char* value) {
 }
 
 void mvParser::parse(mvAttr& target, const char* name, const char* value) {
-	target.name = strdup(name);
+	target.name.adopt(name);
 	if (value[0] == '\'') {
 		target.type = STRING;
 		target.value.string = strdup(value + 1);

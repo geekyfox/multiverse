@@ -29,7 +29,7 @@ inline static void __mvAttr_set__(mvAttr* dst, const mvAttr* src) {
 
 void mvAttr::operator=(const mvAttr& src)
 {
-	this->name = strdup(src.name);
+	this->name = src.name;
 	__mvAttr_set__(this, &src);
 }
 
@@ -52,7 +52,6 @@ inline static void __mvAttr_release_value__(mvAttr* attr) {
 mvAttr::~mvAttr()
 {
 	__mvAttr_release_value__(this);
-	free(this->name);
 }
 
 void mvAttr_update(mvAttr* dst, mvAttr* src) {

@@ -15,7 +15,7 @@ TESTREQ 1 {
 	ASSERT_STRREF(action.vars[0], "umberto_eco");
 	ASSERT_INT(action.attrs.size(), 1);
 	ASSERT_INT(action.attrs[0].type, STRING);
-	ASSERT_STRING(action.attrs[0].name, "name");
+	ASSERT_STRREF(action.attrs[0].name, "name");
 	ASSERT_STRING(action.attrs[0].value.string, "Umberto Eco");
 }
 
@@ -40,7 +40,7 @@ TESTREQ 11 {
 	ASSERT_INT(action.vars.size(), 1);
 	ASSERT_STRREF(action.vars[0], "person");
 	ASSERT_INT(action.attrs.size(), 1);
-	ASSERT_STRING(action.attrs[0].name, "name");
+	ASSERT_STRREF(action.attrs[0].name, "name");
 	ASSERT_INT(action.attrs[0].type, STRING);
 	ASSERT_STRING(action.attrs[0].value.string, "Umberto Eco");
 }
@@ -50,7 +50,7 @@ TESTREQ 25 {
 	ASSERT_INT(action.spec.size(), 0);
     ASSERT_INT(action.vars.size(), 0);
 	ASSERT_INT(action.attrs.size(), 1);
-	ASSERT_STRING(action.attrs[0].name, "name");
+	ASSERT_STRREF(action.attrs[0].name, "name");
 	ASSERT_INT(action.attrs[0].type, STRING);
 	ASSERT_STRING(action.attrs[0].value.string, "Umberto Eco");
 }
@@ -78,7 +78,7 @@ TESTREQ 14 {
 	ASSERT_STRREF(action.vars[0], "eiffel_tower");
 	ASSERT_INT(action.attrs.size(), 1);
 	ASSERT_INT(action.attrs[0].type, INTEGER);
-	ASSERT_STRING(action.attrs[0].name, "height");
+	ASSERT_STRREF(action.attrs[0].name, "height");
 	ASSERT_INT(action.attrs[0].value.integer, 324);
 }
 

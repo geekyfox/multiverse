@@ -26,8 +26,14 @@ public:
 	{
 		return !((*this) == value);
 	}
+	bool operator== (const mvStrref& value) const;
+	bool operator!= (const mvStrref& value) const
+	{
+		return !((*this) == value);
+	}
 	void* operator new(size_t size);
 	void operator delete(void* ptr);
+	void adopt(const char* text);
 };
 
 class mvStrArray : public mvDynamicArray<mvStrref>

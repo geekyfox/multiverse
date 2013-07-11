@@ -33,7 +33,7 @@ throw (mvError*)
 		ref = findvar(src->value.rawref);
 		if (ref == -1) {
 			if (autovalidate) {
-				NEWTHROW(BADVAR, "Unknown variable '%s'", src->name);
+				NEWTHROW(BADVAR, "Unknown variable '%s'", src->name.ptr);
 			} else {
 				dst->type = RAWREF;
 				dst->value.rawref = strdup(src->value.rawref);	
@@ -56,7 +56,7 @@ throw (mvError*)
 		DIE("Unknown type");
 	}
 
-	dst->name = strdup(src->name);
+	dst->name = src->name;
 }
 
 void mvSession::_create_entity(

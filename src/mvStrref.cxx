@@ -49,6 +49,11 @@ bool mvStrref::operator== (const char* value) const
 	return strcmp(ptr, value) == 0;
 }
 
+bool mvStrref::operator== (const mvStrref& value) const
+{
+	return strcmp(ptr, value.ptr) == 0;
+}
+
 void mvStrref::clear()
 {
 	if (ptr == NULL) return;
@@ -81,6 +86,26 @@ mvStrref::mvStrref(const char* source, int first, int last) {
 	strncpy(target, source + first, len);
 	target[len] = '\0';
 	ptr = target;	
+}
+
+void mvStrref::adopt(const char* text)
+{
+	clear();
+	ctr = localIntPool.acquire(1);
+	char* target;
+	int len = strlen(text);
+	if (len >= 16)
+	{
+		target = (char*)malloc(sizeof(char) * (len + 1));
+		alc = OWN;
+	}
+	else
+	{
+		target = localStrPool.get();
+		alc = POOLED;
+	}
+	strcpy(target, text);
+	ptr = target;
 }
 
 static mvMemPool<mvStrref, 512, 1> refPool;

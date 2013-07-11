@@ -34,7 +34,7 @@ throw (mvError*)
 	for (i=0; i<sz; i++) {
 		tmp[i] = -1;
 		for (j=0; j<fill; j++) {
-			if (STREQ(data[j].name, attrs[i].name)) {
+			if (data[j].name == attrs[i].name) {
 				tmp[i] = j;
 				break;
 			}
