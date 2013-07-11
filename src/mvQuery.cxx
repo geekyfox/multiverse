@@ -20,14 +20,13 @@ mvQuery::mvQuery(mvCommand& cmd)
 	else
 	{
 		assert(cmd.vars.size() == 1);
-		classname = strdup(cmd.vars[0].ptr);
+		classname = cmd.vars[0];
 	}
 	attrs.copy_from(cmd.attrs);
 }
 
 mvQuery::~mvQuery()
 {
-	free(classname);
 	attrs.clear();
 }
 
@@ -54,7 +53,7 @@ bool mvQuery::match(mvEntity& entity)
 		bool match = false;
 		for (i=0; i<entity.classes.size(); i++)
 		{
-			if (STREQ(classname, entity.classes[i].ptr))
+			if (classname == entity.classes[i])
 			{
 				match = true;
 				break;

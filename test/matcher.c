@@ -15,7 +15,7 @@ TEST compile_REQ11() {
 	}
 	mvQuery patt(cmd);
 
-	ASSERT_STRING(patt.classname, "person");
+	ASSERT_STRREF(patt.classname, "person");
 	ASSERT_INT(patt.attrs.size(), 1);
 	ASSERT_STRREF(patt.attrs[0].name, "name");
 	ASSERT_INT(patt.attrs[0].type, STRING);
@@ -29,7 +29,7 @@ TEST match_REQ11() {
 	singletonParser.parse(entity.data[0], "name", "'Umberto Eco");
 	entity.classes.append("person");
 
-	patt.classname = strdup("person");
+	patt.classname = "person";
 	patt.attrs.alloc(1);
 	singletonParser.parse(patt.attrs[0], "name", "'Umberto Eco");
 

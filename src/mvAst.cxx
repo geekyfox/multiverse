@@ -182,7 +182,7 @@ void mvAst::populate(mvAttrlist& target) const
 
 void mvAst::populate(mvQuery& target) const
 {
-	target.classname = strdup((*this)[0].leaf().ptr);
+	target.classname = (*this)[0].leaf();
 	(*this)[1].subtree().populate(target.attrs);
 }
 

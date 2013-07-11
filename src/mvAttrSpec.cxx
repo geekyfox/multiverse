@@ -93,7 +93,7 @@ throw (mvError*)
 		}
 		break;
 	case SUBQUERY:
-		subquery_mutable().classname = strdup(src.subquery().classname);
+		subquery_mutable().classname = src.subquery().classname;
 		subquery_mutable().attrs.copy_from(src.subquery().attrs);
 		break;
 	default:

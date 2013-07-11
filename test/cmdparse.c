@@ -98,7 +98,7 @@ TESTREQ 18 {
 	mvAttrSpec& asp = action.spec[0];
 	ASSERT_INT(asp.get_type(), SUBQUERY);
 	ASSERT_STRREF(asp.name, "books");
-	ASSERT_STRING(asp.subquery().classname, "book");
+	ASSERT_STRREF(asp.subquery().classname, "book");
 }
 
 TESTREQ 20 {

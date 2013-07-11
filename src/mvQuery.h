@@ -14,7 +14,7 @@ public:
 	mvQuery(mvCommand& cmd);
 	~mvQuery();
 	bool match(mvEntity& entity);
-	char* classname;
+	mvStrref classname;
 	mvAttrlist attrs;
 };
 

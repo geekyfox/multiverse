@@ -46,12 +46,20 @@ void mvStrref::operator= (const mvStrref& ref)
 
 bool mvStrref::operator== (const char* value) const
 {
+	if (value == ptr)
+	{
+		return true;
+	}
+	if ( (value == NULL) || (ptr == NULL) )
+	{
+		return false;
+	}
 	return strcmp(ptr, value) == 0;
 }
 
 bool mvStrref::operator== (const mvStrref& value) const
 {
-	return strcmp(ptr, value.ptr) == 0;
+	return (*this) == value.ptr;
 }
 
 void mvStrref::clear()

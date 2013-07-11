@@ -247,7 +247,7 @@ TEST subquery() {
 	mvAttrSpec& spc = session.classes[1].data[0];
 	ASSERT_INT(spc.get_type(), SUBQUERY);
 	const mvQuery& qr = spc.subquery();
-	ASSERT_STRING(qr.classname, "book");
+	ASSERT_STRREF(qr.classname, "book");
 }
 
 TEST update() {
