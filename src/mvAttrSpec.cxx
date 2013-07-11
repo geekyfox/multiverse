@@ -31,6 +31,7 @@ mvStrBuffer& operator<<(mvStrBuffer& buff, const mvTypeSpec& spec)
 	default:
 		DIE("Invalid code (%d)\n", spec.type);
 	}
+	return buff;
 }
 
 mvAttrSpec::~mvAttrSpec()

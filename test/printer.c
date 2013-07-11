@@ -11,7 +11,7 @@ TEST error_unmatched() {
 	}
 }
 
-static void __showcmdimpl(mvStrArray& script, char* ref, char* expect) {
+static void __showcmdimpl(mvStrArray& script, const char* ref, const char* expect) {
 	mvSession state;
 	char* target;
 

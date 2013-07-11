@@ -7,19 +7,20 @@
 enum mvStrrefAlloc { WILD, POOLED, OWN };
 
 class mvStrref {
+public:
+	const char* ptr;
 private:
-	mvStrrefAlloc alc;
 	mvStrref(char* value);
 	void clear();
 	int* ctr;
+	mvStrrefAlloc alc;
 public:
-	const char* ptr;
 	mvStrref();
 	mvStrref(const mvStrref& ref);
 	mvStrref(const char* source, int first, int last);
 	~mvStrref();
-	mvStrref& operator= (const char* value);
-	mvStrref& operator= (const mvStrref& ref);
+	void operator= (const char* value);
+	void operator= (const mvStrref& ref);
 	bool operator== (const char* value) const;
 	bool operator!= (const char* value) const
 	{

@@ -3,7 +3,7 @@
 #include "mvAst.h"
 #include "error.h"
 
-inline static char* __prefix__(int code) {
+inline static const char* __prefix__(int code) {
 	switch(code) {
 	case MVERROR_BADCMD:   return "Bad command";
 	case MVERROR_BADVAR:   return "Bad variable";
@@ -14,14 +14,15 @@ inline static char* __prefix__(int code) {
 }
 
 void mvError_display(mvError* error, FILE* dst) {
-	char* prefix = __prefix__(error->code);
+	const char* prefix = __prefix__(error->code);
 	fprintf(dst, "%s: %s\n", prefix, error->message);
 	fprintf(dst, "at %s\n", error->location);
 	mvError_release(error);
 }
 
 char* mvError_show(mvError* error) {
-	char *result, *prefix = __prefix__(error->code);
+	char *result;
+	const char *prefix = __prefix__(error->code);
 	asprintf(&result, "%s: %s\n", prefix, error->message);
 	return result;
 }
@@ -33,7 +34,7 @@ void mvError_release(mvError* error) {
 }
 
 mvError* mvError_unmatched(int objcode, const char* command) {
-	char* meaning = NULL;
+	const char* meaning = NULL;
 
 	switch (objcode) {
 	case MVAST_TEMPAPOSTROPHE:

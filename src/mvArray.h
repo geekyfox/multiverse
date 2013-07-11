@@ -163,11 +163,12 @@ public:
 
 template <class T>
 class mvStack {
-private:
-	int _size;
 public:
 	T* data;
 	int last;
+private:
+	int _size;
+public:
 	mvStack(int size) :
 		data(new T[size]),
 		last(0),

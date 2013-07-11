@@ -11,13 +11,14 @@ typedef mvStaticArray<mvAttrSpec> mvSpecList;
 #include "mvQuery.h"
 
 class mvTypeSpec {
+public:
+	const mvTypeCode type;
 private:
 	mvStrref classname;
 public:
 	mvTypeSpec(mvTypeCode type);
 	mvTypeSpec(const mvStrref& classname);
 	~mvTypeSpec();
-	const mvTypeCode type;
 	const mvStrref& name() const
 	{
 		return classname;

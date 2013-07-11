@@ -48,6 +48,9 @@ memtest : testsuite
 demo : $(CORE_OBJS) $(DEMO_OBJS) $(HEADERS) 
 	g++ $(COPTS) $(CORE_OBJS) $(DEMO_OBJS) -o demo
 
+build :
+	mkdir -p build
+
 build/dm_%.o : src/%.c $(CORE_HEADERS)
 	g++ $(COPTS) -c $< -o $@
 
@@ -60,7 +63,7 @@ build/suite.c : $(TEST_SRCS)
 build/%.c : test/%.c
 	./gentest.pl $< $@
 
-build/mv_%.o : src/mv_%.c $(CORE_HEADERS)
+build/mv_%.o : src/mv_%.c $(CORE_HEADERS) build
 	g++ $(COPTS) -c $< -o $@
 
 build/op_%.o : src/mv_%.c $(CORE_HEADERS)
@@ -82,6 +85,7 @@ perftest : $(OPT_OBJS) $(HEADERS) build/perftest.o
 clean :
 	rm -f build/*.o
 	rm -f build/*.c
+	rm -r build
 	rm -f testsute
 	rm -f demo
 	rm -f perftest

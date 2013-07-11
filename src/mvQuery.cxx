@@ -85,5 +85,6 @@ mvStrBuffer& operator<<(mvStrBuffer& buff, const mvQuery& q)
 	buff.indent(2);
 	buff << q.attrs;
 	buff.unindent(2);
+	return buff;
 }
 

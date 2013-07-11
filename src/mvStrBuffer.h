@@ -7,8 +7,8 @@
 class mvStrBuffer {
 private:
 	char* data;
-	int size;
 	int used;
+	int size;
 	int pad;
 public:
 	mvStrBuffer(int size);

@@ -48,7 +48,7 @@ TEST tokenize_test() {
 	}
 }
 
-static void __astparse_fail(char* request) {
+static void __astparse_fail(const char* request) {
 	try {
 		mvAst ast(request);
 		DIE("Error expected");
@@ -63,7 +63,7 @@ TEST astparse_failures() {
 	__astparse_fail(BADREQ2);
 }
 
-static void __cmdparse_fail(char* request) {
+static void __cmdparse_fail(const char* request) {
 	mvCommand action;
 	try
 	{

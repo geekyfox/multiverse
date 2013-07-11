@@ -45,6 +45,9 @@ inline static void __display_success(mvCommand* cmd) {
 	case UPDATE_ENTITY:
 		printf ("OK, entity updated\n");
 		break;
+	default:
+		// Just do nothing
+		break;
 	}
 }
 

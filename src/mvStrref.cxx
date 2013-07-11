@@ -26,7 +26,7 @@ mvStrref::~mvStrref()
 	if (ptr != NULL && ctr != NULL) clear();
 }
 
-mvStrref& mvStrref::operator= (const char* value)
+void mvStrref::operator= (const char* value)
 {
 	clear();
 	this->ptr = value;
@@ -34,7 +34,7 @@ mvStrref& mvStrref::operator= (const char* value)
 	this->alc = WILD;
 }
 
-mvStrref& mvStrref::operator= (const mvStrref& ref)
+void mvStrref::operator= (const mvStrref& ref)
 {
 	clear();
 	this->ptr = ref.ptr;

@@ -10,8 +10,8 @@ class mvEntity {
 public:
 	mvEntity(int attrCount, int classCount);
 	~mvEntity();
-	mvAttrlist data;
 	mvStrArray classes;
+	mvAttrlist data;
 	void show(mvStrBuffer& buff) const;
 	void update(const mvAttrlist& attrs) throw (mvError*);
 };

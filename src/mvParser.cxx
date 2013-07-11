@@ -140,7 +140,7 @@ throw (mvError*)
 		_parse_update(target, ast);
 		return;
 	}
-	NEWTHROW(BADCMD, cmdname.ptr);
+	NEWTHROW(BADCMD, "%s", cmdname.ptr);
 }
 
 void mvParser::_parse_assign(mvCommand& cmd, const mvAst& ast)

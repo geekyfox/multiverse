@@ -89,7 +89,6 @@ throw (mvError*)
 {
 	int i;
 	mvEntity* entity = new mvEntity(attrs.size(), 0);
-	mvError *error;
 	mvAttr *src, *dst;
 	//
 	for (i=0; i<attrs.size(); i++) {
@@ -102,7 +101,7 @@ throw (mvError*)
 		catch (mvError* err)
 		{
 			delete entity;
-			throw error;
+			throw err;
 		}
 	}
 	return entities.push(entity);

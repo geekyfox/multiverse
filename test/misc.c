@@ -6,7 +6,7 @@
 #include "mvParser.h"
 #include "test.h"
 
-char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
+const char* response_1 = "umberto_eco = entity {\n  name = 'Umberto Eco'\n}\n";
 
 TEST mvCommand_test() {
 	mvCommand action;
@@ -158,7 +158,6 @@ TEST mv_session_findvar_test() {
 
 TEST mvAttrSpec_release_test() {
 	mvCommand cmd;
-	mvError* error;
 
 	try
 	{
@@ -169,7 +168,7 @@ TEST mvAttrSpec_release_test() {
 	}
 	catch (mvError* err)
 	{
-		FAIL(error);
+		FAIL(err);
 	}
 }
 
